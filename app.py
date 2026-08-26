@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 from core.state import (
     FLUXO,
     TELA_ADMIN,
+    TELA_CONFIRMACAO,
     TELA_CONVERSA,
     TELA_SELECAO,
     indice_da_tela,
@@ -18,7 +19,7 @@ from core.state import (
     ir_para,
     limpar_laudo,
 )
-from screens import admin, conversa, selecao
+from screens import admin, confirmacao, conversa, selecao
 
 load_dotenv()
 
@@ -26,6 +27,7 @@ TELAS = {
     TELA_SELECAO: selecao.render,
     TELA_ADMIN: admin.render,
     TELA_CONVERSA: conversa.render,
+    TELA_CONFIRMACAO: confirmacao.render,
 }
 
 
@@ -61,10 +63,10 @@ def main() -> None:
     render = TELAS.get(st.session_state["tela"])
     if render is None:
         st.warning(
-            "Etapa ainda não implementada. A confirmação entra no Milestone 3 e a "
-            "geração do .docx no Milestone 4."
+            "A geração do .docx entra no Milestone 4. Os dados confirmados estão "
+            "guardados na sessão."
         )
-        destino = TELA_CONVERSA if st.session_state.get("exame_id") else TELA_SELECAO
+        destino = TELA_CONFIRMACAO if st.session_state.get("exame_id") else TELA_SELECAO
         if st.button("Voltar"):
             ir_para(destino)
             st.rerun()

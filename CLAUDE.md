@@ -83,6 +83,7 @@ config/
   exams.py                 # REGISTRO de exames (fonte da UI)
 core/
   state.py                 # session_state: init, navegação, helpers
+  derivados.py             # camada 3: conclusão e legenda, por regra
   llm.py                   # cliente OpenAI + parsing JSON defensivo
   extracao.py              # prompt de extração + merge validado no estado
   pendencias.py            # varredura de campos obrigatórios
@@ -91,11 +92,13 @@ screens/
   selecao.py               # tela 1 — seleção do tipo de exame
   admin.py                 # tela 2 — formulário administrativo
   conversa.py              # tela 3 — slot-filling (chat + painel de estado)
-  # confirmacao.py (M3) e documento.py (M4) ainda não existem
+  confirmacao.py           # tela 4 — revisão editável + imagens + derivados
+  # documento.py (M4) ainda não existe
 templates/
   identificacao_substancia/boilerplate.py   # CAMADA 2 (texto fixo)
 verificacao/
   fluxo.py                 # controlador, com extrator falso (sem API)
+  confirmacao.py           # tela de revisão pela UI real (sem API)
   fidelidade.py            # tenta induzir invenção, com API real
 ```
 
@@ -209,8 +212,22 @@ cp .env.example .env   # preencher OPENAI_API_KEY
   `templates/identificacao_substancia/boilerplate.py`. Só será preenchida com
   texto transcrito dos 4 laudos reais — escrever esse texto de cabeça violaria
   a regra de fidelidade.
-- **Imagens ainda não implementadas** — entram no M3, junto da revisão.
-- **Milestone 3 — próximo:** tela de confirmação com os campos derivados.
+- **Milestone 3 — confirmação:** tudo que vai ao documento passa por uma tela
+  editável — dados administrativos, camada 1, imagens e camada 3. Campo
+  obrigatório apagado na revisão volta a bloquear o avanço.
+  - **Derivados (camada 3) são montados por regra, sem LLM.** Conclusão sai das
+    substâncias com resultado positivo; legenda sai dos campos do material. A
+    tradução para o termo técnico do laudo ("THC" → "Cannabis sativa L.") é
+    vocabulário institucional, então é o perito quem escreve — a ferramenta não
+    traduz por conta própria.
+  - Enquanto o perito não editar, o derivado **acompanha** a camada 1: conclusão
+    desatualizada num laudo é erro silencioso. Depois que ele escreve a versão
+    dele, o texto dele manda e a divergência fica à vista com opção de recalcular.
+  - **Imagens** entram por upload ou `st.camera_input`, presas a um material,
+    com legenda montada dos campos que o perito informou. Continuam sendo anexo
+    documental: nada é lido da foto.
+- **Milestone 4 — próximo:** montagem do `.docx`. Bloqueado pelos 4 laudos
+  reais, que são a camada 2.
 
 ### Verificação
 

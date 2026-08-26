@@ -39,6 +39,8 @@ def init_state() -> None:
     st.session_state.setdefault("fala_atual", None)  # pergunta que está no ar
     st.session_state.setdefault("ultima_extracao", "")  # JSON bruto, para depuração
     st.session_state.setdefault("derivados", {})  # camada 3, confirmada pelo perito
+    st.session_state.setdefault("derivados_origem", {})  # último valor vindo da regra
+    st.session_state.setdefault("derivados_recalcular", [])  # pedidos de recálculo
 
 
 def ir_para(tela: str) -> None:
@@ -70,6 +72,8 @@ def limpar_laudo() -> None:
     st.session_state["fala_atual"] = None
     st.session_state["ultima_extracao"] = ""
     st.session_state["derivados"] = {}
+    st.session_state["derivados_origem"] = {}
+    st.session_state["derivados_recalcular"] = []
 
 
 def indice_da_tela(tela: str) -> int:
