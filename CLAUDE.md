@@ -83,7 +83,9 @@ config/
   exams.py                 # REGISTRO de exames (fonte da UI)
 core/
   state.py                 # session_state: init, navegação, helpers
-  derivados.py             # camada 3: conclusão e legenda, por regra
+  numeros.py               # extenso de números, massas e datas
+  derivados.py             # camada 3: descrições, conclusão, quesitos
+  documento.py             # montagem do .docx
   llm.py                   # cliente OpenAI + parsing JSON defensivo
   extracao.py              # prompt de extração + merge validado no estado
   pendencias.py            # varredura de campos obrigatórios
@@ -93,12 +95,14 @@ screens/
   admin.py                 # tela 2 — formulário administrativo
   conversa.py              # tela 3 — slot-filling (chat + painel de estado)
   confirmacao.py           # tela 4 — revisão editável + imagens + derivados
-  # documento.py (M4) ainda não existe
+  documento.py             # tela 5 — minuta e download
 templates/
   identificacao_substancia/boilerplate.py   # CAMADA 2 (texto fixo)
+referencia/                # laudos reais; fora do git (dados pessoais)
 verificacao/
   fluxo.py                 # controlador, com extrator falso (sem API)
   confirmacao.py           # tela de revisão pela UI real (sem API)
+  documento.py             # .docx conferido contra o laudo real (sem API)
   fidelidade.py            # tenta induzir invenção, com API real
 ```
 
@@ -208,10 +212,23 @@ cp .env.example .env   # preencher OPENAI_API_KEY
   Quantidade de invólucros vai ao laudo como medição sua, então não registro
   estimativa — me diga o valor exato."* Trecho citado é conferido contra a fala
   do perito antes de aparecer; citação que não bate é descartada.
-- **Camada 2 (boilerplate) está VAZIA e marcada como pendente** em
-  `templates/identificacao_substancia/boilerplate.py`. Só será preenchida com
-  texto transcrito dos 4 laudos reais — escrever esse texto de cabeça violaria
-  a regra de fidelidade.
+- **Camada 2 transcrita do laudo SB 1252/2019** (demanda 00024529-28) em
+  `templates/identificacao_substancia/boilerplate.py`: cabeçalho, preâmbulo,
+  histórico, conclusão, os 6 quesitos, referências, fecho e assinatura.
+  **Um dos quatro laudos.** Por isso só existe descrição técnica para análise
+  botânica e CCD, e texto de proscrição para Cannabis sativa L. e cocaína.
+  Scott, Fast Blue B e FTIR seguem sem texto: viram `[PENDENTE: ...]` em
+  vermelho no documento, para o perito redigir. Preencher por semelhança seria
+  inventar procedimento pericial.
+- **Milestone 4 — geração do .docx:** camadas 1+2+3 no layout do laudo real,
+  com as imagens embutidas. Nenhum texto nasce na montagem, e o LLM não
+  participa: tudo que varia já foi ditado pelo perito ou derivado por regra e
+  confirmado por ele na tela anterior.
+  - Números por extenso seguem o laudo: `1,98 kg (um quilograma e novecentos e
+    oitenta gramas)`, `02 (dois) invólucros`. Grama com decimal ainda não tem
+    forma transcrita — vira pendência em vez de palpite.
+  - O laudo real é a referência do teste: `verificacao/documento.py` alimenta o
+    montador com os dados dele e confere trecho a trecho.
 - **Milestone 3 — confirmação:** tudo que vai ao documento passa por uma tela
   editável — dados administrativos, camada 1, imagens e camada 3. Campo
   obrigatório apagado na revisão volta a bloquear o avanço.
@@ -226,13 +243,15 @@ cp .env.example .env   # preencher OPENAI_API_KEY
   - **Imagens** entram por upload ou `st.camera_input`, presas a um material,
     com legenda montada dos campos que o perito informou. Continuam sendo anexo
     documental: nada é lido da foto.
-- **Milestone 4 — próximo:** montagem do `.docx`. Bloqueado pelos 4 laudos
-  reais, que são a camada 2.
+- **Próximo:** os outros três laudos completam a camada 2 e respondem o que
+  ainda está em aberto no schema.
 
 ### Verificação
 
 ```bash
 .venv/bin/python -m verificacao.fluxo        # sem API, determinístico
+.venv/bin/python -m verificacao.confirmacao  # sem API, pela UI real
+.venv/bin/python -m verificacao.documento    # sem API, contra o laudo real
 .venv/bin/python -m verificacao.fidelidade   # com API real, custa chamadas
 ```
 

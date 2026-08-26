@@ -21,9 +21,20 @@ from config.schema import CampoAdmin, Colecao, Exame, Slot
 
 _ADMIN_IDENTIFICACAO = (
     CampoAdmin(
+        chave="numero_laudo",
+        label="Número do laudo",
+        ajuda="Como aparece no cabeçalho, ex.: SB 1252/2019.",
+    ),
+    CampoAdmin(
+        chave="numero_demanda",
+        label="Número da demanda",
+        ajuda="Ex.: 00024529-28.",
+    ),
+    CampoAdmin(
         chave="data_exame",
         label="Data do exame",
         tipo="data",
+        ajuda="Data em que a solicitação foi recebida no Instituto.",
     ),
     CampoAdmin(
         chave="orgao_solicitante",
@@ -34,6 +45,12 @@ _ADMIN_IDENTIFICACAO = (
         chave="documento_solicitacao",
         label="Documento de solicitação",
         ajuda="Ofício, requisição ou memorando que originou o exame.",
+    ),
+    CampoAdmin(
+        chave="data_documento",
+        label="Data do documento de solicitação",
+        tipo="data",
+        ajuda="A data do ofício, que o laudo cita separada da data do exame.",
     ),
     CampoAdmin(
         chave="tipo_procedimento",
@@ -58,14 +75,15 @@ _ADMIN_IDENTIFICACAO = (
         label="Matrícula",
     ),
     CampoAdmin(
-        chave="numero_demanda",
-        label="Número da demanda",
+        chave="classe_perito",
+        label="Classe do perito",
         obrigatorio=False,
+        ajuda="Aparece sob a assinatura, ex.: Primeira Classe.",
     ),
     CampoAdmin(
         chave="protocolo_sbs",
-        label="Protocolo (SBS)",
-        obrigatorio=False,
+        label="Protocolo no Laboratório de Análises",
+        ajuda="Ex.: SBI0302/2019.",
     ),
 )
 

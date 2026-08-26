@@ -25,6 +25,10 @@ PNG = base64.b64decode(
 )
 
 ADMIN = {
+    "numero_laudo": "SB 1252/2019",
+    "numero_demanda": "00024529-28",
+    "data_documento": "2026-08-23",
+    "classe_perito": "Primeira Classe",
     "data_exame": "2026-08-25",
     "orgao_solicitante": "1º DP de Teresina/PI",
     "documento_solicitacao": "Ofício 412/2026",
@@ -33,8 +37,7 @@ ADMIN = {
     "envolvido": "FULANO DE TAL",
     "perito_designado": "PERITO DE TESTE",
     "matricula": "123456-7",
-    "numero_demanda": "",
-    "protocolo_sbs": "",
+    "protocolo_sbs": "SBI0302/2026",
 }
 
 COLECOES = {
@@ -101,7 +104,7 @@ def main() -> int:
     checa(not at.exception, "a tela não pode levantar exceção")
     print("conclusão derivada:", repr(at.session_state["derivados"].get("conclusao")))
     checa(
-        at.session_state["derivados"].get("conclusao") == "POSITIVO para THC e cocaína.",
+        at.session_state["derivados"].get("conclusao") == "POSITIVO para THC e POSITIVO para cocaína",
         "conclusão devia sair dos resultados positivos",
     )
     checa(not at.error, "schema completo não devia ter impedimento")
@@ -111,7 +114,7 @@ def main() -> int:
     at.text_input(key="conf_exames_realizados_1_substancia").set_value("Cannabis sativa L.").run()
     print("após editar a substância:", repr(at.session_state["derivados"]["conclusao"]))
     checa(
-        at.session_state["derivados"]["conclusao"] == "POSITIVO para Cannabis sativa L. e cocaína.",
+        at.session_state["derivados"]["conclusao"] == "POSITIVO para Cannabis sativa L. e POSITIVO para cocaína",
         "derivado intocado devia acompanhar a camada 1",
     )
 
@@ -139,7 +142,7 @@ def main() -> int:
         checa(not at.exception, "recalcular não pode levantar exceção de session_state")
         checa(
             at.session_state["derivados"]["conclusao"]
-            == "POSITIVO para Cannabis sativa L. e cloridrato de cocaína.",
+            == "POSITIVO para Cannabis sativa L. e POSITIVO para cloridrato de cocaína",
             "recalcular devia usar os dados atuais",
         )
 
@@ -157,9 +160,8 @@ def main() -> int:
     if legendas:
         print("legenda sugerida:", repr(legendas[0].value))
         checa(
-            legendas[0].value
-            == "Imagem 01: Fotografia do material 1 — erva prensada, esverdeada, 3 invólucros plásticos.",
-            "legenda devia sair dos campos informados pelo perito",
+            legendas[0].value == "Foto do material periciado",
+            "legenda devia usar o texto transcrito do laudo real",
         )
     checa(
         any("Remover imagem" in b.label for b in at.button),
