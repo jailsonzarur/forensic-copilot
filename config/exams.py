@@ -80,6 +80,7 @@ _MATERIAL = Colecao(
         Slot(
             chave="massa_liquida_valor",
             label="Massa líquida",
+            exige_valor_exato=True,
             pergunta="Qual a massa líquida do material?",
             instrucao_extracao=(
                 "Valor numérico da massa líquida medida pelo perito, como "
@@ -112,6 +113,7 @@ _MATERIAL = Colecao(
         Slot(
             chave="acondicionamento_quantidade",
             label="Quantidade de invólucros",
+            exige_valor_exato=True,
             pergunta="Em quantos invólucros o material estava acondicionado?",
             instrucao_extracao=(
                 "Número inteiro de invólucros contado pelo perito. Se ele não "

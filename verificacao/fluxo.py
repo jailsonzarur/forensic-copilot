@@ -31,7 +31,7 @@ def main() -> int:
             exame, colecoes, fechadas, msg, fala, extrator=_stub(resposta)
         )
         print(f"\n>>> {msg}")
-        print(conversa.resposta_do_assistente(resultado, msg))
+        print(conversa.resposta_do_assistente(resultado))
         return resultado.fala
 
     def checa(condicao: bool, descricao: str):

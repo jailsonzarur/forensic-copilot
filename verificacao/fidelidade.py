@@ -19,7 +19,9 @@ from config.exams import obter_exame  # noqa: E402
 from core import conversa  # noqa: E402
 from core.llm import chave_configurada, modelo  # noqa: E402
 
-#: (nome, falas, campos que NÃO podem aparecer, campos que devem aparecer)
+#: (nome, falas, campos que NÃO podem aparecer, campos que devem aparecer,
+#:  slots que devem vir recusados com motivo explicado; "*" = qualquer recusa,
+#:  desde que exista uma — nenhuma mensagem pode ficar sem explicação)
 CASOS = (
     (
         "droga nomeada sem descrição",
@@ -63,21 +65,54 @@ CASOS = (
         ["acondicionamento_quantidade", "acondicionamento_tipo"],
         (),
     ),
+    # Aproximação num campo medido: não grava, mas TEM que dizer por quê —
+    # senão a pergunta volta igual e o perito fica em loop.
+    (
+        "contagem aproximada",
+        [
+            "15,3 g de pedra bege",
+            "São em torno de 15 invólucros enrolados em saco plástico transparente",
+        ],
+        ["acondicionamento_quantidade"],
+        (("acondicionamento_tipo", "saco plástico transparente"),),
+        ("acondicionamento_quantidade",),
+    ),
+    (
+        "massa aproximada",
+        ["deu cerca de 10 g"],
+        ["massa_liquida_valor"],
+        (),
+        ("massa_liquida_valor",),
+    ),
+    # Nenhuma mensagem pode voltar sem explicação, nem conversa fiada.
+    ("saudação", ["e ai, tudo bem?"], [], (), ("*",)),
+    ("agradecimento", ["obrigado, valeu"], [], (), ("*",)),
+    ("pergunta ao assistente", ["quantos invólucros você acha que tinha?"], [], (), ("*",)),
+    ("assunto alheio ao laudo", ["o carro estava estacionado na esquina"], [], (), ("*",)),
+    (
+        "contagem exata com erro de digitação",
+        ["15,3 g de pedra bege", "15 invólucros enroldas em saco plático transparente"],
+        [],
+        (("acondicionamento_quantidade", "15"),),
+        (),
+    ),
 )
 
 
-def _roda(exame, mensagens: list[str]) -> dict:
+def _roda(exame, mensagens: list[str]) -> tuple[dict, list[str]]:
     colecoes: dict[str, list[dict]] = {}
     fechadas: list[str] = []
     fala = conversa.proxima_fala(exame, colecoes, fechadas)
+    recusas: list[str] = []
     for mensagem in mensagens:
         resultado = conversa.processar(exame, colecoes, fechadas, mensagem, fala)
         if resultado.erro:
             raise RuntimeError(resultado.erro)
+        recusas = [r.chave for r in resultado.recusas]
         fala = resultado.fala
     material = (colecoes.get("materiais") or [{}])[0]
     realizado = (colecoes.get("exames_realizados") or [{}])[0]
-    return {**material, **realizado}
+    return {**material, **realizado}, recusas
 
 
 def main() -> int:
@@ -89,12 +124,24 @@ def main() -> int:
     falhas: list[str] = []
     print(f"modelo: {modelo()}")
 
-    for nome, mensagens, proibidos, esperados in CASOS:
-        estado = _roda(exame, mensagens)
+    for caso in CASOS:
+        nome, mensagens, proibidos, esperados = caso[:4]
+        recusas_esperadas = caso[4] if len(caso) > 4 else ()
+        estado, recusas = _roda(exame, mensagens)
         print(f"\n--- {nome}")
         print("    fala:", " | ".join(mensagens))
         print("    estado:", estado or "(vazio)")
+        if recusas:
+            print("    recusou:", ", ".join(recusas))
         problemas = []
+        for chave in recusas_esperadas:
+            if chave == "*":
+                if not recusas:
+                    problemas.append(f"{nome}: devolveu nada sem explicar o porquê")
+            elif chave not in recusas:
+                problemas.append(
+                    f"{nome}: devia recusar {chave} com motivo, mas ficou calado"
+                )
         for chave in proibidos:
             if estado.get(chave):
                 problemas.append(f"{nome}: inventou {chave}={estado[chave]!r}")

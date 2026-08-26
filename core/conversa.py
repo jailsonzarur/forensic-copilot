@@ -16,7 +16,7 @@ from typing import Callable
 
 from config.schema import Exame
 from core import pendencias
-from core.extracao import Alteracao, aplicar, extrair
+from core.extracao import Alteracao, Recusa, aplicar, extrair, ler_recusas
 from core.llm import ErroLLM
 
 PERGUNTA = "pergunta"
@@ -111,9 +111,11 @@ class Resultado:
 
     fala: Fala
     alteracoes: list[Alteracao] = field(default_factory=list)
+    recusas: list[Recusa] = field(default_factory=list)
     erro: str = ""
     bruto: str = ""
     chamou_modelo: bool = False
+    abriu_item: bool = False
 
 
 def _itens_referenciaveis(
@@ -214,33 +216,48 @@ def processar(
         return Resultado(fala=fala, erro=str(erro), chamou_modelo=True)
 
     alteracoes = aplicar(exame, colecoes, operacoes)
+    recusas = ler_recusas(exame, operacoes, mensagem)
 
     # "Sim" sem descrever nada: abre o próximo item para receber as perguntas.
-    if aguardando and not alteracoes and eh_afirmativa(mensagem):
+    abriu_item = bool(aguardando) and not alteracoes and eh_afirmativa(mensagem)
+    if abriu_item:
         colecoes.setdefault(aguardando, []).append({})
+
+    # O modelo às vezes devolve {} sem dizer por quê. Nada pode voltar ao perito
+    # sem explicação, e o código já sabe o bastante para dar uma verdadeira:
+    # nenhum campo foi gravado.
+    if not alteracoes and not recusas and not abriu_item:
+        recusas = [Recusa("sem_dado")]
 
     fala = proxima_fala(exame, colecoes, fechadas)
     return Resultado(
         fala=fala,
         alteracoes=alteracoes,
+        recusas=recusas,
         bruto=bruto,
         chamou_modelo=True,
+        abriu_item=abriu_item,
     )
 
 
-def resposta_do_assistente(resultado: Resultado, mensagem_original: str = "") -> str:
+def resposta_do_assistente(resultado: Resultado) -> str:
     """Fala do assistente: o que foi gravado (se algo foi) e a próxima pergunta."""
     partes: list[str] = []
 
     if resultado.erro:
-        partes.append(f"Não consegui processar essa mensagem: {resultado.erro}")
+        # Única mensagem padronizada do sistema: a falha é da ferramenta, não da
+        # fala do perito, e não há motivo do modelo para explicar.
+        partes.append(f"Falha da ferramenta ao processar sua mensagem: {resultado.erro}")
         partes.append("Nada foi registrado. Pode repetir?")
         return "\n\n".join(partes)
 
     if resultado.alteracoes:
         partes.append(_texto_alteracoes(resultado.alteracoes))
-    elif resultado.chamou_modelo and not eh_afirmativa(mensagem_original):
-        partes.append("Não identifiquei nenhum dado novo nessa mensagem.")
+
+    # Toda recusa se explica e cita o trecho que a causou. Sem o motivo, o perito
+    # repete a mesma frase e a pergunta volta igual, sem fim.
+    for recusa in resultado.recusas:
+        partes.append(recusa.explicacao())
 
     partes.append(resultado.fala.texto)
     return "\n\n".join(partes)

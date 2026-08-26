@@ -49,6 +49,10 @@ class Slot:
     #: Quando False, ``opcoes`` é apenas vocabulário sugerido — o perito pode
     #: informar algo fora da lista e o valor dele prevalece.
     opcoes_fechadas: bool = False
+    #: Campo que vai ao laudo como medição ou contagem do perito. Aproximação
+    #: ("em torno de 15") não é gravada: o extrator recusa e diz o motivo, para
+    #: o perito informar o valor exato em vez de ficar repetindo a pergunta.
+    exige_valor_exato: bool = False
     #: Chave de outra coleção quando este slot referencia um item dela (ex.: o
     #: exame aponta para qual material foi examinado). A pergunta dirigida passa
     #: a listar os itens já registrados, para o perito responder pelo número.

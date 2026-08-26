@@ -17,6 +17,13 @@ Este arquivo é a fonte de verdade do projeto. Leia antes de escrever código.
   resultados. Dado faltante vira **PENDÊNCIA** (pergunta dirigida ao perito),
   nunca invenção. Se você se pegar preenchendo uma lacuna com um valor
   plausível, pare — é exatamente o erro que este projeto existe para evitar.
+- **Transparência na recusa.** Toda vez que a ferramenta deixar de registrar
+  algo, ela diz POR QUÊ, em termos do que o perito escreveu — citando o trecho
+  que causou a recusa. Nada de resposta genérica do tipo "não identifiquei
+  nenhum dado": sem o motivo, o perito repete a mesma frase e a pergunta volta
+  igual, sem fim. A única mensagem padronizada permitida é a de falha de
+  código (erro de rede, de autenticação, JSON inválido) — aí o problema não
+  partiu da fala do perito e não há motivo do modelo para explicar.
 - **Humano no controle.** A saída é uma MINUTA. Sempre há tela de confirmação
   antes de gerar o documento, onde o perito revisa e edita. A responsabilidade
   legal é do perito. A ferramenta é assistente de redação, não perito
@@ -25,6 +32,11 @@ Este arquivo é a fonte de verdade do projeto. Leia antes de escrever código.
 Corolário para o código: nenhum default "esperto", nenhum valor de exemplo que
 possa vazar para o laudo, nenhum campo boilerplate escrito de cabeça — texto
 institucional só entra transcrito de laudo real.
+
+Corolário da transparência: a explicação nunca pode depender de o modelo
+lembrar de explicar. Os motivos são um conjunto fechado (`core.extracao.MOTIVOS`)
+com texto montado por template, e quando nada é gravado o próprio código produz
+uma recusa `sem_dado` — o modelo pode refinar o motivo, nunca omiti-lo.
 
 ---
 
@@ -172,6 +184,12 @@ cp .env.example .env   # preencher OPENAI_API_KEY
   ordem do registro; a coleção só encerra quando o perito diz que não há mais
   itens, e o painel de estado tem botão para reabrir se ela encerrar cedo demais.
   O avanço só libera com a camada 1 completa.
+- **Recusa explicada:** slots marcados `exige_valor_exato` (massa e contagem de
+  invólucros) não aceitam estimativa — "em torno de 15" não vira 15. Nesse caso
+  a ferramenta diz o motivo e cita o trecho: *"Você disse «em torno de 15».
+  Quantidade de invólucros vai ao laudo como medição sua, então não registro
+  estimativa — me diga o valor exato."* Trecho citado é conferido contra a fala
+  do perito antes de aparecer; citação que não bate é descartada.
 - **Camada 2 (boilerplate) está VAZIA e marcada como pendente** em
   `templates/identificacao_substancia/boilerplate.py`. Só será preenchida com
   texto transcrito dos 4 laudos reais — escrever esse texto de cabeça violaria

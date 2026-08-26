@@ -46,7 +46,7 @@ def _envia(exame: Exame, texto: str) -> None:
     st.session_state["mensagens"].append(
         {
             "role": "assistant",
-            "content": controlador.resposta_do_assistente(resultado, texto),
+            "content": controlador.resposta_do_assistente(resultado),
         }
     )
 

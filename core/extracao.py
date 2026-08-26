@@ -49,12 +49,82 @@ REGRAS ABSOLUTAS
 
 FORMATO DA SAÍDA
 Responda APENAS com um objeto JSON no formato:
-{"<colecao>": [{"indice": <n>, "campos": {"<slot>": "<valor>"}}]}
+{"<colecao>": [{"indice": <n>, "campos": {"<slot>": "<valor>"}}],
+ "nao_registrado": [{"colecao": "<colecao>", "slot": "<slot>", "motivo": "<motivo>"}]}
 
 - "indice" é o número do item na coleção, começando em 1. Use um índice existente para completar um item já iniciado; use o próximo índice livre para um item novo, e só quando o perito estiver claramente falando de outro item.
 - Inclua em "campos" apenas os slots informados nesta mensagem.
 - Se a mensagem não trouxer nenhum dado novo, responda {}.
-- Não invente coleções nem slots fora dos listados abaixo."""
+- Não invente coleções nem slots fora dos listados abaixo.
+- "nao_registrado" explica TUDO que o perito falou e não foi gravado. Se você não
+  gravar nenhum campo, "nao_registrado" é OBRIGATÓRIO: o perito precisa saber por
+  que a pergunta voltou. Isso vale para qualquer mensagem — saudação, agradecimento,
+  desabafo, pergunta, assunto alheio ao laudo. Responder {} sem explicação é erro:
+  o perito fica sem saber o que aconteceu e repete a mesma frase.
+- Cada entrada tem "motivo" e, quando houver, "trecho": a citação EXATA e curta
+  das palavras do perito que causaram a recusa, copiada da mensagem sem alterar
+  uma letra. Se não der para citar, omita "trecho".
+- "colecao" e "slot" identificam o campo afetado; omita ambos quando a recusa não
+  for sobre um campo específico.
+- Motivos válidos, e só estes:
+  - "aproximado": estimativa ("em torno de 15", "cerca de 10 g", "uns 3") num
+    campo que exige valor exato.
+  - "ambiguo": o perito falou do campo mas não dá para saber qual é o valor.
+  - "fora_do_escopo": o perito falou de algo que não é campo deste laudo.
+  - "pergunta": a mensagem é uma pergunta ao assistente, não um dado.
+  - "sem_dado": a mensagem não traz informação sobre nenhum campo.
+- Omitir a chave e listar em "nao_registrado" são coisas diferentes: omita quando
+  o perito não falou do campo; liste quando falou e o valor não serve."""
+
+
+@dataclass(frozen=True)
+class Recusa:
+    """Algo que o perito falou e não foi gravado, com o motivo.
+
+    Nunca vira mensagem genérica: o texto sai de um motivo fechado, e o trecho
+    citado é conferido contra a fala do perito antes de ser exibido.
+    """
+
+    motivo: str
+    colecao: Colecao | None = None
+    slot: Slot | None = None
+    trecho: str = ""
+
+    @property
+    def chave(self) -> str:
+        return self.slot.chave if self.slot else self.motivo
+
+    def _citacao(self) -> str:
+        return f"«{self.trecho}»" if self.trecho else "o que você escreveu"
+
+    def explicacao(self) -> str:
+        campo = self.slot.label.lower() if self.slot else "esse ponto"
+
+        if self.motivo == "aproximado":
+            return (
+                f"Você disse {self._citacao()}. {campo.capitalize()} vai ao laudo "
+                "como medição sua, então não registro estimativa — me diga o valor "
+                "exato."
+            )
+        if self.motivo == "ambiguo":
+            return (
+                f"Você falou de {campo}, mas {self._citacao()} não me deixa seguro "
+                "de qual é o valor, e eu não vou adivinhar. Pode dizer de outro jeito?"
+            )
+        if self.motivo == "fora_do_escopo":
+            return (
+                f"{self._citacao().capitalize()} não corresponde a nenhum campo "
+                "deste laudo, então não registrei nada."
+            )
+        if self.motivo == "pergunta":
+            return (
+                "Li isso como uma pergunta, não como um dado do exame, então não "
+                "registrei nada."
+            )
+        return (
+            "Essa mensagem não trouxe informação sobre nenhum campo do laudo, "
+            "então não registrei nada."
+        )
 
 
 @dataclass(frozen=True)
@@ -104,6 +174,12 @@ def descreve_schema(exame: Exame) -> str:
             partes = [f'  - "{slot.chave}" ({slot.label})']
             if slot.instrucao_extracao:
                 partes.append(slot.instrucao_extracao)
+            if slot.exige_valor_exato:
+                partes.append(
+                    "Exige valor exato (é medição ou contagem do perito). Se a "
+                    "fala trouxer aproximação, NÃO registre: informe em "
+                    '"nao_registrado" com motivo "aproximado".'
+                )
             if slot.opcoes_fechadas:
                 aceitos = ", ".join(f'"{o}"' for o in slot.opcoes)
                 partes.append(f"Somente um destes valores: {aceitos}.")
@@ -230,6 +306,42 @@ def aplicar(
                 alteracoes.append(Alteracao(colecao, indice, slot, texto, anterior))
 
     return alteracoes
+
+
+MOTIVOS = ("aproximado", "ambiguo", "fora_do_escopo", "pergunta", "sem_dado")
+
+
+def ler_recusas(exame: Exame, operacoes: dict, mensagem: str = "") -> list[Recusa]:
+    """Recusas declaradas pelo extrator, validadas contra o schema e a fala.
+
+    Um trecho que não aparece na mensagem do perito é descartado: citação
+    inventada seria pior do que citação nenhuma.
+    """
+    encontradas: list[Recusa] = []
+    entradas = operacoes.get("nao_registrado")
+    if not isinstance(entradas, list):
+        return encontradas
+
+    referencia = _normaliza(mensagem)
+    for entrada in entradas:
+        if not isinstance(entrada, dict):
+            continue
+
+        colecao = exame.colecao(str(entrada.get("colecao", "")))
+        slot = colecao.slot(str(entrada.get("slot", ""))) if colecao else None
+        if slot is None:
+            colecao = None
+
+        motivo = str(entrada.get("motivo", "")).strip().lower()
+        if motivo not in MOTIVOS:
+            motivo = "ambiguo" if slot else "sem_dado"
+
+        trecho = str(entrada.get("trecho", "")).strip().strip('"«»')
+        if trecho and _normaliza(trecho) not in referencia:
+            trecho = ""
+
+        encontradas.append(Recusa(motivo, colecao, slot, trecho))
+    return encontradas
 
 
 def _indice_valido(valor: object, quantidade: int) -> int | None:
