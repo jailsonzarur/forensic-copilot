@@ -121,6 +121,80 @@ def main() -> int:
     )
     checa("materiais" in fechadas, "'não, é só isso' devia encerrar os materiais")
     checa(len(colecoes["materiais"]) == 2, "negativa não pode criar item nem chamar o modelo")
+    fechadas.remove("materiais")
+
+    # Regressão: o extrator devolve um campo gravado E uma entrada de
+    # "nao_registrado" por slot vazio. Não pode virar parede de mensagens
+    # repetidas, nem dizer "não registrei nada" depois de "Registrei:".
+    fala = passo("sim", {}, fala)
+    resposta = conversa.resposta_do_assistente(
+        conversa.processar(
+            exame,
+            colecoes,
+            fechadas,
+            "um tablete de cocaína",
+            fala,
+            extrator=_stub(
+                {
+                    "materiais": [{"indice": 3, "campos": {"forma_fisica": "tablete"}}],
+                    "nao_registrado": [
+                        {"colecao": "materiais", "slot": chave, "motivo": "sem_dado"}
+                        for chave in (
+                            "massa_liquida_valor",
+                            "massa_liquida_unidade",
+                            "coloracao",
+                            "acondicionamento_quantidade",
+                            "acondicionamento_tipo",
+                            "observacoes",
+                        )
+                    ],
+                }
+            ),
+        )
+    )
+    print("\n>>> um tablete de cocaína")
+    print(resposta)
+    checa("Registrei:" in resposta, "devia confirmar o campo gravado")
+    checa(
+        "não registrei nada" not in resposta.lower(),
+        "não pode dizer que não registrou nada logo após registrar",
+    )
+    checa(
+        resposta.count("não trouxe informação") == 0,
+        "recusa de mensagem inteira não cabe quando houve registro",
+    )
+    for linha in resposta.splitlines():
+        if linha.strip():
+            checa(
+                resposta.count(linha) == 1,
+                f"linha repetida na resposta: {linha[:50]!r}",
+            )
+    # Regressão: motivo fora do conjunto e "aproximado" sem palavra de estimativa
+    # são erro do extrator. Renomeá-los viraria explicação confiante e falsa, então
+    # são descartados e a resposta assume a falha de leitura.
+    for rotulo, motivo in (("motivo inventado", "unidade diferente"), ("aproximado sem estimativa", "aproximado")):
+        resultado = conversa.processar(
+            exame, colecoes, fechadas, "1,2 kg", fala,
+            extrator=_stub({"nao_registrado": [{
+                "colecao": "materiais", "slot": "massa_liquida_valor",
+                "motivo": motivo, "trecho": "1,2 kg",
+            }]}),
+        )
+        resposta = conversa.resposta_do_assistente(resultado)
+        print(f"\n>>> [{rotulo}] 1,2 kg")
+        print(resposta)
+        checa(
+            "não vou adivinhar" not in resposta and "estimativa" not in resposta,
+            f"{rotulo}: recusa inválida do extrator não podia virar explicação",
+        )
+        checa(
+            "falha é de leitura minha" in resposta,
+            f"{rotulo}: devia assumir a falha em vez de culpar a mensagem",
+        )
+
+    colecoes["materiais"] = colecoes["materiais"][:2]
+    fechadas.append("materiais")
+    fala = conversa.proxima_fala(exame, colecoes, fechadas)
 
     fala = passo(
         "fiz o Fast Blue B no material 1",

@@ -66,9 +66,23 @@ Responda APENAS com um objeto JSON no formato:
   uma letra. Se não der para citar, omita "trecho".
 - "colecao" e "slot" identificam o campo afetado; omita ambos quando a recusa não
   for sobre um campo específico.
+- "nao_registrado" NÃO é a lista dos campos que ainda faltam. Só entra campo sobre
+  o qual o perito falou NESTA mensagem e cujo valor não pôde ser gravado. Campo que
+  ele não mencionou simplesmente não aparece — a próxima pergunta já cobre isso.
+- Se você gravou algum campo, "sem_dado" está errado: a mensagem trouxe dado.
+- Uma entrada por problema, sem repetir o mesmo motivo para o mesmo campo.
+- ANTES de recusar, verifique se a fala contém o valor. Se contém, GRAVE. Recusar
+  é exceção, não o caminho fácil. Em particular:
+  - unidade diferente da que você esperava não é motivo de recusa: grave o valor e
+    a unidade exatamente como o perito disse, sem converter;
+  - forma de escrever o número (vírgula, ponto, por extenso) não é motivo de recusa.
+- Não invente motivo: use um dos listados. Motivo fora da lista é descartado e o
+  perito fica sem explicação nenhuma.
 - Motivos válidos, e só estes:
-  - "aproximado": estimativa ("em torno de 15", "cerca de 10 g", "uns 3") num
-    campo que exige valor exato.
+  - "aproximado": o perito usou palavra de estimativa — "em torno de", "cerca de",
+    "aproximadamente", "uns", "mais ou menos", "por volta de" — num campo que exige
+    valor exato. Sem uma dessas palavras NÃO é aproximado: "1,2 kg" e "1,2 quilos"
+    são valores exatos.
   - "ambiguo": o perito falou do campo mas não dá para saber qual é o valor.
   - "fora_do_escopo": o perito falou de algo que não é campo deste laudo.
   - "pergunta": a mensagem é uma pergunta ao assistente, não um dado.
@@ -115,6 +129,12 @@ class Recusa:
             return (
                 f"{self._citacao().capitalize()} não corresponde a nenhum campo "
                 "deste laudo, então não registrei nada."
+            )
+        if self.motivo == "sem_extracao":
+            return (
+                "Não consegui extrair nenhum campo dessa mensagem. Se você informou "
+                "algum dado aí, a falha é de leitura minha, não sua — tente dizer de "
+                "outro jeito. O JSON bruto do extrator está no painel ao lado."
             )
         if self.motivo == "pergunta":
             return (
@@ -308,7 +328,54 @@ def aplicar(
     return alteracoes
 
 
+#: Motivos que o extrator pode declarar.
 MOTIVOS = ("aproximado", "ambiguo", "fora_do_escopo", "pergunta", "sem_dado")
+
+#: Usado só pelo código, quando o extrator não gravou nada e não explicou (ou
+#: explicou com um motivo que não resistiu à conferência). Não é oferecido ao
+#: modelo: ele nunca deve alegar falha da própria ferramenta.
+SEM_EXTRACAO = "sem_extracao"
+
+#: Palavras que caracterizam estimativa. Sem uma delas, uma recusa "aproximado"
+#: é erro do extrator e não chega ao perito.
+_ESTIMATIVAS = (
+    "em torno de", "cerca de", "aproximadamente", "aproximado", "mais ou menos",
+    "por volta de", "uns ", "umas ", "estimad", "chute", "acho que",
+)
+
+#: Motivos que falam da mensagem inteira, não de um campo. No máximo um deles
+#: aparece por vez, e sem slot associado.
+MOTIVOS_DE_MENSAGEM = ("sem_dado", "pergunta", "fora_do_escopo", SEM_EXTRACAO)
+
+
+def consolida_recusas(recusas: list[Recusa], houve_registro: bool) -> list[Recusa]:
+    """Uma explicação por problema, e nenhuma que contradiga o que foi gravado.
+
+    O extrator às vezes devolve uma entrada por slot vazio, o que viraria uma
+    parede de mensagens idênticas. E "não registrei nada" logo depois de um
+    "Registrei:" seria mentira — some.
+    """
+    vistos: set = set()
+    por_campo: list[Recusa] = []
+    da_mensagem: list[Recusa] = []
+
+    for recusa in recusas:
+        if recusa.motivo in MOTIVOS_DE_MENSAGEM:
+            if recusa.motivo == "sem_dado" and houve_registro:
+                continue
+            if recusa.motivo in vistos:
+                continue
+            vistos.add(recusa.motivo)
+            da_mensagem.append(Recusa(recusa.motivo, trecho=recusa.trecho))
+            continue
+
+        chave = (recusa.motivo, recusa.slot.chave if recusa.slot else "")
+        if chave in vistos:
+            continue
+        vistos.add(chave)
+        por_campo.append(recusa)
+
+    return por_campo + da_mensagem[:1]
 
 
 def ler_recusas(exame: Exame, operacoes: dict, mensagem: str = "") -> list[Recusa]:
@@ -334,7 +401,13 @@ def ler_recusas(exame: Exame, operacoes: dict, mensagem: str = "") -> list[Recus
 
         motivo = str(entrada.get("motivo", "")).strip().lower()
         if motivo not in MOTIVOS:
-            motivo = "ambiguo" if slot else "sem_dado"
+            # Renomear para um motivo plausível transformaria erro do extrator em
+            # explicação confiante e falsa. Descarta.
+            continue
+
+        if motivo == "aproximado" and not any(p in referencia for p in _ESTIMATIVAS):
+            # O extrator alegou estimativa sem que o perito tenha estimado.
+            continue
 
         trecho = str(entrada.get("trecho", "")).strip().strip('"«»')
         if trecho and _normaliza(trecho) not in referencia:

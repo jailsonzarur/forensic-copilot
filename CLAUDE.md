@@ -34,9 +34,24 @@ possa vazar para o laudo, nenhum campo boilerplate escrito de cabeça — texto
 institucional só entra transcrito de laudo real.
 
 Corolário da transparência: a explicação nunca pode depender de o modelo
-lembrar de explicar. Os motivos são um conjunto fechado (`core.extracao.MOTIVOS`)
-com texto montado por template, e quando nada é gravado o próprio código produz
-uma recusa `sem_dado` — o modelo pode refinar o motivo, nunca omiti-lo.
+lembrar de explicar, nem ser aceita sem conferência. Os motivos são um conjunto
+fechado (`core.extracao.MOTIVOS`) com texto montado por template, e cada recusa
+passa por três checagens antes de chegar ao perito:
+
+1. motivo fora do conjunto é **descartado**, nunca renomeado para um parecido —
+   renomear transforma erro do extrator em explicação confiante e falsa;
+2. `aproximado` exige que a fala contenha palavra de estimativa ("em torno de",
+   "cerca de", "uns"). Sem isso a recusa é erro do extrator e não aparece;
+3. trecho citado tem que existir na mensagem do perito; citação inventada é
+   removida.
+
+Quando nada sobra — o extrator não gravou e não explicou, ou a explicação não
+passou —, o código produz `sem_extracao`, que **assume a falha de leitura em vez
+de culpar a mensagem do perito**. Dizer "sua mensagem não tinha dado" quando o
+extrator é que falhou seria a mesma desonestidade das respostas genéricas.
+
+Recusar também não pode ser o caminho fácil do modelo: unidade inesperada e
+formato de número (vírgula, ponto, por extenso) nunca são motivo de recusa.
 
 ---
 

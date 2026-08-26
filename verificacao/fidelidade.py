@@ -22,6 +22,10 @@ from core.llm import chave_configurada, modelo  # noqa: E402
 #: (nome, falas, campos que NÃO podem aparecer, campos que devem aparecer,
 #:  slots que devem vir recusados com motivo explicado; "*" = qualquer recusa,
 #:  desde que exista uma — nenhuma mensagem pode ficar sem explicação)
+#:
+#: Valor esperado prefixado por "~" é conferido por conteúdo, não por igualdade:
+#: quanto da frase do perito o extrator transcreve varia, e desde que as palavras
+#: dele estejam lá, a transcrição é fiel.
 CASOS = (
     (
         "droga nomeada sem descrição",
@@ -74,7 +78,7 @@ CASOS = (
             "São em torno de 15 invólucros enrolados em saco plástico transparente",
         ],
         ["acondicionamento_quantidade"],
-        (("acondicionamento_tipo", "saco plástico transparente"),),
+        (("acondicionamento_tipo", "~saco plástico transparente"),),
         ("acondicionamento_quantidade",),
     ),
     (
@@ -89,6 +93,11 @@ CASOS = (
     ("agradecimento", ["obrigado, valeu"], [], (), ("*",)),
     ("pergunta ao assistente", ["quantos invólucros você acha que tinha?"], [], (), ("*",)),
     ("assunto alheio ao laudo", ["o carro estava estacionado na esquina"], [], (), ("*",)),
+    # Regressão: valor exato em qualquer formato tem que ser gravado. Recusar
+    # "1,2 kg" por causa da unidade foi bug real.
+    ("massa em quilo", ["1,2 kg"], [], (("massa_liquida_valor", "1,2"), ("massa_liquida_unidade", "kg")), ()),
+    ("massa por extenso", ["1,2 quilos"], [], (("massa_liquida_valor", "1,2"),), ()),
+    ("massa com ponto decimal", ["1.2 kg"], [], (("massa_liquida_valor", "1.2"),), ()),
     (
         "contagem exata com erro de digitação",
         ["15,3 g de pedra bege", "15 invólucros enroldas em saco plático transparente"],
@@ -146,7 +155,9 @@ def main() -> int:
             if estado.get(chave):
                 problemas.append(f"{nome}: inventou {chave}={estado[chave]!r}")
         for chave, valor in esperados:
-            if str(estado.get(chave)) != valor:
+            obtido = str(estado.get(chave) or "")
+            ok = valor[1:] in obtido if valor.startswith("~") else obtido == valor
+            if not ok:
                 problemas.append(
                     f"{nome}: esperava {chave}={valor!r}, veio {estado.get(chave)!r}"
                 )

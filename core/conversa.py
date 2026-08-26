@@ -16,7 +16,15 @@ from typing import Callable
 
 from config.schema import Exame
 from core import pendencias
-from core.extracao import Alteracao, Recusa, aplicar, extrair, ler_recusas
+from core.extracao import (
+    Alteracao,
+    Recusa,
+    SEM_EXTRACAO,
+    aplicar,
+    consolida_recusas,
+    extrair,
+    ler_recusas,
+)
 from core.llm import ErroLLM
 
 PERGUNTA = "pergunta"
@@ -216,18 +224,20 @@ def processar(
         return Resultado(fala=fala, erro=str(erro), chamou_modelo=True)
 
     alteracoes = aplicar(exame, colecoes, operacoes)
-    recusas = ler_recusas(exame, operacoes, mensagem)
+    recusas = consolida_recusas(
+        ler_recusas(exame, operacoes, mensagem), houve_registro=bool(alteracoes)
+    )
 
     # "Sim" sem descrever nada: abre o próximo item para receber as perguntas.
     abriu_item = bool(aguardando) and not alteracoes and eh_afirmativa(mensagem)
     if abriu_item:
         colecoes.setdefault(aguardando, []).append({})
 
-    # O modelo às vezes devolve {} sem dizer por quê. Nada pode voltar ao perito
-    # sem explicação, e o código já sabe o bastante para dar uma verdadeira:
-    # nenhum campo foi gravado.
+    # O modelo às vezes devolve {} sem dizer por quê, ou com um motivo que não
+    # resistiu à conferência. Nada volta ao perito sem explicação — e a explicação
+    # aqui assume a falha em vez de culpar a mensagem dele.
     if not alteracoes and not recusas and not abriu_item:
-        recusas = [Recusa("sem_dado")]
+        recusas = [Recusa(SEM_EXTRACAO)]
 
     fala = proxima_fala(exame, colecoes, fechadas)
     return Resultado(
