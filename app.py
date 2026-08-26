@@ -60,9 +60,13 @@ def main() -> None:
 
     render = TELAS.get(st.session_state["tela"])
     if render is None:
-        st.warning("Etapa ainda não implementada.")
-        if st.button("Voltar ao início"):
-            ir_para(TELA_SELECAO)
+        st.warning(
+            "Etapa ainda não implementada. A confirmação entra no Milestone 3 e a "
+            "geração do .docx no Milestone 4."
+        )
+        destino = TELA_CONVERSA if st.session_state.get("exame_id") else TELA_SELECAO
+        if st.button("Voltar"):
+            ir_para(destino)
             st.rerun()
         return
     render()

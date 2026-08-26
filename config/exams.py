@@ -166,6 +166,7 @@ _EXAMES_REALIZADOS = Colecao(
         Slot(
             chave="item_material",
             label="Material examinado",
+            referencia_colecao="materiais",
             pergunta="Esse exame se aplica a qual material?",
             instrucao_extracao=(
                 "Identificação do item de material ao qual o exame se aplica, "
@@ -180,6 +181,7 @@ _EXAMES_REALIZADOS = Colecao(
                 "Resultado declarado pelo perito: 'positivo' ou 'negativo'."
             ),
             opcoes=("positivo", "negativo"),
+            opcoes_fechadas=True,
         ),
         Slot(
             chave="substancia",

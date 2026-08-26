@@ -56,15 +56,20 @@ config/
   exams.py                 # REGISTRO de exames (fonte da UI)
 core/
   state.py                 # session_state: init, navegação, helpers
-  llm.py                   # cliente OpenAI + parsing JSON seguro   (M2)
-  pendencias.py            # varredura de campos obrigatórios       (M2)
+  llm.py                   # cliente OpenAI + parsing JSON defensivo
+  extracao.py              # prompt de extração + merge validado no estado
+  pendencias.py            # varredura de campos obrigatórios
+  conversa.py              # controlador do slot-filling (sem Streamlit)
 screens/
   selecao.py               # tela 1 — seleção do tipo de exame
   admin.py                 # tela 2 — formulário administrativo
-  conversa.py              # tela 3 — slot-filling (placeholder no M1)
+  conversa.py              # tela 3 — slot-filling (chat + painel de estado)
   # confirmacao.py (M3) e documento.py (M4) ainda não existem
 templates/
   identificacao_substancia/boilerplate.py   # CAMADA 2 (texto fixo)
+verificacao/
+  fluxo.py                 # controlador, com extrator falso (sem API)
+  fidelidade.py            # tenta induzir invenção, com API real
 ```
 
 ---
@@ -156,19 +161,51 @@ cp .env.example .env   # preencher OPENAI_API_KEY
 ## Estado atual
 
 - **Milestone 1 — esqueleto navegável:** seleção do exame → formulário admin →
-  tela de conversa (placeholder). Formulário renderizado a partir do registro.
+  conversa. Formulário renderizado a partir do registro, sem valor
+  pré-preenchido (a data começa vazia).
+- **Milestone 2 — conversa de slot-filling:** chat que preenche a camada 1.
+  O extrator devolve JSON estrito; `core.extracao.aplicar` descarta chave
+  desconhecida, valor vazio, valor de enfeite ("não informado") e valor fora do
+  conjunto fechado de um slot. As falas do assistente são montadas por template
+  a partir do que foi gravado — o LLM não redige nenhuma fala, então não tem
+  como afirmar que registrou algo que não registrou. Uma coleção por vez, na
+  ordem do registro; a coleção só encerra quando o perito diz que não há mais
+  itens, e o painel de estado tem botão para reabrir se ela encerrar cedo demais.
+  O avanço só libera com a camada 1 completa.
 - **Camada 2 (boilerplate) está VAZIA e marcada como pendente** em
   `templates/identificacao_substancia/boilerplate.py`. Só será preenchida com
   texto transcrito dos 4 laudos reais — escrever esse texto de cabeça violaria
   a regra de fidelidade.
-- **Milestone 2 — próximo:** validar o schema de slots contra os laudos reais
-  (CHECKPOINT), depois loop de chat + extração de slots + verificação de
-  pendências.
+- **Imagens ainda não implementadas** — entram no M3, junto da revisão.
+- **Milestone 3 — próximo:** tela de confirmação com os campos derivados.
+
+### Verificação
+
+```bash
+.venv/bin/python -m verificacao.fluxo        # sem API, determinístico
+.venv/bin/python -m verificacao.fidelidade   # com API real, custa chamadas
+```
+
+`fidelidade.py` é a rede de segurança do princípio central: cada caso é uma
+fala incompleta cujo preenchimento "óbvio" viria do conhecimento de mundo do
+modelo. Rodar sempre que mexer no prompt de extração ou trocar de modelo.
+
+### Pontos em aberto do schema
+
+Levantados no checkpoint e ainda sem resposta dos laudos reais: massa bruta
+além da líquida; terceira categoria de resultado além de positivo/negativo;
+como os laudos nomeiam os itens de material; embalagem dentro de embalagem;
+mais de um envolvido; imagem por laudo ou por material. Ver também o
+comportamento de `item_material` descrito abaixo.
+
+**`item_material` é preenchido pelo extrator por resolução de referência.**
+Quando há um único material registrado, o modelo às vezes responde "1" mesmo
+sem o perito ter dito o número. É um ponteiro, não um achado pericial, e o
+perito confirma na tela do M3 — mas se isso incomodar, o campo deve virar
+derivado (camada 3) em vez de slot de conversa.
 
 ## Plano de milestones
 
-- **M2** — conversa + slot-filling + pendências. CHECKPOINTs: (a) aprovar o
-  schema de slots antes da UI; (b) conversa preenchendo o schema corretamente.
 - **M3** — tela de confirmação: campos derivados (camada 3) + schema completo
   editável. CHECKPOINT.
 - **M4** — geração e export `.docx`: camadas 1+2+3 no template, imagens

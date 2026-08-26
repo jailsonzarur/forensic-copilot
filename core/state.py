@@ -33,8 +33,11 @@ def init_state() -> None:
     st.session_state.setdefault("exame_id", None)
     st.session_state.setdefault("admin", {})
     st.session_state.setdefault("colecoes", {})  # chave -> list[dict] (camada 1)
+    st.session_state.setdefault("colecoes_fechadas", [])  # o perito disse "não há mais"
     st.session_state.setdefault("imagens", [])  # anexos documentais
     st.session_state.setdefault("mensagens", [])  # histórico da conversa
+    st.session_state.setdefault("fala_atual", None)  # pergunta que está no ar
+    st.session_state.setdefault("ultima_extracao", "")  # JSON bruto, para depuração
     st.session_state.setdefault("derivados", {})  # camada 3, confirmada pelo perito
 
 
@@ -49,6 +52,7 @@ def definir_exame(exame_id: str) -> None:
     st.session_state["exame_id"] = exame_id
     exame = obter_exame(exame_id)
     st.session_state["colecoes"] = {c.chave: [] for c in exame.colecoes}
+    st.session_state["colecoes_fechadas"] = []
 
 
 def exame_atual() -> Exame | None:
@@ -60,8 +64,11 @@ def limpar_laudo() -> None:
     """Descarta os dados do laudo, preservando a tela atual."""
     st.session_state["admin"] = {}
     st.session_state["colecoes"] = {}
+    st.session_state["colecoes_fechadas"] = []
     st.session_state["imagens"] = []
     st.session_state["mensagens"] = []
+    st.session_state["fala_atual"] = None
+    st.session_state["ultima_extracao"] = ""
     st.session_state["derivados"] = {}
 
 

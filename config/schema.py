@@ -44,6 +44,15 @@ class Slot:
     instrucao_extracao: str = ""
     obrigatorio_se: tuple[str, str] | None = None
     opcoes: tuple[str, ...] = ()
+    #: Quando True, ``opcoes`` é o conjunto fechado de valores aceitos e a
+    #: extração descarta qualquer outro valor (o slot volta como pendência).
+    #: Quando False, ``opcoes`` é apenas vocabulário sugerido — o perito pode
+    #: informar algo fora da lista e o valor dele prevalece.
+    opcoes_fechadas: bool = False
+    #: Chave de outra coleção quando este slot referencia um item dela (ex.: o
+    #: exame aponta para qual material foi examinado). A pergunta dirigida passa
+    #: a listar os itens já registrados, para o perito responder pelo número.
+    referencia_colecao: str = ""
 
     def exigido_em(self, item: dict) -> bool:
         """O slot é exigível para este item da coleção?"""
