@@ -9,12 +9,15 @@ Duas regras governam tudo aqui:
 1. **Não inventa.** Campo que não estiver na requisição fica vazio, para o
    perito preencher. Todo valor extraído é conferido contra a transcrição:
    valor que não aparece no documento é descartado.
-2. **Transcrição de digitalização é rascunho, nunca fato.** Medido neste
-   projeto: três leituras da mesma requisição devolveram três redações
-   diferentes para o mesmo quesito, e nenhuma batia com o papel. Por isso o
-   caminho da imagem roda várias vezes e só propõe o que saiu IGUAL em todas;
-   o que oscilou vira leitura incerta, para o perito ler do documento. Mesmo o
-   que passa no consenso continua sendo proposta — erro estável existe.
+2. **A transcrição vem de OCR, não de modelo de visão.** Medido nesta
+   requisição real: o modelo de visão reescreveu um quesito de três maneiras
+   diferentes em três leituras, inventou endereço, e-mail e matrícula, e apagou
+   a data da apreensão. O Tesseract, com a página endireitada, transcreveu os
+   seis quesitos palavra por palavra e acertou a matrícula. Os dois erram — mas
+   o OCR erra produzindo ruído visível ("1P" por "IP") e o modelo erra
+   produzindo prosa plausível que ninguém confere. O modelo de visão só entra
+   quando não há Tesseract na máquina, e aí a leitura é cruzada entre passes e
+   marcada como frágil.
 3. **A descrição do material da requisição NÃO entra no laudo.** O delegado
    escreve "aparentemente maconha", "semelhantes à pasta base de cocaína" —
    isso é a suspeita dele, não achado pericial. A camada 1 continua vindo
@@ -27,6 +30,7 @@ import io
 from dataclasses import dataclass, field
 
 from config.schema import Exame
+from core import ocr
 from core.llm import chamar_json, chamar_visao
 from templates.identificacao_substancia import boilerplate
 
@@ -85,10 +89,15 @@ class Leitura:
     bruto: str = ""
     erro: str = ""
 
+    #: "exata" (camada de texto), "ocr" (Tesseract) ou "modelo" (visão).
+    nivel: str = "exata"
+    #: Graus de rotação que o OCR precisou aplicar em cada página.
+    rotacoes: list[int] = field(default_factory=list)
+
     @property
     def confiavel(self) -> bool:
         """Só a camada de texto de um PDF é leitura exata do documento."""
-        return self.origem == "camada de texto do PDF"
+        return self.nivel == "exata"
 
 
 def texto_de_pdf(dados: bytes) -> str:
@@ -223,10 +232,13 @@ def _consolidar(leituras: list[Leitura], exame: Exame) -> Leitura:
     Divergência entre passes é prova de que o modelo não leu, adivinhou. O que
     diverge não entra como valor: entra como leitura incerta.
     """
+    # Consolidar só acontece no caminho do modelo de visão: o nível já nasce
+    # marcado como frágil, para que uma Leitura solta nunca pareça confiável.
     final = Leitura(
         texto=leituras[0].texto,
         bruto=leituras[0].bruto,
         passes=len(leituras),
+        nivel="modelo",
     )
     rotulos = {c.chave: c.label for c in exame.campos_admin}
 
@@ -260,25 +272,40 @@ def _consolidar(leituras: list[Leitura], exame: Exame) -> Leitura:
 
 
 def ler(exame: Exame, dados: bytes, nome: str, passes: int = 3) -> Leitura:
-    """Lê a requisição. Digitalização é lida ``passes`` vezes e cruzada."""
+    """Lê a requisição pelo caminho mais fiel que estiver disponível.
+
+    Ordem: camada de texto do PDF > OCR do Tesseract > modelo de visão. O
+    último só entra sem Tesseract instalado, e roda várias vezes para que a
+    divergência entre leituras apareça como incerteza em vez de virar valor.
+    """
     try:
         if nome.lower().endswith(".pdf"):
             texto = texto_de_pdf(dados)
             if len(texto) >= _MINIMO_DE_TEXTO:
                 leitura = extrair(exame, texto)
                 leitura.origem = "camada de texto do PDF"
+                leitura.nivel = "exata"
                 return leitura
-            imagens = imagens_de_pdf(dados)
-            if not imagens:
+            paginas = imagens_de_pdf(dados)
+            if not paginas:
                 return Leitura(erro="PDF sem camada de texto e sem imagem legível.")
         else:
-            imagens = [dados]
+            paginas = [dados]
+
+        if ocr.disponivel():
+            texto, rotacoes = ocr.ler_paginas(paginas)
+            if len(texto) >= ocr.MINIMO_APROVEITAVEL:
+                leitura = extrair(exame, texto)
+                leitura.origem = "OCR do documento digitalizado"
+                leitura.nivel = "ocr"
+                leitura.rotacoes = rotacoes
+                return leitura
 
         textos = [
             chamar_visao(
                 SISTEMA_TRANSCRICAO,
                 "Transcreva integralmente esta requisição de exame pericial.",
-                imagens,
+                paginas,
             )
             for _ in range(max(passes, 1))
         ]
@@ -290,5 +317,6 @@ def ler(exame: Exame, dados: bytes, nome: str, passes: int = 3) -> Leitura:
         return Leitura(erro=next(l.erro for l in leituras if l.erro))
 
     final = _consolidar(leituras, exame)
-    final.origem = "leitura de imagem digitalizada"
+    final.origem = "leitura por modelo de visão (sem OCR nesta máquina)"
+    final.nivel = "modelo"
     return final

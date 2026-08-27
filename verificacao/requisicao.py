@@ -11,7 +11,22 @@ quesito, e nenhuma batia com o papel.
 from __future__ import annotations
 
 from config.exams import obter_exame
+from core import ocr
+from core import quesitos as camada1_quesitos
 from core import requisicao as leitor
+
+#: Quesitos como o OCR os devolveu na requisição real, com o ruído incluído
+#: ("possuí" em vez de "possui"). O casamento com o padrão de resposta não pode
+#: quebrar por causa disso.
+QUESITOS_COM_RUIDO = (
+    "Qual a natureza do material apresentado a exame?",
+    "Quais suas características e peso exato?",
+    "O material apresentado para exame possuí propriedade psicotrópica ou que "
+    "determine dependência física ou psíquica?",
+    "Caso afirmativo, causa dependência física ou psíquica?",
+    "São substâncias venenosas?",
+    "Há outros dados julgados úteis?",
+)
 
 TEXTO = """10ª DELEGACIA REGIONAL DE POLÍCIA CIVIL - OEIRAS/PI
 Ofício n.º 152/2019-DRO
@@ -122,6 +137,21 @@ def main() -> int:
         not final.quesitos and any("lista de quesitos" in i for i in final.incertos),
         "número de quesitos divergente devia invalidar a lista",
     )
+
+    # 4. Ruído de OCR não pode quebrar o casamento com o padrão de resposta.
+    montados = camada1_quesitos.montar(
+        list(QUESITOS_COM_RUIDO),
+        {"materiais": [{"forma_fisica": "vegetal"}],
+         "exames_realizados": [{"nome_teste": "CCD", "item_material": "1",
+                                "resultado": "positivo", "substancia": "THC"}]},
+        {},
+    )
+    sem_padrao = [q.numero for q in montados if not q.padrao_conhecido]
+    print("\nquesitos com ruído de OCR sem padrão:", sem_padrao or "(nenhum)")
+    checa(not sem_padrao, "ruído de OCR não podia quebrar o casamento dos quesitos")
+
+    # 5. O caminho de leitura precisa preferir OCR ao modelo de visão.
+    print("tesseract disponível nesta máquina:", ocr.disponivel())
 
     print("\n" + "=" * 60)
     if falhas:

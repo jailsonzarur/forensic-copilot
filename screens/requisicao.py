@@ -21,19 +21,31 @@ from templates.identificacao_substancia import boilerplate
 
 
 def _aviso_de_confianca(leitura: leitor.Leitura) -> None:
-    if leitura.confiavel:
+    if leitura.nivel == "exata":
         st.success(
             "Lido da camada de texto do PDF — é o texto exato do documento, sem "
             "OCR no meio. Confira mesmo assim."
         )
         return
+
+    if leitura.nivel == "ocr":
+        giros = ", ".join(f"{g}°" for g in leitura.rotacoes if g)
+        detalhe = f" A página foi endireitada ({giros})." if giros else ""
+        st.warning(
+            "**Lido por OCR do documento digitalizado.**" + detalhe + " O OCR erra "
+            "trocando caracteres — troca de letra, `@` que vira outra coisa, "
+            "acento perdido. Esse tipo de erro fica visível na transcrição abaixo: "
+            "leia-a de olho no papel antes de confirmar."
+        )
+        return
+
     st.error(
-        f"**Leitura por imagem, feita {leitura.passes} vezes e cruzada.** "
-        "Transcrição de digitalização não é fato: em teste com uma requisição "
-        "real, três leituras devolveram três redações diferentes para o mesmo "
-        "quesito, e nenhuma batia com o papel. O que oscilou entre as leituras "
-        "está marcado abaixo — mas mesmo o que passou pode estar errado de "
-        "forma estável. **Confira campo por campo contra o documento.**"
+        f"**Sem OCR nesta máquina — leitura feita pelo modelo, {leitura.passes} "
+        "vezes e cruzada.** Este é o caminho mais frágil: em teste com uma "
+        "requisição real, três leituras devolveram três redações diferentes para "
+        "o mesmo quesito e nenhuma batia com o papel. Instale o Tesseract "
+        "(`brew install tesseract tesseract-lang`) para uma leitura melhor. "
+        "**Confira campo por campo contra o documento.**"
     )
 
 

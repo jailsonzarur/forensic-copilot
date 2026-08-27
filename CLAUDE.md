@@ -28,12 +28,17 @@ Este arquivo é a fonte de verdade do projeto. Leia antes de escrever código.
   visão do modelo é leitura de papel, e é permitido. Ler a FOTO DO MATERIAL para
   descrever, pesar ou contar é inferência sobre prova física, e continua
   proibido. A distinção é o tipo de objeto, não a tecnologia.
-- **Transcrição de digitalização é rascunho, nunca fato.** Medido neste projeto:
-  três leituras da mesma requisição real devolveram três redações diferentes
-  para o mesmo quesito, e nenhuma batia com o papel. O caminho da imagem roda
-  várias vezes e só propõe o que saiu igual em todas; o resto vira leitura
-  incerta. Mesmo o que passa no consenso é PROPOSTA — alucinação estável existe,
-  e foi observada. Quem confirma é o perito, com o documento na mão.
+- **Transcrição de digitalização é rascunho, nunca fato.** Requisição chega
+  digitalizada: OCR é o caso normal, não a exceção. A leitura segue a ordem
+  camada de texto do PDF → **OCR do Tesseract** → modelo de visão (só sem
+  Tesseract na máquina).
+  Medido nesta requisição real: o modelo de visão reescreveu um quesito de três
+  maneiras diferentes em três leituras, inventou endereço, e-mail e matrícula, e
+  apagou a data da apreensão. O Tesseract, com a página endireitada, transcreveu
+  os seis quesitos palavra por palavra e acertou a matrícula. **Os dois erram —
+  mas o OCR erra produzindo ruído visível ("1P" por "IP") e o modelo erra
+  produzindo prosa plausível que ninguém confere.** Por isso o OCR vem primeiro,
+  e a transcrição fica à vista para o perito conferir contra o papel.
 - **Humano no controle.** A saída é uma MINUTA. Sempre há tela de confirmação
   antes de gerar o documento, onde o perito revisa e edita. A responsabilidade
   legal é do perito. A ferramenta é assistente de redação, não perito
@@ -94,7 +99,8 @@ config/
   exams.py                 # REGISTRO de exames (fonte da UI)
 core/
   state.py                 # session_state: init, navegação, helpers
-  requisicao.py            # leitura do ofício: PDF, OCR por visão, consenso
+  ocr.py                   # Tesseract: endireita a página e transcreve
+  requisicao.py            # leitura do ofício: texto do PDF > OCR > visão
   quesitos.py              # perguntas da autoridade + padrão de resposta
   numeros.py               # extenso de números, massas e datas
   derivados.py             # camada 3: descrições, conclusão, quesitos
@@ -210,8 +216,15 @@ texto boilerplate. NÃO inventar estrutura — extrair dos laudos reais.
   `session_state`.
 - Streamlit re-executa o script a cada interação: gerenciar estado com cuidado
   via `session_state`, sem presumir execução linear.
-- Dependências: `streamlit`, `openai`, `python-dotenv`, `python-docx` e `pypdf`
-  (leitura da requisição em PDF). Não adicionar outras sem necessidade real.
+- Dependências: `streamlit`, `openai`, `python-dotenv`, `python-docx`, `pypdf` e
+  `pytesseract`. Não adicionar outras sem necessidade real.
+- **Tesseract é binário de sistema**, não vem no `pip install`:
+  `brew install tesseract tesseract-lang` (macOS) ou
+  `apt-get install tesseract-ocr tesseract-ocr-por` (Linux). Sem ele a leitura
+  cai para o modelo de visão, que é o caminho frágil.
+- Documento digitalizado costuma chegar **deitado**, e texto de lado derruba o
+  OCR. A orientação é detectada e corrigida antes de ler — na requisição de
+  referência foram 90°.
 - Python 3.12 (venv em `.venv`).
 
 ---
