@@ -28,6 +28,18 @@ _MESES = (
     "agosto", "setembro", "outubro", "novembro", "dezembro",
 )
 
+#: Sub-unidade de cada unidade, para escrever a fração por extenso.
+_SUBUNIDADE = {
+    "kg": ("g", "grama", "gramas"),
+    "quilo": ("g", "grama", "gramas"),
+    "quilos": ("g", "grama", "gramas"),
+    "quilograma": ("g", "grama", "gramas"),
+    "quilogramas": ("g", "grama", "gramas"),
+    "g": ("mg", "miligrama", "miligramas"),
+    "grama": ("mg", "miligrama", "miligramas"),
+    "gramas": ("mg", "miligrama", "miligramas"),
+}
+
 #: Unidades de massa conhecidas: (singular, plural, fator em gramas).
 UNIDADES_MASSA = {
     "g": ("grama", "gramas", 1),
@@ -104,10 +116,10 @@ def massa_por_extenso(valor: str, unidade: str) -> str:
     if numero is None or numero < 0:
         return ""
 
-    chave = str(unidade).strip().lower().rstrip(".")
-    if chave not in UNIDADES_MASSA:
+    chave_unidade = str(unidade).strip().lower().rstrip(".")
+    if chave_unidade not in UNIDADES_MASSA:
         return ""
-    singular, plural, fator = UNIDADES_MASSA[chave]
+    singular, plural, _ = UNIDADES_MASSA[chave_unidade]
 
     inteiro = int(numero)
     fracao = numero - inteiro
@@ -118,13 +130,17 @@ def massa_por_extenso(valor: str, unidade: str) -> str:
         partes.append(f"{por_extenso(inteiro)} {rotulo}")
 
     if fracao > 0:
-        if fator == 1000:  # quilograma: a fração vira gramas
-            gramas = int(round(fracao * 1000))
-            if gramas:
-                partes.append(f"{por_extenso(gramas)} {'grama' if gramas == 1 else 'gramas'}")
-        else:
-            # Sem sub-unidade transcrita de laudo real para este caso.
+        # O laudo real converte a fração para a sub-unidade: "1,98 kg" vira
+        # "um quilograma e novecentos e oitenta gramas". A mesma convenção
+        # desce um degrau: grama com decimal vira miligramas.
+        sub = _SUBUNIDADE.get(chave_unidade)
+        if sub is None:
             return ""
+        nome_sub, singular_sub, plural_sub = sub
+        quantidade = int(round(fracao * 1000))
+        if quantidade:
+            rotulo = singular_sub if quantidade == 1 else plural_sub
+            partes.append(f"{por_extenso(quantidade)} {rotulo}")
 
     return " e ".join(partes)
 

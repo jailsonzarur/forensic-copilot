@@ -153,7 +153,7 @@ def proxima_fala(exame: Exame, colecoes: dict[str, list[dict]], fechadas: list[s
     for colecao in exame.colecoes:
         itens = colecoes.get(colecao.chave, [])
 
-        encontradas = pendencias.pendencias_da_colecao(colecao, itens)
+        encontradas = pendencias.pendencias_da_colecao(colecao, itens, so_conversa=True)
         if encontradas:
             pendente = encontradas[0]
             total = max(len(itens), colecao.minimo)

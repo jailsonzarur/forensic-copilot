@@ -62,8 +62,13 @@ COLECOES = {
         },
     ],
     "exames_realizados": [
-        {"nome_teste": "Fast Blue B", "item_material": "1", "resultado": "positivo", "substancia": "THC"},
-        {"nome_teste": "Scott", "item_material": "2", "resultado": "positivo", "substancia": "cocaína"},
+        # Ensaios que já têm redação transcrita: sem isso, o relato de
+        # procedimento vira pendência e bloqueia a geração — comportamento
+        # correto, mas não é o que este teste exercita.
+        {"nome_teste": "Análise botânica", "item_material": "1",
+         "resultado": "positivo", "substancia": "Cannabis sativa L."},
+        {"nome_teste": "Cromatografia em Camada Delgada (CCD)", "item_material": "2",
+         "resultado": "positivo", "substancia": "cocaína"},
     ],
 }
 
@@ -123,7 +128,8 @@ def main() -> int:
     checa(not at.exception, "a tela não pode levantar exceção")
     print("conclusão derivada:", repr(at.session_state["derivados"].get("conclusao")))
     checa(
-        at.session_state["derivados"].get("conclusao") == "POSITIVO para THC e POSITIVO para cocaína",
+        at.session_state["derivados"].get("conclusao")
+        == "POSITIVO para Cannabis sativa L. e POSITIVO para cocaína",
         "conclusão devia sair dos resultados positivos",
     )
     checa(not at.error, "schema completo não devia ter impedimento")
@@ -133,10 +139,11 @@ def main() -> int:
     checa(confirmar(at) is not None and not confirmar(at).disabled, "devia liberar o avanço")
 
     # Derivado intocado acompanha a camada 1.
-    at.text_input(key="conf_exames_realizados_1_substancia").set_value("Cannabis sativa L.").run()
+    at.text_input(key="conf_exames_realizados_2_substancia").set_value("cloridrato de cocaína").run()
     print("após editar a substância:", repr(at.session_state["derivados"]["conclusao"]))
     checa(
-        at.session_state["derivados"]["conclusao"] == "POSITIVO para Cannabis sativa L. e POSITIVO para cocaína",
+        at.session_state["derivados"]["conclusao"]
+        == "POSITIVO para Cannabis sativa L. e POSITIVO para cloridrato de cocaína",
         "derivado intocado devia acompanhar a camada 1",
     )
 
@@ -150,7 +157,7 @@ def main() -> int:
     # Texto do perito manda sobre a regra.
     escrito = "POSITIVO para maconha e cocaína, conforme item 3."
     at.text_area(key="derivado_conclusao").set_value(escrito).run()
-    at.text_input(key="conf_exames_realizados_2_substancia").set_value("cloridrato de cocaína").run()
+    at.text_input(key="conf_exames_realizados_2_substancia").set_value("cocaína").run()
     print("conclusão do perito:", repr(at.session_state["derivados"]["conclusao"]))
     checa(
         at.session_state["derivados"]["conclusao"] == escrito,
@@ -164,7 +171,7 @@ def main() -> int:
         checa(not at.exception, "recalcular não pode levantar exceção de session_state")
         checa(
             at.session_state["derivados"]["conclusao"]
-            == "POSITIVO para Cannabis sativa L. e POSITIVO para cloridrato de cocaína",
+            == "POSITIVO para Cannabis sativa L. e POSITIVO para cocaína",
             "recalcular devia usar os dados atuais",
         )
 

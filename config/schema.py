@@ -57,6 +57,14 @@ class Slot:
     #: ("em torno de 15") não é gravada: o extrator recusa e diz o motivo, para
     #: o perito informar o valor exato em vez de ficar repetindo a pergunta.
     exige_valor_exato: bool = False
+    #: False quando o slot não é coletado na conversa, e sim confirmado pelo
+    #: perito na tela de confirmação — caso de referência entre coleções, que o
+    #: extrator só preencheria por dedução.
+    na_conversa: bool = True
+    #: True quando o slot só é exigido enquanto não houver redação institucional
+    #: transcrita para aquele ensaio: sem texto pronto, o perito precisa contar
+    #: como conduziu o exame para que o parágrafo possa ser redigido.
+    exigido_sem_redacao: bool = False
     #: Chave de outra coleção quando este slot referencia um item dela (ex.: o
     #: exame aponta para qual material foi examinado). A pergunta dirigida passa
     #: a listar os itens já registrados, para o perito responder pelo número.
@@ -66,7 +74,11 @@ class Slot:
         """O slot é exigível para este item da coleção?"""
         if self.obrigatorio_se is not None:
             chave, valor = self.obrigatorio_se
-            return str(item.get(chave, "")).strip().lower() == valor.lower()
+            outro = str(item.get(chave, "")).strip()
+            # "*" = exigido sempre que o outro campo estiver preenchido.
+            if valor == "*":
+                return bool(outro)
+            return outro.lower() == valor.lower()
         return self.obrigatorio
 
 

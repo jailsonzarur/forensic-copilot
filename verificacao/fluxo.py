@@ -197,13 +197,13 @@ def main() -> int:
     fala = conversa.proxima_fala(exame, colecoes, fechadas)
 
     fala = passo(
-        "fiz o Fast Blue B no material 1",
+        "fiz a análise botânica",
         {
             "exames_realizados": [
                 {
                     "indice": 1,
                     "campos": {
-                        "nome_teste": "Fast Blue B",
+                        "nome_teste": "Análise botânica",
                         "item_material": "Material 1",
                         "resultado": "deu certo",
                     },
@@ -211,6 +211,11 @@ def main() -> int:
             ]
         },
         fala,
+    )
+    checa(
+        not colecoes["exames_realizados"][0].get("item_material"),
+        "referência entre coleções não é coletada na conversa: quem aponta é o "
+        "perito na confirmação",
     )
     checa(
         not colecoes["exames_realizados"][0].get("resultado"),
@@ -230,14 +235,43 @@ def main() -> int:
 
     fala = passo(
         "THC",
-        {"exames_realizados": [{"indice": 1, "campos": {"substancia": "THC"}}]},
+        {"exames_realizados": [{"indice": 1, "campos": {"substancia": "Cannabis sativa L."}}]},
+        fala,
+    )
+
+    # Ensaio sem redação transcrita: a conversa pede o relato do procedimento,
+    # porque sem ele não há como redigir o parágrafo da seção 4.
+    fala = passo("sim", {}, fala)
+    fala = passo(
+        "fiz o Ensaio de Scott Modificado",
+        {"exames_realizados": [{"indice": 2, "campos": {"nome_teste": "Ensaio de Scott Modificado"}}]},
+        fala,
+    )
+    fala = passo(
+        "positivo para cocaína",
+        {"exames_realizados": [{"indice": 2, "campos": {"resultado": "positivo", "substancia": "cocaína"}}]},
+        fala,
+    )
+    checa(
+        "conduziu" in fala.texto,
+        "ensaio sem redação transcrita devia pedir o relato do procedimento",
+    )
+    fala = passo(
+        "usei o reagente de Scott e deu azul",
+        {"exames_realizados": [{"indice": 2, "campos": {"procedimento": "usei o reagente de Scott e deu azul"}}]},
         fala,
     )
     fala = passo("não", {}, fala)
 
     checa(
-        pendencias.completo(exame, colecoes, fechadas),
-        "camada 1 devia estar completa ao fim",
+        pendencias.completo(exame, colecoes, fechadas, so_conversa=True),
+        "a parte da conversa devia estar completa ao fim",
+    )
+    faltam = [p.rotulo() for p in pendencias.todas(exame, colecoes)]
+    print("\npendente para a confirmação:", faltam)
+    checa(
+        all("Material examinado" in r for r in faltam),
+        "só a referência de material devia sobrar para a confirmação",
     )
     checa(fala.tipo == conversa.COMPLETO, "fala final devia ser a de conclusão")
 

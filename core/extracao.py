@@ -191,6 +191,8 @@ def descreve_schema(exame: Exame) -> str:
     for colecao in exame.colecoes:
         linhas.append(f'Coleção "{colecao.chave}" ({colecao.label_plural}):')
         for slot in colecao.slots:
+            if not slot.na_conversa:
+                continue  # referência entre coleções: quem aponta é o perito
             partes = [f'  - "{slot.chave}" ({slot.label})']
             if slot.instrucao_extracao:
                 partes.append(slot.instrucao_extracao)
@@ -309,7 +311,10 @@ def aplicar(
 
             for chave, valor in campos.items():
                 slot = colecao.slot(str(chave))
-                if slot is None:
+                if slot is None or not slot.na_conversa:
+                    # Slot fora da conversa só é preenchido pelo perito na
+                    # confirmação. O extrator o deduziria, e dedução não é
+                    # transcrição.
                     continue
                 texto = _valor_limpo(valor)
                 if not texto:

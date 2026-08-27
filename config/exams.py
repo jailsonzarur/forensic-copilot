@@ -146,6 +146,25 @@ _MATERIAL = Colecao(
             ),
         ),
         Slot(
+            chave="massa_bruta_valor",
+            label="Massa bruta",
+            obrigatorio=False,
+            exige_valor_exato=True,
+            pergunta="Qual a massa bruta, com a embalagem?",
+            instrucao_extracao=(
+                "Valor numérico da massa bruta (com embalagem) medida pelo perito. "
+                "Não converter unidades nem arredondar."
+            ),
+        ),
+        Slot(
+            chave="massa_bruta_unidade",
+            label="Unidade da massa bruta",
+            obrigatorio=False,
+            obrigatorio_se=("massa_bruta_valor", "*"),
+            pergunta="Em que unidade está a massa bruta?",
+            instrucao_extracao="Unidade da massa bruta, exatamente como dita.",
+        ),
+        Slot(
             chave="forma_fisica",
             label="Forma / tipo físico",
             pergunta="Qual a forma física do material?",
@@ -218,6 +237,7 @@ _EXAMES_REALIZADOS = Colecao(
         Slot(
             chave="item_material",
             label="Material examinado",
+            na_conversa=False,
             referencia_colecao="materiais",
             pergunta="Esse exame se aplica a qual material?",
             instrucao_extracao=(
@@ -228,11 +248,12 @@ _EXAMES_REALIZADOS = Colecao(
         Slot(
             chave="resultado",
             label="Resultado",
-            pergunta="O resultado foi positivo ou negativo?",
+            pergunta="O resultado foi positivo, negativo ou inconclusivo?",
             instrucao_extracao=(
-                "Resultado declarado pelo perito: 'positivo' ou 'negativo'."
+                "Resultado declarado pelo perito: 'positivo', 'negativo' ou "
+                "'inconclusivo'."
             ),
-            opcoes=("positivo", "negativo"),
+            opcoes=("positivo", "negativo", "inconclusivo"),
             opcoes_fechadas=True,
         ),
         Slot(
@@ -244,6 +265,22 @@ _EXAMES_REALIZADOS = Colecao(
             instrucao_extracao=(
                 "Substância para a qual o resultado foi positivo, conforme dita "
                 "pelo perito. Vazio quando o resultado for negativo."
+            ),
+        ),
+        Slot(
+            chave="procedimento",
+            label="Como o ensaio foi conduzido",
+            obrigatorio=False,
+            exigido_sem_redacao=True,
+            pergunta=(
+                "Não tenho a redação institucional deste ensaio. Conte como você "
+                "o conduziu — reagente ou padrão usado, o que foi observado — que "
+                "eu redijo o parágrafo com as suas palavras."
+            ),
+            instrucao_extracao=(
+                "Descrição, com as palavras do perito, de como o ensaio foi "
+                "conduzido: reagentes, padrões, equipamento, o que foi observado. "
+                "Transcrever sem acrescentar etapa que ele não mencionou."
             ),
         ),
     ),

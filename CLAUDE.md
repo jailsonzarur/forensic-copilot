@@ -102,6 +102,7 @@ core/
   ocr.py                   # Tesseract: endireita a página e transcreve
   requisicao.py            # leitura do ofício: texto do PDF > OCR > visão
   quesitos.py              # perguntas da autoridade + padrão de resposta
+  redacao.py               # formaliza o relato de procedimento do perito
   biblioteca.py            # redação institucional escrita por perito
   conferencia.py           # requisitado × examinado (cadeia de custódia)
   numeros.py               # extenso de números, massas e datas
@@ -124,6 +125,7 @@ referencia/                # laudos reais; fora do git (dados pessoais)
 verificacao/
   fluxo.py                 # controlador, com extrator falso (sem API)
   biblioteca.py            # redação aprendida e pendências (sem API)
+  tela_requisicao.py       # a tela do anexo pela UI real (sem API)
   requisicao.py            # consenso e descarte de leitura (sem API)
   confirmacao.py           # tela de revisão pela UI real (sem API)
   documento.py             # .docx conferido contra o laudo real (sem API)
@@ -279,6 +281,13 @@ cp .env.example .env   # preencher OPENAI_API_KEY
   pericial — o parágrafo da seção 4 **declara como o exame foi conduzido**
   (qual padrão de referência, qual grandeza comparada), e um modelo escrevendo
   isso afirma procedimento que ninguém relatou.
+- **Sem redação transcrita, a conversa pergunta o procedimento.** O slot
+  `procedimento` só é exigido quando não existe parágrafo para aquele
+  (ensaio, substância): o perito conta como conduziu — reagente, padrão, o que
+  observou — e `core/redacao.py` formaliza **o relato dele**. Isso não afrouxa a
+  regra: continua sendo reformatar o que o perito informou. O que o modelo não
+  pode é acrescentar etapa, fase ou grandeza que ele não citou, e o texto passa
+  pela confirmação antes de valer.
 - **A camada 2 cresce por escrita de perito, não por PDF.** A fonte sempre foi
   um perito redigindo; o laudo em PDF era só o transporte. Quando falta redação,
   a tela de confirmação abre um campo, o perito escreve UMA vez e
@@ -291,8 +300,8 @@ cp .env.example .env   # preencher OPENAI_API_KEY
   confirmado por ele na tela anterior.
   - Números por extenso seguem o laudo: `1,98 kg (um quilograma e novecentos e
     oitenta gramas)`, `02 (dois) invólucros`, `redigido em duas páginas` (com
-    flexão de gênero). Grama com decimal ainda não tem forma transcrita — vira
-    pendência em vez de palpite.
+    flexão de gênero). Grama com decimal aplica a MESMA convenção do laudo — a
+    fração vira a sub-unidade: `15,3 g (quinze gramas e trezentos miligramas)`.
   - **Paginação é do editor, não da montagem.** O perito baixa a minuta, lê a
     contagem no Word e informa o número na confirmação; em branco, o fecho sai
     marcado como pendente. Estimar poria número inventado no fecho de um laudo.
@@ -335,17 +344,15 @@ modelo. Rodar sempre que mexer no prompt de extração ou trocar de modelo.
 
 ### Pontos em aberto do schema
 
-Levantados no checkpoint e ainda sem resposta dos laudos reais: massa bruta
-além da líquida; terceira categoria de resultado além de positivo/negativo;
-como os laudos nomeiam os itens de material; embalagem dentro de embalagem;
-mais de um envolvido; imagem por laudo ou por material. Ver também o
-comportamento de `item_material` descrito abaixo.
+Respondidos pelo perito em 2026-08-27: massa bruta é registrada (slots
+opcionais); "inconclusivo" é resultado válido; embalagem dentro de embalagem
+cabe numa frase só no tipo de acondicionamento; grama com decimal segue a
+convenção do laudo (fração vira sub-unidade). Ainda em aberto: mais de um
+envolvido (hoje campo único).
 
-**`item_material` é preenchido pelo extrator por resolução de referência.**
-Quando há um único material registrado, o modelo às vezes responde "1" mesmo
-sem o perito ter dito o número. É um ponteiro, não um achado pericial, e o
-perito confirma na tela do M3 — mas se isso incomodar, o campo deve virar
-derivado (camada 3) em vez de slot de conversa.
+**Referência entre coleções sai da conversa.** `item_material` tem
+`na_conversa=False`: o extrator não o enxerga nem o grava, e o perito escolhe o
+material num seletor na confirmação. Dedução não é transcrição.
 
 ## Plano de milestones
 

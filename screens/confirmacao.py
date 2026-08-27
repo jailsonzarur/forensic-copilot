@@ -15,6 +15,7 @@ from config.schema import Colecao, Exame
 from core import derivados as camada3
 from core import biblioteca
 from core import conferencia
+from core import redacao
 from core import pendencias
 from core import quesitos as camada1_quesitos
 from core.state import (
@@ -42,8 +43,32 @@ def _edita_admin(exame: Exame) -> None:
                 admin[campo.chave] = novo
 
 
+def _escolhe_referencia(slot, indice: int, item: dict) -> None:
+    """Referência entre coleções: quem aponta é o perito, não o extrator."""
+    alvo = st.session_state["colecoes"].get(slot.referencia_colecao, [])
+    if not alvo:
+        st.caption(f"Nenhum item em {slot.referencia_colecao} para referenciar.")
+        return
+    opcoes = [""] + [str(i) for i in range(1, len(alvo) + 1)]
+    atual = str(item.get(slot.chave, "")).strip()
+    posicao = opcoes.index(atual) if atual in opcoes else 0
+    escolhido = st.selectbox(
+        slot.label + " *",
+        options=opcoes,
+        index=posicao,
+        format_func=lambda v: f"Material {v}" if v else "— selecione —",
+        key=f"conf_ref_{slot.chave}_{indice}",
+    )
+    item[slot.chave] = escolhido
+    if not escolhido:
+        st.caption("⚠️ Diga a qual material este exame se aplica.")
+
+
 def _edita_item(colecao: Colecao, indice: int, item: dict) -> None:
     for slot in colecao.slots:
+        if slot.referencia_colecao:
+            _escolhe_referencia(slot, indice, item)
+            continue
         exigido = slot.exigido_em(item)
         atual = item.get(slot.chave, "")
         novo = st.text_input(
@@ -211,6 +236,9 @@ def _lacunas_institucionais(exame: Exame) -> list[dict]:
                     "ele mostrou, como o Instituto redige."
                 ),
                 "titulo_sugerido": f"Análise por {nome.lower()}",
+                "ensaio": nome,
+                "substancia": substancia,
+                "procedimento": str(item.get("procedimento", "")).strip(),
             }
         )
 
@@ -279,9 +307,35 @@ def _painel_biblioteca(exame: Exame) -> None:
                     value=lacuna.get("titulo_sugerido", ""),
                     key=f"bib_titulo_{lacuna['tipo']}_{lacuna['id']}",
                 )
+            chave_texto = f"bib_texto_{lacuna['tipo']}_{lacuna['id']}"
+            relato = lacuna.get("procedimento", "")
+            if relato:
+                st.caption(f"Você contou na conversa: «{relato}»")
+                if st.button(
+                    "Redigir a partir do seu relato",
+                    key=f"bib_redigir_{lacuna['tipo']}_{lacuna['id']}",
+                    help=(
+                        "A IA formaliza o que VOCÊ contou. Ela não acrescenta "
+                        "reagente, fase nem etapa que você não citou — leia antes "
+                        "de salvar."
+                    ),
+                ):
+                    with st.spinner("Redigindo…"):
+                        try:
+                            proposta, _ = redacao.redigir(
+                                lacuna["ensaio"], lacuna["substancia"], relato
+                            )
+                            st.session_state[chave_texto] = proposta["texto"]
+                            st.session_state[
+                                f"bib_titulo_{lacuna['tipo']}_{lacuna['id']}"
+                            ] = proposta["titulo"]
+                        except Exception as erro:
+                            st.error(f"Falha da ferramenta ao redigir: {erro}")
+                    st.rerun()
+
             texto = st.text_area(
                 "Redação",
-                key=f"bib_texto_{lacuna['tipo']}_{lacuna['id']}",
+                key=chave_texto,
                 height=140,
             )
             if st.button(
