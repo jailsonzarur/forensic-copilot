@@ -30,8 +30,8 @@ def cliente() -> OpenAI:
     chave = os.getenv("OPENAI_API_KEY")
     if not chave:
         raise ErroLLM(
-            "OPENAI_API_KEY não encontrada. Copie o .env.example para .env e "
-            "preencha a chave antes de usar a conversa."
+            "A ferramenta não está configurada para conversar. Quem a instalou "
+            "precisa cadastrar a chave de acesso (OPENAI_API_KEY no arquivo .env)."
         )
     return OpenAI(api_key=chave)
 
@@ -48,7 +48,7 @@ def parse_json_seguro(texto: str) -> dict:
     porque preencher o laudo com um palpite seria pior do que falhar.
     """
     if not texto or not texto.strip():
-        raise ErroLLM("O modelo devolveu uma resposta vazia.")
+        raise ErroLLM("A leitura automática não devolveu nada.")
 
     limpo = _CERCA_FINAL.sub("", _CERCA_INICIAL.sub("", texto.strip()))
     try:
@@ -56,14 +56,14 @@ def parse_json_seguro(texto: str) -> dict:
     except json.JSONDecodeError:
         inicio, fim = limpo.find("{"), limpo.rfind("}")
         if inicio == -1 or fim <= inicio:
-            raise ErroLLM("O modelo não devolveu um objeto JSON.") from None
+            raise ErroLLM("A leitura automática devolveu uma resposta ilegível.") from None
         try:
             dados = json.loads(limpo[inicio : fim + 1])
         except json.JSONDecodeError as erro:
-            raise ErroLLM(f"JSON inválido na resposta do modelo: {erro}") from erro
+            raise ErroLLM(f"Resposta ilegível da leitura automática: {erro}") from erro
 
     if not isinstance(dados, dict):
-        raise ErroLLM("O modelo devolveu JSON que não é um objeto.")
+        raise ErroLLM("A leitura automática devolveu uma resposta no formato errado.")
     return dados
 
 
@@ -99,7 +99,7 @@ def chamar_visao(sistema: str, instrucao: str, imagens: list[bytes]) -> str:
     except ErroLLM:
         raise
     except Exception as erro:
-        raise ErroLLM(f"Falha ao ler o documento: {erro}") from erro
+        raise ErroLLM(f"Não consegui ler o documento: {erro}") from erro
 
     return resposta.choices[0].message.content or ""
 
@@ -119,7 +119,7 @@ def chamar_json(sistema: str, usuario: str, temperatura: float = 0.0) -> tuple[d
     except ErroLLM:
         raise
     except Exception as erro:  # falha de rede, autenticação, cota
-        raise ErroLLM(f"Falha ao chamar o modelo: {erro}") from erro
+        raise ErroLLM(f"Não consegui falar com o serviço de leitura: {erro}") from erro
 
     bruto = resposta.choices[0].message.content or ""
     return parse_json_seguro(bruto), bruto

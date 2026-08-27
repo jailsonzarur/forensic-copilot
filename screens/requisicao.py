@@ -23,29 +23,31 @@ from templates.identificacao_substancia import boilerplate
 def _aviso_de_confianca(leitura: leitor.Leitura) -> None:
     if leitura.nivel == "exata":
         st.success(
-            "Lido da camada de texto do PDF — é o texto exato do documento, sem "
-            "OCR no meio. Confira mesmo assim."
+            "Este PDF já trazia o texto dentro dele, então isto é cópia exata do "
+            "documento — nada foi adivinhado a partir da imagem. Confira mesmo assim."
         )
         return
 
     if leitura.nivel == "ocr":
         giros = ", ".join(f"{g}°" for g in leitura.rotacoes if g)
-        detalhe = f" A página foi endireitada ({giros})." if giros else ""
+        detalhe = f" A página estava deitada e foi endireitada ({giros})." if giros else ""
         st.warning(
-            "**Lido por OCR do documento digitalizado.**" + detalhe + " O OCR erra "
-            "trocando caracteres — troca de letra, `@` que vira outra coisa, "
-            "acento perdido. Esse tipo de erro fica visível na transcrição abaixo: "
-            "leia-a de olho no papel antes de confirmar."
+            "**O documento é uma imagem digitalizada, e o texto foi lido "
+            "automaticamente dela.**" + detalhe + " Esse tipo de leitura troca "
+            "caractere: uma letra por outra, um acento que some, um `@` que vira "
+            "outra coisa. O erro aparece à vista no texto abaixo — leia-o de olho "
+            "no papel antes de confirmar."
         )
         return
 
     st.error(
-        f"**Sem OCR nesta máquina — leitura feita pelo modelo, {leitura.passes} "
-        "vezes e cruzada.** Este é o caminho mais frágil: em teste com uma "
-        "requisição real, três leituras devolveram três redações diferentes para "
-        "o mesmo quesito e nenhuma batia com o papel. Instale o Tesseract "
-        "(`brew install tesseract tesseract-lang`) para uma leitura melhor. "
-        "**Confira campo por campo contra o documento.**"
+        "**O leitor de imagens não está instalado nesta máquina.** O documento foi "
+        f"lido por outro caminho, {leitura.passes} vezes, e só aproveitamos o que "
+        "saiu igual em todas. Mesmo assim é o caminho mais frágil: em teste com uma "
+        "requisição real, ele reescreveu um quesito de três formas diferentes e "
+        "nenhuma batia com o papel. **Confira campo por campo contra o documento** — "
+        "e peça a quem instalou a ferramenta para instalar o leitor de imagens "
+        "(Tesseract)."
     )
 
 
@@ -141,7 +143,10 @@ def render() -> None:
 
     if arquivo is not None and st.button("Ler requisição", type="primary"):
         if not chave_configurada() and not arquivo.name.lower().endswith(".pdf"):
-            st.error("Ler imagem exige OPENAI_API_KEY configurada.")
+            st.error(
+                "Para ler uma imagem a ferramenta precisa estar configurada. Avise "
+                "quem a instalou, ou anexe o documento em PDF."
+            )
         else:
             with st.spinner("Lendo o documento…"):
                 leitura = leitor.ler(exame, arquivo.getvalue(), arquivo.name)

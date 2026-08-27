@@ -365,6 +365,24 @@ material num seletor na confirmação. Dedução não é transcrição.
 
 Parar em cada CHECKPOINT e pedir validação antes de avançar.
 
+## Linguagem com o perito
+
+Quem usa isto é perito criminal, não pessoa de tecnologia. Nenhum texto de tela
+usa jargão: nada de "JSON", "extrator", "OCR", "modelo", "camada 1", "schema",
+"slot", "API". Erro de configuração não é culpa de quem está usando — a
+mensagem diz o que fazer e a quem avisar, e o detalhe técnico vai rotulado como
+"mostre isto a quem instalou".
+
+E o perito **fala**, não digita formulário. "17 gramas e meio" é 17,5; "meio
+quilo" é 0,5 quilo. Número por extenso ou em fração é valor exato, não
+estimativa — transcrever em algarismos é notação, não conversão. Uma frase pode
+preencher vários campos de uma vez, e a pergunta pendente não pode fazer o
+resto da fala ser ignorado.
+
+Guarda determinística: campo marcado `exige_valor_exato` só aceita número. Sem
+isso, "dezessete gramas e meio" entrava inteiro no campo de massa e iria assim
+para o laudo — aconteceu, e virou caso de teste.
+
 ## Convenções
 
 - Commits: conventional commits com escopo, em inglês, terminando em ponto

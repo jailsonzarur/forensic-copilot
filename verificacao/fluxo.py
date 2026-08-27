@@ -188,7 +188,7 @@ def main() -> int:
             f"{rotulo}: recusa inválida do extrator não podia virar explicação",
         )
         checa(
-            "falha é de leitura minha" in resposta,
+            "quem não entendeu fui eu" in resposta,
             f"{rotulo}: devia assumir a falha em vez de culpar a mensagem",
         )
 

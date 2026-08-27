@@ -92,7 +92,7 @@ def _painel_estado(exame: Exame) -> None:
             if st.button(
                 f"Adicionar {colecao.label_singular.lower()}",
                 key=f"reabrir_{colecao.chave}",
-                help="Use se algum item ficou de fora ou a conversa encerrou cedo demais.",
+                help="Use se esqueceu de algum item ou encerrou antes da hora.",
             ):
                 colecoes.setdefault(colecao.chave, []).append({})
                 fechadas.remove(colecao.chave)
@@ -103,9 +103,15 @@ def _painel_estado(exame: Exame) -> None:
                 )
                 st.rerun()
 
-    with st.expander("Última resposta bruta do extrator", expanded=False):
-        st.caption(f"Modelo: {modelo()}")
-        st.code(st.session_state.get("ultima_extracao") or "(nenhuma chamada ainda)", language="json")
+    with st.expander("Detalhes técnicos da última leitura", expanded=False):
+        st.caption(
+            "Só serve para diagnóstico, se a ferramenta estiver entendendo errado. "
+            f"Serviço em uso: {modelo()}."
+        )
+        st.code(
+            st.session_state.get("ultima_extracao") or "(nenhuma leitura ainda)",
+            language="json",
+        )
 
 
 def render() -> None:
@@ -117,8 +123,8 @@ def render() -> None:
 
     st.header("Conversa")
     st.caption(
-        f"{exame.label} — descreva o que você examinou. Só é registrado o que você "
-        "disser; para corrigir um campo, basta informá-lo de novo."
+        f"{exame.label} — conte o que você examinou, do seu jeito. Só vai para o "
+        "laudo o que você disser. Para corrigir algo, é só falar de novo."
     )
 
     with st.expander("Dados administrativos transcritos", expanded=False):
@@ -136,8 +142,8 @@ def render() -> None:
 
     if not chave_configurada():
         st.error(
-            "OPENAI_API_KEY não encontrada. Copie o .env.example para .env e preencha "
-            "a chave — sem ela a extração não roda."
+            "A ferramenta não está configurada para conversar. Avise quem a instalou: "
+            "falta cadastrar a chave de acesso (OPENAI_API_KEY no arquivo .env)."
         )
         if st.button("Voltar"):
             ir_para(TELA_ADMIN)

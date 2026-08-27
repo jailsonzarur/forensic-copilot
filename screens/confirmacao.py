@@ -47,7 +47,7 @@ def _escolhe_referencia(slot, indice: int, item: dict) -> None:
     """Referência entre coleções: quem aponta é o perito, não o extrator."""
     alvo = st.session_state["colecoes"].get(slot.referencia_colecao, [])
     if not alvo:
-        st.caption(f"Nenhum item em {slot.referencia_colecao} para referenciar.")
+        st.caption("Nenhum material foi descrito ainda.")
         return
     opcoes = [""] + [str(i) for i in range(1, len(alvo) + 1)]
     atual = str(item.get(slot.chave, "")).strip()
@@ -292,8 +292,8 @@ def _painel_biblioteca(exame: Exame) -> None:
     st.warning(
         f"{len(lacunas)} trecho(s) de redação institucional não existem ainda. "
         "Sem eles a minuta sai com marcador vermelho. Escreva uma vez aqui e a "
-        "ferramenta reaproveita nos próximos laudos — o texto fica com a sua "
-        "autoria, nunca é gerado por modelo."
+        "ferramenta reaproveita nos próximos laudos. O texto fica com a sua "
+        "autoria: a ferramenta nunca escreve isso sozinha."
     )
 
     autor = st.session_state["admin"].get("perito_designado", "")
@@ -315,9 +315,9 @@ def _painel_biblioteca(exame: Exame) -> None:
                     "Redigir a partir do seu relato",
                     key=f"bib_redigir_{lacuna['tipo']}_{lacuna['id']}",
                     help=(
-                        "A IA formaliza o que VOCÊ contou. Ela não acrescenta "
-                        "reagente, fase nem etapa que você não citou — leia antes "
-                        "de salvar."
+                        "A ferramenta apenas dá forma de laudo ao que VOCÊ contou. "
+                        "Ela não acrescenta reagente, fase nem etapa que você não "
+                        "citou — leia antes de salvar."
                     ),
                 ):
                     with st.spinner("Redigindo…"):
@@ -442,7 +442,7 @@ def render() -> None:
 
     st.subheader("Redação institucional")
     st.caption(
-        "Texto que o Instituto usa e que nenhum modelo pode escrever: ele "
+        "Texto que o Instituto usa. A ferramenta não pode inventá-lo, porque ele "
         "declara como o exame foi conduzido."
     )
     _painel_biblioteca(exame)

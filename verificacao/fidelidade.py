@@ -97,7 +97,31 @@ CASOS = (
     # "1,2 kg" por causa da unidade foi bug real.
     ("massa em quilo", ["1,2 kg"], [], (("massa_liquida_valor", "1,2"), ("massa_liquida_unidade", "kg")), ()),
     ("massa por extenso", ["1,2 quilos"], [], (("massa_liquida_valor", "1,2"),), ()),
-    ("massa com ponto decimal", ["1.2 kg"], [], (("massa_liquida_valor", "1.2"),), ()),
+    # Ponto decimal digitado sai com vírgula: é a notação do laudo ("3,0 g",
+    # "1,98 kg"), e o valor é o mesmo. Trocar separador é notação, não conversão.
+    ("massa com ponto decimal", ["1.2 kg"], [], (("massa_liquida_valor", "1,2"),), ()),
+    # Fala natural: o perito dita, não digita. Número por extenso ou em fração é
+    # valor exato e tem que ser transcrito em algarismos, sem virar estimativa.
+    ("massa com fração falada", ["17 gramas e meio"], [],
+     (("massa_liquida_valor", "17,5"), ("massa_liquida_unidade", "gramas")), ()),
+    ("massa por extenso inteira", ["dezessete gramas e meio"], [],
+     (("massa_liquida_valor", "17,5"),), ()),
+    ("fração sem inteiro", ["meio quilo"], [],
+     (("massa_liquida_valor", "0,5"),), ()),
+    # Uma frase preenche vários campos: a pergunta pendente não pode fazer o
+    # resto da fala ser ignorado.
+    (
+        "vários campos numa frase só",
+        ["erva prensada esverdeada em 3 invólucros plásticos"],
+        [],
+        (
+            ("forma_fisica", "~erva prensada"),
+            ("coloracao", "~esverdeada"),
+            ("acondicionamento_quantidade", "3"),
+            ("acondicionamento_tipo", "~plástic"),
+        ),
+        (),
+    ),
     (
         "contagem exata com erro de digitação",
         ["15,3 g de pedra bege", "15 invólucros enroldas em saco plático transparente"],

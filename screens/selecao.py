@@ -19,7 +19,7 @@ def render() -> None:
     exames = listar_exames()
     disponiveis = [e for e in exames if e.disponivel]
     if not disponiveis:
-        st.error("Nenhum tipo de exame cadastrado no registro.")
+        st.error("Nenhum tipo de exame está cadastrado na ferramenta.")
         return
 
     ids = [e.id for e in disponiveis]

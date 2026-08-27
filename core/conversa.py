@@ -182,7 +182,7 @@ def proxima_fala(exame: Exame, colecoes: dict[str, list[dict]], fechadas: list[s
 def saudacao(exame: Exame, colecoes: dict[str, list[dict]], fechadas: list[str]) -> str:
     fala = proxima_fala(exame, colecoes, fechadas)
     return (
-        "Vamos registrar o que você examinou. Descreva com suas palavras — eu só "
+        "Vamos registrar o que você examinou. Pode falar como você fala — eu só "
         "anoto o que você disser, e pergunto o que faltar.\n\n" + fala.texto
     )
 
@@ -223,9 +223,11 @@ def processar(
         fala = fala_anterior or proxima_fala(exame, colecoes, fechadas)
         return Resultado(fala=fala, erro=str(erro), chamou_modelo=True)
 
-    alteracoes = aplicar(exame, colecoes, operacoes)
+    recusas_da_validacao: list[Recusa] = []
+    alteracoes = aplicar(exame, colecoes, operacoes, recusas_da_validacao)
     recusas = consolida_recusas(
-        ler_recusas(exame, operacoes, mensagem), houve_registro=bool(alteracoes)
+        ler_recusas(exame, operacoes, mensagem) + recusas_da_validacao,
+        houve_registro=bool(alteracoes),
     )
 
     # "Sim" sem descrever nada: abre o próximo item para receber as perguntas.
@@ -257,8 +259,14 @@ def resposta_do_assistente(resultado: Resultado) -> str:
     if resultado.erro:
         # Única mensagem padronizada do sistema: a falha é da ferramenta, não da
         # fala do perito, e não há motivo do modelo para explicar.
-        partes.append(f"Falha da ferramenta ao processar sua mensagem: {resultado.erro}")
-        partes.append("Nada foi registrado. Pode repetir?")
+        partes.append(
+            "A ferramenta falhou ao processar sua mensagem — o problema é dela, não "
+            "do que você escreveu. Nada foi anotado."
+        )
+        partes.append(
+            "Pode repetir? Se continuar falhando, mostre isto a quem instalou a "
+            f"ferramenta: {resultado.erro}"
+        )
         return "\n\n".join(partes)
 
     if resultado.alteracoes:

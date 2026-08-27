@@ -78,8 +78,11 @@ def main() -> int:
     checa(not at.exception, "a tela com leitura não pode levantar exceção")
     avisos = " ".join(w.value for w in at.warning)
     print("avisos:", avisos[:110])
-    checa("OCR" in avisos, "devia avisar que a leitura veio de OCR")
-    checa("90°" in avisos, "devia dizer que endireitou a página")
+    checa(
+        "imagem digitalizada" in avisos and "lido" in avisos.lower(),
+        "devia avisar, sem jargão, que o texto foi lido de uma imagem",
+    )
+    checa("90°" in avisos and "deitada" in avisos, "devia dizer que endireitou a página")
     checa(
         any("quesito 02" in w.value for w in at.warning),
         "o que oscilou entre leituras devia aparecer como incerto",

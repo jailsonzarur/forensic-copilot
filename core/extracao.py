@@ -46,6 +46,13 @@ REGRAS ABSOLUTAS
 4. Não use conhecimento próprio sobre drogas, embalagens, cores ou exames para preencher nada. Saber que cocaína costuma ser branca não autoriza escrever "branca".
 5. Transcreva o valor com as palavras do perito, sem reescrever nem melhorar a redação.
 6. Não deduza um campo a partir de outro. Massa não implica quantidade de invólucros; nome do exame não implica resultado.
+7. O perito fala como se fala, não como se digita. Número dito por extenso ou em
+   fração é valor EXATO, não estimativa: escreva-o em algarismos. "N gramas e
+   meio" vira o valor "N,5"; "meio quilo" vira o valor "0,5" com a unidade
+   "quilo"; "N vírgula M" vira "N,M". Isso é notação, não conversão: a unidade
+   continua sendo exatamente a que ele disse.
+8. Em campo de valor exato entra SÓ o número, sem a unidade junto — a unidade
+   tem campo próprio.
 
 FORMATO DA SAÍDA
 Responda APENAS com um objeto JSON no formato:
@@ -123,27 +130,27 @@ class Recusa:
         if self.motivo == "ambiguo":
             return (
                 f"Você falou de {campo}, mas {self._citacao()} não me deixa seguro "
-                "de qual é o valor, e eu não vou adivinhar. Pode dizer de outro jeito?"
+                "de qual é o valor, e eu não vou adivinhar. Pode repetir de outro jeito?"
             )
         if self.motivo == "fora_do_escopo":
             return (
-                f"{self._citacao().capitalize()} não corresponde a nenhum campo "
-                "deste laudo, então não registrei nada."
+                f"{self._citacao().capitalize()} não corresponde a nada que este "
+                "laudo registre, então não anotei nada."
             )
         if self.motivo == "sem_extracao":
             return (
-                "Não consegui extrair nenhum campo dessa mensagem. Se você informou "
-                "algum dado aí, a falha é de leitura minha, não sua — tente dizer de "
-                "outro jeito. O JSON bruto do extrator está no painel ao lado."
+                "Não consegui aproveitar nada dessa mensagem. Se você informou algum "
+                "dado aí, quem não entendeu fui eu, não você — tente dizer de outro "
+                "jeito, com outras palavras."
             )
         if self.motivo == "pergunta":
             return (
-                "Li isso como uma pergunta, não como um dado do exame, então não "
-                "registrei nada."
+                "Entendi isso como uma pergunta, não como um dado do exame, então "
+                "não anotei nada."
             )
         return (
-            "Essa mensagem não trouxe informação sobre nenhum campo do laudo, "
-            "então não registrei nada."
+            "Não vi nessa mensagem nenhuma informação que entre no laudo, então "
+            "não anotei nada."
         )
 
 
@@ -178,6 +185,15 @@ def _valor_limpo(valor: object) -> str:
     return texto
 
 
+def _numero(texto: str) -> float | None:
+    """Valor numérico de um campo de medição, ou None se não for número."""
+    limpo = str(texto).strip().replace(" ", "").replace(".", "").replace(",", ".")
+    try:
+        return float(limpo)
+    except ValueError:
+        return None
+
+
 def _canonico(texto: str, opcoes: tuple[str, ...]) -> str | None:
     alvo = _normaliza(texto).strip(".")
     for opcao in opcoes:
@@ -198,9 +214,11 @@ def descreve_schema(exame: Exame) -> str:
                 partes.append(slot.instrucao_extracao)
             if slot.exige_valor_exato:
                 partes.append(
-                    "Exige valor exato (é medição ou contagem do perito). Se a "
-                    "fala trouxer aproximação, NÃO registre: informe em "
-                    '"nao_registrado" com motivo "aproximado".'
+                    "Só o número, em algarismos, sem unidade e sem texto em volta. "
+                    "É medição ou contagem do perito: se a fala trouxer estimativa "
+                    '("em torno de", "cerca de"), NÃO registre — informe em '
+                    '"nao_registrado" com motivo "aproximado". Número dito por '
+                    "extenso não é estimativa: transcreva em algarismos."
                 )
             if slot.opcoes_fechadas:
                 aceitos = ", ".join(f'"{o}"' for o in slot.opcoes)
@@ -253,15 +271,16 @@ def montar_prompt(
         if alvo:
             contexto.append(f"Essa pergunta se refere a: {alvo}.")
             contexto.append(
-                "Se a resposta do perito trouxer um valor solto (só um número, só "
-                "uma palavra), esse valor é a resposta dessa pergunta e vai nesse "
-                "slot. Isso NÃO autoriza preencher nenhum outro campo: todo slot "
-                "que a fala não mencionar continua omitido."
+                "Se a resposta trouxer um valor solto (só um número, só uma "
+                "palavra), ele pertence ao slot perguntado. Mas a fala quase nunca "
+                "responde só isso: o perito descreve várias coisas de uma vez. "
+                "GRAVE TODOS os campos que ele mencionar, não apenas o perguntado. "
+                "O que ele não mencionar continua omitido."
             )
         else:
             contexto.append(
-                "A mensagem pode responder a essa pergunta e trazer outros campos. "
-                "Se a fala não contiver o dado, omita a chave."
+                "A mensagem pode responder a essa pergunta e trazer outros campos "
+                "junto. Grave todos os que ela mencionar; o que não mencionar, omita."
             )
         blocos += contexto
     blocos += ["", "MENSAGEM DO PERITO:", mensagem.strip()]
@@ -285,9 +304,16 @@ def aplicar(
     exame: Exame,
     colecoes: dict[str, list[dict]],
     operacoes: dict,
+    recusas_locais: list[Recusa] | None = None,
 ) -> list[Alteracao]:
-    """Grava no estado o que sobreviveu à validação. Nunca apaga dado."""
+    """Grava no estado o que sobreviveu à validação. Nunca apaga dado.
+
+    ``recusas_locais`` recebe as recusas que a própria validação produziu, para
+    que o perito saiba por que um valor não entrou.
+    """
     alteracoes: list[Alteracao] = []
+    if recusas_locais is None:
+        recusas_locais = []
 
     for colecao in exame.colecoes:
         entradas = operacoes.get(colecao.chave)
@@ -318,6 +344,11 @@ def aplicar(
                     continue
                 texto = _valor_limpo(valor)
                 if not texto:
+                    continue
+                if slot.exige_valor_exato and _numero(texto) is None:
+                    # "dezessete gramas e meio" inteiro dentro do campo numérico
+                    # iria para o laudo como se fosse um número medido.
+                    recusas_locais.append(Recusa("ambiguo", colecao, slot, texto))
                     continue
                 if slot.opcoes_fechadas:
                     canonico = _canonico(texto, slot.opcoes)
