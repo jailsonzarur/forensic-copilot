@@ -102,6 +102,7 @@ core/
   ocr.py                   # Tesseract: endireita a página e transcreve
   requisicao.py            # leitura do ofício: texto do PDF > OCR > visão
   quesitos.py              # perguntas da autoridade + padrão de resposta
+  biblioteca.py            # redação institucional escrita por perito
   conferencia.py           # requisitado × examinado (cadeia de custódia)
   numeros.py               # extenso de números, massas e datas
   derivados.py             # camada 3: descrições, conclusão, quesitos
@@ -122,6 +123,7 @@ templates/
 referencia/                # laudos reais; fora do git (dados pessoais)
 verificacao/
   fluxo.py                 # controlador, com extrator falso (sem API)
+  biblioteca.py            # redação aprendida e pendências (sem API)
   requisicao.py            # consenso e descarte de leitura (sem API)
   confirmacao.py           # tela de revisão pela UI real (sem API)
   documento.py             # .docx conferido contra o laudo real (sem API)
@@ -273,8 +275,16 @@ cp .env.example .env   # preencher OPENAI_API_KEY
   **Um dos quatro laudos.** Por isso só existe descrição técnica para análise
   botânica e CCD, e texto de proscrição para Cannabis sativa L. e cocaína.
   Scott, Fast Blue B e FTIR seguem sem texto: viram `[PENDENTE: ...]` em
-  vermelho no documento, para o perito redigir. Preencher por semelhança seria
-  inventar procedimento pericial.
+  vermelho no documento. Preencher por semelhança seria inventar procedimento
+  pericial — o parágrafo da seção 4 **declara como o exame foi conduzido**
+  (qual padrão de referência, qual grandeza comparada), e um modelo escrevendo
+  isso afirma procedimento que ninguém relatou.
+- **A camada 2 cresce por escrita de perito, não por PDF.** A fonte sempre foi
+  um perito redigindo; o laudo em PDF era só o transporte. Quando falta redação,
+  a tela de confirmação abre um campo, o perito escreve UMA vez e
+  `core/biblioteca.py` guarda em `templates/identificacao_substancia/
+  aprendidos.json`, indexado por ensaio e substância, **com autor e data**. O
+  próximo laudo já sai completo. Nenhuma entrada é gerada por modelo.
 - **Milestone 4 — geração do .docx:** camadas 1+2+3 no layout do laudo real,
   com as imagens embutidas. Nenhum texto nasce na montagem, e o LLM não
   participa: tudo que varia já foi ditado pelo perito ou derivado por regra e

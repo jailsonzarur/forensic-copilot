@@ -13,6 +13,7 @@ import streamlit as st
 
 from config.schema import Colecao, Exame
 from core import derivados as camada3
+from core import biblioteca
 from core import conferencia
 from core import pendencias
 from core import quesitos as camada1_quesitos
@@ -180,6 +181,121 @@ def _edita_derivados(exame: Exame) -> None:
                 st.rerun()
 
 
+def _lacunas_institucionais(exame: Exame) -> list[dict]:
+    """Redações que faltam para este laudo e que a biblioteca pode aprender."""
+    from templates.identificacao_substancia import boilerplate as texto_fixo
+
+    colecoes = st.session_state["colecoes"]
+    lacunas: list[dict] = []
+
+    for item in colecoes.get("exames_realizados", []):
+        nome = str(item.get("nome_teste", "")).strip()
+        substancia = str(item.get("substancia", "")).strip()
+        if not nome:
+            continue
+        chave_par = (texto_fixo.normaliza(nome), texto_fixo.chave_substancia(substancia))
+        if texto_fixo.RESULTADOS_POR_ENSAIO.get(chave_par):
+            continue
+        identificador = biblioteca.chave(nome, substancia)
+        if biblioteca.buscar("resultado", identificador):
+            continue
+        if any(l["id"] == identificador for l in lacunas):
+            continue
+        lacunas.append(
+            {
+                "tipo": "resultado",
+                "id": identificador,
+                "rotulo": f"Seção 4 — {nome}" + (f" para {substancia}" if substancia else ""),
+                "ajuda": (
+                    "Parágrafo que descreve como o ensaio foi conduzido e o que "
+                    "ele mostrou, como o Instituto redige."
+                ),
+                "titulo_sugerido": f"Análise por {nome.lower()}",
+            }
+        )
+
+    for item in colecoes.get("exames_realizados", []):
+        if str(item.get("resultado", "")).strip().lower() != "positivo":
+            continue
+        substancia = str(item.get("substancia", "")).strip()
+        if not substancia:
+            continue
+        chave_sub = texto_fixo.chave_substancia(substancia)
+        identificador = biblioteca.chave(substancia)
+        for tipo, rotulo, fonte, ajuda in (
+            (
+                "proscricao",
+                f"Quesito 03 — texto legal de {substancia}",
+                texto_fixo.PROSCRICAO_POR_SUBSTANCIA,
+                "Texto de proscrição: portaria, lista e condição legal da substância.",
+            ),
+            (
+                "natureza",
+                f"Quesito 01 — construção da resposta para {substancia}",
+                texto_fixo.NATUREZA_POR_SUBSTANCIA,
+                "Use {forma} onde entra a forma do material. Ex.: "
+                "'A substância {forma} trata-se de ...'",
+            ),
+        ):
+            if fonte.get(chave_sub) or biblioteca.buscar(tipo, identificador):
+                continue
+            if any(l["id"] == identificador and l["tipo"] == tipo for l in lacunas):
+                continue
+            lacunas.append(
+                {"tipo": tipo, "id": identificador, "rotulo": rotulo, "ajuda": ajuda}
+            )
+
+    return lacunas
+
+
+def _painel_biblioteca(exame: Exame) -> None:
+    """Onde o perito escreve a redação institucional que falta — uma vez só."""
+    lacunas = _lacunas_institucionais(exame)
+    if not lacunas:
+        contagem = biblioteca.resumo()
+        st.success(
+            "Toda a redação institucional deste laudo já existe. Biblioteca: "
+            + ", ".join(f"{v} {k}" for k, v in contagem.items() if v)
+            + "." if any(contagem.values()) else
+            "Toda a redação institucional deste laudo já existe."
+        )
+        return
+
+    st.warning(
+        f"{len(lacunas)} trecho(s) de redação institucional não existem ainda. "
+        "Sem eles a minuta sai com marcador vermelho. Escreva uma vez aqui e a "
+        "ferramenta reaproveita nos próximos laudos — o texto fica com a sua "
+        "autoria, nunca é gerado por modelo."
+    )
+
+    autor = st.session_state["admin"].get("perito_designado", "")
+    for lacuna in lacunas:
+        with st.expander(lacuna["rotulo"], expanded=False):
+            st.caption(lacuna["ajuda"])
+            titulo = ""
+            if lacuna["tipo"] == "resultado":
+                titulo = st.text_input(
+                    "Título da subseção",
+                    value=lacuna.get("titulo_sugerido", ""),
+                    key=f"bib_titulo_{lacuna['tipo']}_{lacuna['id']}",
+                )
+            texto = st.text_area(
+                "Redação",
+                key=f"bib_texto_{lacuna['tipo']}_{lacuna['id']}",
+                height=140,
+            )
+            if st.button(
+                "Salvar na biblioteca",
+                key=f"bib_salvar_{lacuna['tipo']}_{lacuna['id']}",
+                disabled=not texto.strip(),
+            ):
+                conteudo = {"texto": texto.strip()}
+                if lacuna["tipo"] == "resultado":
+                    conteudo["titulo"] = titulo.strip() or lacuna["rotulo"]
+                biblioteca.salvar(lacuna["tipo"], lacuna["id"], conteudo, autor)
+                st.rerun()
+
+
 def _painel_conferencia() -> bool:
     """Confronta o declarado na requisição com o descrito pelo perito.
 
@@ -269,6 +385,13 @@ def render() -> None:
                 if colecao.aceita_imagens:
                     st.divider()
                     _edita_imagens(colecao, indice, item)
+
+    st.subheader("Redação institucional")
+    st.caption(
+        "Texto que o Instituto usa e que nenhum modelo pode escrever: ele "
+        "declara como o exame foi conduzido."
+    )
+    _painel_biblioteca(exame)
 
     st.subheader("Conferência com a requisição")
     st.caption(

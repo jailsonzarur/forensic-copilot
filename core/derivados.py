@@ -15,6 +15,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from config.schema import Exame
+from core import biblioteca
 from core import numeros
 from templates.identificacao_substancia import boilerplate
 
@@ -156,6 +157,9 @@ def natureza(colecoes: dict[str, list[dict]]) -> str:
         vistas.add(chave)
 
         construcao = boilerplate.NATUREZA_POR_SUBSTANCIA.get(chave, "")
+        if not construcao:
+            aprendido = biblioteca.buscar("natureza", biblioteca.chave(substancia))
+            construcao = aprendido["texto"] if aprendido else ""
         forma = _forma_curta(_material_de(colecoes, item.get("item_material", "")))
         if not construcao:
             # A redação da resposta é específica de cada substância; escolher a
@@ -178,6 +182,9 @@ def proscricao(colecoes: dict[str, list[dict]]) -> str:
     for substancia in _positivos(colecoes):
         chave = boilerplate.chave_substancia(substancia)
         texto = boilerplate.PROSCRICAO_POR_SUBSTANCIA.get(chave, "")
+        if not texto:
+            aprendido = biblioteca.buscar("proscricao", biblioteca.chave(substancia))
+            texto = aprendido["texto"] if aprendido else ""
         if texto:
             if texto not in trechos:
                 trechos.append(texto)
@@ -200,6 +207,10 @@ def resultados_obtidos(colecoes: dict[str, list[dict]]) -> list[dict[str, str]]:
         transcrito = boilerplate.RESULTADOS_POR_ENSAIO.get(chave)
         if transcrito:
             secoes.append(dict(transcrito))
+            continue
+        aprendido = biblioteca.buscar("resultado", biblioteca.chave(nome, substancia))
+        if aprendido:
+            secoes.append({"titulo": aprendido["titulo"], "texto": aprendido["texto"]})
             continue
         alvo = f"{nome} para {substancia}" if substancia else nome
         secoes.append(
