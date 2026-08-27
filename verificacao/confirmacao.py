@@ -68,7 +68,19 @@ COLECOES = {
 }
 
 
-def _abre(com_imagem: bool = False) -> AppTest:
+#: O que a autoridade declarou na requisição de referência: dois itens, duas
+#: porções cada — batendo com o que o perito descreveu.
+DECLARADOS_QUE_BATEM = [
+    {"quantidade": "3", "texto": "trouxinhas de substância vegetal"},
+    {"quantidade": "1", "texto": "tablete de substância esbranquiçada"},
+]
+DECLARADOS_QUE_DIVERGEM = [
+    {"quantidade": "7", "texto": "trouxinhas de substância vegetal"},
+    {"quantidade": "1", "texto": "tablete de substância esbranquiçada"},
+]
+
+
+def _abre(com_imagem: bool = False, declarados: list[dict] | None = None) -> AppTest:
     at = AppTest.from_file(APP, default_timeout=90)
     at.session_state["tela"] = "confirmacao"
     at.session_state["exame_id"] = "identificacao_substancia"
@@ -78,6 +90,10 @@ def _abre(com_imagem: bool = False) -> AppTest:
     }
     at.session_state["colecoes_fechadas"] = ["materiais", "exames_realizados"]
     at.session_state["quesitos"] = list(QUESITOS_DA_REQUISICAO_MODELO)
+    at.session_state["requisicao"] = {
+        "origem": "OCR do documento digitalizado",
+        "itens_declarados": declarados if declarados is not None else DECLARADOS_QUE_BATEM,
+    }
     if com_imagem:
         at.session_state["imagens"] = [
             {
@@ -157,6 +173,25 @@ def main() -> int:
         botao.click().run()
     print("tela final:", at.session_state["tela"])
     checa(at.session_state["tela"] == "documento", "confirmar devia avançar para o documento")
+
+    # Cadeia de custódia: divergência aponta, exige reconhecimento e não conclui.
+    at = _abre(declarados=DECLARADOS_QUE_DIVERGEM)
+    erros = [e.value for e in at.error]
+    print("\nerros com divergência:", erros)
+    checa(
+        any("não confere" in e for e in erros),
+        "contagem divergente devia ser apontada",
+    )
+    bloqueio = confirmar(at)
+    checa(
+        bloqueio is not None and bloqueio.disabled,
+        "divergência não reconhecida devia bloquear a geração",
+    )
+    at.checkbox(key="ciente_divergencia").set_value(True).run()
+    checa(
+        confirmar(at) is not None and not confirmar(at).disabled,
+        "reconhecer a divergência devia liberar",
+    )
 
     # Imagem: anexo com legenda montada dos campos do perito.
     at = _abre(com_imagem=True)

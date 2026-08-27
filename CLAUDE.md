@@ -102,6 +102,7 @@ core/
   ocr.py                   # Tesseract: endireita a página e transcreve
   requisicao.py            # leitura do ofício: texto do PDF > OCR > visão
   quesitos.py              # perguntas da autoridade + padrão de resposta
+  conferencia.py           # requisitado × examinado (cadeia de custódia)
   numeros.py               # extenso de números, massas e datas
   derivados.py             # camada 3: descrições, conclusão, quesitos
   documento.py             # montagem do .docx
@@ -168,8 +169,15 @@ de terceiro, não do perito:
   que o exame foi bancado.
 - **A descrição do material na requisição é suspeita da autoridade**
   ("aparentemente maconha", "semelhante a pasta base") e NÃO pode tocar a
-  camada 1. O que vai ao laudo é o que o perito mediu. A extração da requisição
-  é instruída a ignorar essa parte do documento.
+  camada 1. O que vai ao laudo é o que o perito mediu. Ela é guardada à parte,
+  em `itens_declarados`, com um único uso: **conferência de cadeia de custódia**
+  (`core/conferencia.py`). A ferramenta compara quantidade de itens e contagem
+  de porções, aponta divergência e exige reconhecimento explícito antes de
+  gerar — mas não conclui nada: divergência pode ter explicação legítima, e
+  quem interpreta é o perito.
+- Data e local da apreensão são registrados (cadeia de custódia) mas **não são
+  impressos**: o laudo de referência não os traz. Entram no documento quando
+  algum laudo real mostrar onde.
 
 ## Primeiro (e único, no v1) exame: Identificação de Substância
 

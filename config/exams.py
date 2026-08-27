@@ -78,6 +78,27 @@ _ADMIN_IDENTIFICACAO = (
         label="Envolvido",
     ),
     CampoAdmin(
+        chave="data_apreensao",
+        da_requisicao=True,
+        label="Data da apreensão",
+        tipo="data",
+        obrigatorio=False,
+        ajuda=(
+            "Consta da requisição. Faz parte da cadeia de custódia; o laudo de "
+            "referência não a imprime."
+        ),
+    ),
+    CampoAdmin(
+        chave="local_apreensao",
+        da_requisicao=True,
+        label="Local da apreensão",
+        obrigatorio=False,
+        ajuda=(
+            "Consta da requisição. Faz parte da cadeia de custódia; o laudo de "
+            "referência não o imprime."
+        ),
+    ),
+    CampoAdmin(
         chave="perito_designado",
         label="Perito designado",
     ),

@@ -13,6 +13,7 @@ import streamlit as st
 
 from config.schema import Colecao, Exame
 from core import derivados as camada3
+from core import conferencia
 from core import pendencias
 from core import quesitos as camada1_quesitos
 from core.state import (
@@ -179,6 +180,36 @@ def _edita_derivados(exame: Exame) -> None:
                 st.rerun()
 
 
+def _painel_conferencia() -> bool:
+    """Confronta o declarado na requisição com o descrito pelo perito.
+
+    Devolve se há divergência. A ferramenta aponta; quem interpreta é o perito.
+    """
+    requisicao = st.session_state.get("requisicao") or {}
+    declarados = requisicao.get("itens_declarados") or []
+    materiais = st.session_state["colecoes"].get("materiais", [])
+
+    observacoes = conferencia.comparar(declarados, materiais)
+    for observacao in observacoes:
+        if observacao.tipo == "divergencia":
+            st.error(observacao.texto)
+        elif observacao.tipo == "confere":
+            st.success(observacao.texto)
+        else:
+            st.info(observacao.texto)
+
+    if declarados:
+        with st.expander("O que a autoridade declarou enviar", expanded=False):
+            st.caption(
+                "Palavras do delegado, incluindo a suspeita dele. Não entra no "
+                "laudo — está aqui só para a conferência."
+            )
+            for item in declarados:
+                st.write(f"- **{item.get('quantidade') or '?'}** — {item['texto']}")
+
+    return conferencia.ha_divergencia(observacoes)
+
+
 def _edita_quesitos(exame: Exame) -> None:
     """Quesitos: a pergunta é da autoridade, a resposta é do perito."""
     perguntas = st.session_state["quesitos"]
@@ -239,6 +270,13 @@ def render() -> None:
                     st.divider()
                     _edita_imagens(colecao, indice, item)
 
+    st.subheader("Conferência com a requisição")
+    st.caption(
+        "Cadeia de custódia: o que a autoridade declarou ter enviado contra o "
+        "que você descreveu na bancada."
+    )
+    divergencia = _painel_conferencia()
+
     st.subheader("Quesitos")
     st.caption(
         "As perguntas vêm da requisição da autoridade; as respostas, do exame. "
@@ -275,6 +313,17 @@ def render() -> None:
         impedimentos.append("Conclusão em branco")
     if sem_quesito:
         impedimentos.append("Nenhum quesito transcrito da requisição")
+
+    if divergencia:
+        ciente = st.checkbox(
+            "Estou ciente da divergência com a requisição e assumo a descrição "
+            "acima como a correta.",
+            key="ciente_divergencia",
+        )
+        if not ciente:
+            impedimentos.append(
+                "Divergência com a requisição ainda não reconhecida"
+            )
 
     for impedimento in impedimentos:
         st.error(impedimento)

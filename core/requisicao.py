@@ -54,9 +54,11 @@ REGRAS ABSOLUTAS
    pelo perito depois; campo inventado corrompe um documento oficial.
 3. Não deduza um campo a partir de outro, nem use conhecimento próprio sobre
    como delegacias costumam numerar ofícios ou procedimentos.
-4. NÃO extraia a descrição do material apreendido. A requisição traz a suspeita
-   da autoridade ("aparentemente maconha", "semelhante a pasta base"); isso não
-   é achado pericial e não entra no laudo. Ignore essa parte do documento.
+4. A descrição do material vai APENAS em "itens_declarados", e serve só para
+   conferir contagem contra o que o perito recebeu. Ela NUNCA preenche campo do
+   laudo: a requisição traz a suspeita da autoridade ("aparentemente maconha",
+   "semelhante a pasta base"), e suspeita não é achado pericial. Copie o texto
+   como está, sem completar e sem concluir nada dele.
 5. Os quesitos devem ser copiados PALAVRA POR PALAVRA, na ordem em que aparecem,
    sem renumerar, sem reescrever e sem completar com quesitos que você conheça
    de outros laudos.
@@ -64,13 +66,17 @@ REGRAS ABSOLUTAS
 FORMATO DA SAÍDA
 Responda APENAS com um objeto JSON:
 {"admin": {"<campo>": {"valor": "<valor>", "trecho": "<citação exata do documento>"}},
- "quesitos": ["<pergunta copiada>", "..."]}
+ "quesitos": ["<pergunta copiada>", "..."],
+ "itens_declarados": [{"quantidade": "<número, só dígitos>", "texto": "<descrição copiada>"}]}
 
 - "trecho" é a citação literal do documento de onde o valor saiu, copiada sem
   alterar uma letra. Valor cujo trecho não existir no documento é descartado.
 - Datas no campo "valor" vão no formato AAAA-MM-DD; o "trecho" mantém a forma
   original escrita no documento.
-- Se não houver quesitos no documento, devolva a lista vazia."""
+- Se não houver quesitos no documento, devolva a lista vazia.
+- "itens_declarados": um por item de material que a autoridade diz estar enviando.
+  "quantidade" é só o número que ela declarou (de "02 (dois) tabletes", é "2").
+  Se ela não declarar número, omita "quantidade"."""
 
 
 @dataclass
@@ -82,6 +88,9 @@ class Leitura:
     campos: dict[str, str] = field(default_factory=dict)
     trechos: dict[str, str] = field(default_factory=dict)
     quesitos: list[str] = field(default_factory=list)
+    #: O que a AUTORIDADE diz ter enviado. Serve para conferência de contagem e
+    #: nada mais — nunca preenche a camada 1, que é o que o perito mediu.
+    itens_declarados: list[dict] = field(default_factory=list)
     descartados: list[str] = field(default_factory=list)
     #: Campos e quesitos que variaram entre as leituras — o perito lê do papel.
     incertos: list[str] = field(default_factory=list)
@@ -212,6 +221,22 @@ def extrair(exame: Exame, texto: str) -> Leitura:
             leitura.campos[campo.chave] = valor
             leitura.trechos[campo.chave] = trecho
 
+    declarados = dados.get("itens_declarados")
+    if isinstance(declarados, list):
+        for item in declarados:
+            if not isinstance(item, dict):
+                continue
+            texto_item = str(item.get("texto", "")).strip()
+            if not texto_item or boilerplate.normaliza(texto_item) not in referencia:
+                continue
+            quantidade = str(item.get("quantidade", "")).strip()
+            leitura.itens_declarados.append(
+                {
+                    "quantidade": quantidade if quantidade.isdigit() else "",
+                    "texto": texto_item,
+                }
+            )
+
     perguntas = dados.get("quesitos")
     if isinstance(perguntas, list):
         for pergunta in perguntas:
@@ -250,6 +275,14 @@ def _consolidar(leituras: list[Leitura], exame: Exame) -> Leitura:
             final.trechos[chave] = leituras[0].trechos.get(chave, "")
         else:
             final.incertos.append(rotulos.get(chave, chave))
+
+    contagens = {
+        tuple(i.get("quantidade", "") for i in l.itens_declarados) for l in leituras
+    }
+    if len(contagens) == 1:
+        final.itens_declarados = leituras[0].itens_declarados
+    else:
+        final.incertos.append("os itens declarados pela autoridade")
 
     tamanhos = {len(l.quesitos) for l in leituras}
     if len(tamanhos) != 1 or tamanhos == {0}:

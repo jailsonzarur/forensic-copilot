@@ -177,6 +177,19 @@ def render() -> None:
         st.text(leitura.texto or "(vazio)")
 
     campos = _campos_propostos(exame, leitura)
+
+    if leitura.itens_declarados:
+        st.subheader("Material declarado pela autoridade")
+        st.caption(
+            "Isto é o que o delegado diz estar enviando, com as palavras dele — "
+            "inclusive as suspeitas (\"aparentemente maconha\"). **Não entra no "
+            "laudo e não preenche nada.** Serve só para conferir a contagem "
+            "contra o que você receber na bancada."
+        )
+        for item in leitura.itens_declarados:
+            quantidade = item.get("quantidade") or "?"
+            st.write(f"- **{quantidade}** — {item['texto']}")
+
     perguntas = _quesitos_propostos(leitura)
 
     st.divider()
@@ -194,8 +207,10 @@ def render() -> None:
         st.session_state["quesitos"] = perguntas
         st.session_state["requisicao"] = {
             "origem": leitura.origem,
+            "nivel": leitura.nivel,
             "texto": leitura.texto,
             "incertos": leitura.incertos,
+            "itens_declarados": leitura.itens_declarados,
         }
         ir_para(TELA_ADMIN)
         st.rerun()
