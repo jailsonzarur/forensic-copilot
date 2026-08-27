@@ -29,6 +29,16 @@ VERMELHO = RGBColor(0xC0, 0x00, 0x00)
 MARCADOR = "[PENDENTE:"
 
 
+def _paginas(derivados: dict) -> str:
+    """Contagem de páginas por extenso, ou pendência.
+
+    Paginação é do editor de texto, não desta montagem: o perito lê no Word e
+    informa. Estimar aqui poria um número inventado no fecho de um laudo.
+    """
+    extenso = numeros.paginas_por_extenso(derivados.get(camada3.CHAVE_PAGINAS, ""))
+    return extenso or camada3.PENDENTE.format(o_que="número de páginas por extenso")
+
+
 def _configura(documento: Document) -> None:
     estilo = documento.styles["Normal"]
     estilo.font.name = FONTE
@@ -199,18 +209,13 @@ def _conclusao_e_quesitos(
         _paragrafo(documento, "R – " + quesito.resposta)
 
 
-def _fecho(documento: Document, admin: dict) -> None:
+def _fecho(documento: Document, admin: dict, derivados: dict) -> None:
     _titulo_secao(documento, "6. REFERÊNCIAS")
     for referencia in boilerplate.REFERENCIAS:
         _paragrafo(documento, referencia)
 
     documento.add_paragraph()
-    _paragrafo(
-        documento,
-        boilerplate.FECHO.format(
-            paginas_extenso=camada3.PENDENTE.format(o_que="número de páginas por extenso")
-        ),
-    )
+    _paragrafo(documento, boilerplate.FECHO.format(paginas_extenso=_paginas(derivados)))
 
     documento.add_paragraph()
     for linha, negrito in (
@@ -248,7 +253,7 @@ def montar(
         quesitos if quesitos is not None else list(boilerplate.QUESITOS_DA_REQUISICAO_MODELO),
         respostas_quesitos or {},
     )
-    _fecho(documento, admin)
+    _fecho(documento, admin, derivados)
     return documento
 
 
@@ -285,6 +290,7 @@ def pendencias_do_texto(
             for i, m in enumerate(colecoes.get("materiais", []), start=1)
         ),
     ]
+    pedacos.append(_paginas(derivados))
     encontradas: list[str] = []
     for pedaco in pedacos:
         restante = str(pedaco)

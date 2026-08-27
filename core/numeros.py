@@ -56,19 +56,34 @@ def _ate_999(numero: int) -> str:
     return f"{base} e {_ate_999(resto)}" if resto else base
 
 
-def por_extenso(numero: int) -> str:
+#: Formas femininas: "duas páginas", não "dois páginas".
+_FEMININO = {
+    "um": "uma", "dois": "duas", "duzentos": "duzentas", "trezentos": "trezentas",
+    "quatrocentos": "quatrocentas", "quinhentos": "quinhentas",
+    "seiscentos": "seiscentas", "setecentos": "setecentas",
+    "oitocentos": "oitocentas", "novecentos": "novecentas",
+}
+
+
+def _flexiona(texto: str) -> str:
+    return " ".join(_FEMININO.get(palavra, palavra) for palavra in texto.split())
+
+
+def por_extenso(numero: int, feminino: bool = False) -> str:
     """Inteiro por extenso, de 0 a 999.999."""
     if numero < 0 or numero > 999_999:
         raise ValueError(f"fora do intervalo suportado: {numero}")
     if numero < 1000:
-        return _ate_999(numero)
+        escrito = _ate_999(numero)
+        return _flexiona(escrito) if feminino else escrito
 
     milhares, resto = divmod(numero, 1000)
     base = "mil" if milhares == 1 else f"{_ate_999(milhares)} mil"
     if not resto:
         return base
     ligacao = " e " if resto < 100 or resto % 100 == 0 else " "
-    return f"{base}{ligacao}{_ate_999(resto)}"
+    escrito = f"{base}{ligacao}{_ate_999(resto)}"
+    return _flexiona(escrito) if feminino else escrito
 
 
 def _decimal(texto: str) -> float | None:
@@ -112,6 +127,17 @@ def massa_por_extenso(valor: str, unidade: str) -> str:
             return ""
 
     return " e ".join(partes)
+
+
+def paginas_por_extenso(valor: str) -> str:
+    """"2" -> "duas". Vazio se não for um número de páginas plausível."""
+    texto = str(valor).strip()
+    if not texto.isdigit():
+        return ""
+    quantidade = int(texto)
+    if not 1 <= quantidade <= 999:
+        return ""
+    return por_extenso(quantidade, feminino=True)
 
 
 def quantidade_por_extenso(valor: str) -> str:

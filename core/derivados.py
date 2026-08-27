@@ -22,6 +22,7 @@ CHAVE_CONCLUSAO = "conclusao"
 CHAVE_EXAMES = "exames_realizados_texto"
 CHAVE_NATUREZA = "natureza"
 CHAVE_PROSCRICAO = "proscricao"
+CHAVE_PAGINAS = "paginas"
 PREFIXO_MATERIAL = "descricao_material_"
 
 #: Marcador que aparece no texto quando falta redação transcrita de laudo real.
@@ -154,10 +155,16 @@ def natureza(colecoes: dict[str, list[dict]]) -> str:
             continue
         vistas.add(chave)
 
-        nome = boilerplate.NATUREZA_POR_SUBSTANCIA.get(chave, substancia)
+        construcao = boilerplate.NATUREZA_POR_SUBSTANCIA.get(chave, "")
         forma = _forma_curta(_material_de(colecoes, item.get("item_material", "")))
-        sujeito = f"A substância {forma}" if forma else "A substância periciada"
-        frases.append(f"{sujeito} trata-se de {nome}.")
+        if not construcao:
+            # A redação da resposta é específica de cada substância; escolher a
+            # de outra por semelhança seria inventar a conclusão do laudo.
+            frases.append(
+                PENDENTE.format(o_que=f"resposta do quesito 01 para {substancia}")
+            )
+            continue
+        frases.append(construcao.format(forma=forma or "periciada"))
 
     if not frases:
         return PENDENTE.format(o_que="natureza do material")
@@ -321,6 +328,19 @@ def montar(exame: Exame, colecoes: dict[str, list[dict]]) -> list[Derivado]:
             label="Quesito 01 — natureza do material",
             valor=natureza(colecoes),
             origem="substâncias com resultado positivo",
+        )
+    )
+    campos.append(
+        Derivado(
+            chave=CHAVE_PAGINAS,
+            label="Número de páginas do laudo",
+            valor="",
+            origem="só o editor sabe, depois da paginação",
+            ajuda=(
+                "O fecho diz 'redigido em X páginas'. Baixe a minuta, veja a "
+                "contagem no Word e escreva o número aqui — ele sai por extenso. "
+                "Em branco, o fecho sai marcado como pendente."
+            ),
         )
     )
     campos.append(

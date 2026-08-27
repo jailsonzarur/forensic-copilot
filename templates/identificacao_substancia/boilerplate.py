@@ -168,10 +168,16 @@ PROSCRICAO_POR_SUBSTANCIA: dict[str, str] = {
     ),
 }
 
-#: Como o laudo nomeia cada substância no quesito 01.
+#: Resposta do quesito 01, transcrita do laudo real. A construção MUDA por
+#: substância — o laudo escreve "trata-se de Cannabis sativa Lineu" para a
+#: vegetal e "apresentou resultado positivo para presença de cocaína" para a
+#: sólida. Não é sinônimo intercambiável: é a redação que o Instituto usa para
+#: cada uma. Substância sem construção transcrita vira PENDÊNCIA.
 NATUREZA_POR_SUBSTANCIA: dict[str, str] = {
-    "cannabis sativa l.": "Cannabis sativa Lineu",
-    "cocaina": "cocaína",
+    "cannabis sativa l.": "A substância {forma} trata-se de Cannabis sativa Lineu.",
+    "cocaina": (
+        "A substância {forma} apresentou resultado positivo para presença de cocaína."
+    ),
 }
 
 #: Sinônimos que o perito costuma falar na conversa e que apontam para a mesma

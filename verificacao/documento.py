@@ -81,7 +81,10 @@ ESPERADOS = (
     "perfil botânico, ao final do ensaio constatou-se tratar-se de Cannabis sativa L..",
     "constatou-se a presença do alcalóide cocaína.",
     "POSITIVO para Cannabis sativa L. e POSITIVO para cocaína",
-    "A substância vegetal trata-se de Cannabis sativa Lineu.",
+    # Quesito 01: a construção muda por substância, e é a do laudo real.
+    "A substância vegetal trata-se de Cannabis sativa Lineu. A substância sólida "
+    "apresentou resultado positivo para presença de cocaína.",
+    "redigido em duas páginas, segue assinado pelo seu relator.",
     "Vide tópico IDENTIFICAÇÃO E DESCRIÇÃO DO MATERIAL.",
     "Portaria 344 SVS/MS de 12 de fevereiro de 1998",
     "Lista F1, trata-se de um entorpecente de uso proscrito no Brasil.",
@@ -102,6 +105,10 @@ def _monta(colecoes=None, imagens=None, derivados_extra=None):
     colecoes = colecoes or COLECOES
     exame = obter_exame("identificacao_substancia")
     derivados = {d.chave: d.valor for d in derivar(exame, colecoes)}
+    # derivar() devolve a contagem vazia de propósito; o laudo de referência
+    # tem duas páginas, então é isso que o perito informaria.
+    if not derivados.get("paginas"):
+        derivados["paginas"] = "2"
     derivados.update(derivados_extra or {})
     return montador.montar(ADMIN, colecoes, derivados, imagens or []), derivados, colecoes
 
@@ -125,7 +132,18 @@ def main() -> int:
         not montador.pendencias_do_texto(ADMIN, COLECOES, derivados),
         "o laudo de referência não devia ter pendência de redação",
     )
-    checa("[PENDENTE: número de páginas" in texto, "contagem de páginas devia ficar pendente")
+    # Contagem de páginas: informada sai por extenso no feminino; em branco fica
+    # pendente, porque paginação é do editor e estimar poria número inventado.
+    documento_sem_paginas, derivados_sem, _ = _monta(derivados_extra={"paginas": ""})
+    checa(
+        "[PENDENTE: número de páginas" in _texto(documento_sem_paginas),
+        "sem a contagem informada, o fecho devia ficar pendente",
+    )
+    checa(
+        "número de páginas por extenso"
+        in montador.pendencias_do_texto(ADMIN, COLECOES, derivados_sem),
+        "a contagem em branco devia aparecer na lista de pendências",
+    )
 
     # Ensaio sem texto transcrito: PENDENTE visível, nunca preenchido por semelhança.
     com_scott = {

@@ -280,8 +280,16 @@ cp .env.example .env   # preencher OPENAI_API_KEY
   participa: tudo que varia já foi ditado pelo perito ou derivado por regra e
   confirmado por ele na tela anterior.
   - Números por extenso seguem o laudo: `1,98 kg (um quilograma e novecentos e
-    oitenta gramas)`, `02 (dois) invólucros`. Grama com decimal ainda não tem
-    forma transcrita — vira pendência em vez de palpite.
+    oitenta gramas)`, `02 (dois) invólucros`, `redigido em duas páginas` (com
+    flexão de gênero). Grama com decimal ainda não tem forma transcrita — vira
+    pendência em vez de palpite.
+  - **Paginação é do editor, não da montagem.** O perito baixa a minuta, lê a
+    contagem no Word e informa o número na confirmação; em branco, o fecho sai
+    marcado como pendente. Estimar poria número inventado no fecho de um laudo.
+  - **A resposta do quesito 01 muda por substância** e é transcrita: "trata-se
+    de Cannabis sativa Lineu" para a vegetal, "apresentou resultado positivo
+    para presença de cocaína" para a sólida. Não são construções
+    intercambiáveis; substância sem construção transcrita vira pendência.
   - O laudo real é a referência do teste: `verificacao/documento.py` alimenta o
     montador com os dados dele e confere trecho a trecho.
 - **Milestone 3 — confirmação:** tudo que vai ao documento passa por uma tela
