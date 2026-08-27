@@ -12,6 +12,7 @@ from config.exams import obter_exame
 from config.schema import Exame
 
 TELA_SELECAO = "selecao"
+TELA_REQUISICAO = "requisicao"
 TELA_ADMIN = "admin"
 TELA_CONVERSA = "conversa"
 TELA_CONFIRMACAO = "confirmacao"
@@ -20,6 +21,7 @@ TELA_DOCUMENTO = "documento"
 # Ordem do fluxo, usada pelo indicador de progresso.
 FLUXO = (
     (TELA_SELECAO, "Tipo de exame"),
+    (TELA_REQUISICAO, "Requisição"),
     (TELA_ADMIN, "Dados administrativos"),
     (TELA_CONVERSA, "Conversa"),
     (TELA_CONFIRMACAO, "Confirmação"),
@@ -32,6 +34,9 @@ def init_state() -> None:
     st.session_state.setdefault("tela", TELA_SELECAO)
     st.session_state.setdefault("exame_id", None)
     st.session_state.setdefault("admin", {})
+    st.session_state.setdefault("requisicao", None)  # leitura do documento
+    st.session_state.setdefault("quesitos", [])  # perguntas da autoridade
+    st.session_state.setdefault("respostas_quesitos", {})  # redação do perito
     st.session_state.setdefault("colecoes", {})  # chave -> list[dict] (camada 1)
     st.session_state.setdefault("colecoes_fechadas", [])  # o perito disse "não há mais"
     st.session_state.setdefault("imagens", [])  # anexos documentais
@@ -65,6 +70,9 @@ def exame_atual() -> Exame | None:
 def limpar_laudo() -> None:
     """Descarta os dados do laudo, preservando a tela atual."""
     st.session_state["admin"] = {}
+    st.session_state["requisicao"] = None
+    st.session_state["quesitos"] = []
+    st.session_state["respostas_quesitos"] = {}
     st.session_state["colecoes"] = {}
     st.session_state["colecoes_fechadas"] = []
     st.session_state["imagens"] = []

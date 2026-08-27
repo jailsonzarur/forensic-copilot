@@ -14,6 +14,7 @@ import streamlit as st
 from config.schema import Colecao, Exame
 from core import derivados as camada3
 from core import pendencias
+from core import quesitos as camada1_quesitos
 from core.state import (
     TELA_CONVERSA,
     TELA_DOCUMENTO,
@@ -178,6 +179,40 @@ def _edita_derivados(exame: Exame) -> None:
                 st.rerun()
 
 
+def _edita_quesitos(exame: Exame) -> None:
+    """Quesitos: a pergunta é da autoridade, a resposta é do perito."""
+    perguntas = st.session_state["quesitos"]
+    respostas = st.session_state["respostas_quesitos"]
+    if not perguntas:
+        st.warning("Nenhum quesito transcrito da requisição — o laudo ficaria sem responder nada.")
+        return
+
+    montados = camada1_quesitos.montar(
+        perguntas, st.session_state["colecoes"], st.session_state["derivados"], respostas
+    )
+    for quesito in montados:
+        st.markdown(f"**{quesito.numero} – {quesito.pergunta}**")
+        chave = f"quesito_resposta_{quesito.numero}"
+        vigente = st.session_state.get(chave)
+        automatica = quesito.resposta if not respostas.get(quesito.numero) else ""
+        if vigente is None:
+            st.session_state[chave] = respostas.get(quesito.numero) or quesito.resposta
+        texto = st.text_area(
+            f"Resposta ao quesito {quesito.numero}",
+            key=chave,
+            label_visibility="collapsed",
+            height=90,
+        )
+        respostas[quesito.numero] = texto
+        if quesito.padrao_conhecido:
+            st.caption("Padrão de resposta transcrito de laudo real.")
+        else:
+            st.caption(
+                "Quesito sem padrão transcrito — esta resposta é sua. "
+                "Enquanto ficar como PENDENTE, sai em vermelho no documento."
+            )
+
+
 def render() -> None:
     exame: Exame | None = exame_atual()
     if exame is None:
@@ -204,6 +239,13 @@ def render() -> None:
                     st.divider()
                     _edita_imagens(colecao, indice, item)
 
+    st.subheader("Quesitos")
+    st.caption(
+        "As perguntas vêm da requisição da autoridade; as respostas, do exame. "
+        "O laudo responde a estas perguntas e a mais nenhuma."
+    )
+    _edita_quesitos(exame)
+
     st.subheader("Campos derivados")
     st.caption(
         "Montados a partir do que você informou, para você confirmar ou reescrever."
@@ -212,6 +254,7 @@ def render() -> None:
 
     st.divider()
     faltando = pendencias.todas(exame, st.session_state["colecoes"])
+    sem_quesito = not st.session_state["quesitos"]
     admin_faltando = [
         c.label
         for c in exame.campos_admin
@@ -230,6 +273,8 @@ def render() -> None:
         )
     if conclusao_vazia:
         impedimentos.append("Conclusão em branco")
+    if sem_quesito:
+        impedimentos.append("Nenhum quesito transcrito da requisição")
 
     for impedimento in impedimentos:
         st.error(impedimento)

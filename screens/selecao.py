@@ -9,7 +9,7 @@ from __future__ import annotations
 import streamlit as st
 
 from config.exams import listar_exames
-from core.state import TELA_ADMIN, definir_exame, ir_para
+from core.state import TELA_REQUISICAO, definir_exame, ir_para
 
 
 def render() -> None:
@@ -37,5 +37,5 @@ def render() -> None:
 
     if st.button("Continuar", type="primary"):
         definir_exame(escolhido.id)
-        ir_para(TELA_ADMIN)
+        ir_para(TELA_REQUISICAO)
         st.rerun()

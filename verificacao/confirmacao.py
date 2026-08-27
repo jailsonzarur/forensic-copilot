@@ -16,6 +16,8 @@ from pathlib import Path
 
 from streamlit.testing.v1 import AppTest
 
+from templates.identificacao_substancia.boilerplate import QUESITOS_DA_REQUISICAO_MODELO
+
 APP = str(Path(__file__).resolve().parent.parent / "app.py")
 
 #: PNG 1x1, só para exercitar o anexo.
@@ -75,6 +77,7 @@ def _abre(com_imagem: bool = False) -> AppTest:
         chave: [dict(item) for item in itens] for chave, itens in COLECOES.items()
     }
     at.session_state["colecoes_fechadas"] = ["materiais", "exames_realizados"]
+    at.session_state["quesitos"] = list(QUESITOS_DA_REQUISICAO_MODELO)
     if com_imagem:
         at.session_state["imagens"] = [
             {
@@ -108,6 +111,9 @@ def main() -> int:
         "conclusão devia sair dos resultados positivos",
     )
     checa(not at.error, "schema completo não devia ter impedimento")
+    respondidos = [t for t in at.text_area if t.key and t.key.startswith("quesito_resposta_")]
+    print("quesitos renderizados:", len(respondidos))
+    checa(len(respondidos) == 6, "os seis quesitos da requisição deviam aparecer")
     checa(confirmar(at) is not None and not confirmar(at).disabled, "devia liberar o avanço")
 
     # Derivado intocado acompanha a camada 1.

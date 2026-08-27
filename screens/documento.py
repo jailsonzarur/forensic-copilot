@@ -39,7 +39,11 @@ def render() -> None:
         "editor, complete o que estiver assinalado e assine."
     )
 
-    pendencias = montador.pendencias_do_texto(admin, colecoes, derivados)
+    quesitos = st.session_state["quesitos"]
+    respostas = st.session_state["respostas_quesitos"]
+    pendencias = montador.pendencias_do_texto(
+        admin, colecoes, derivados, quesitos, respostas
+    )
     if pendencias:
         st.warning(
             "A minuta sai com marcadores em vermelho onde falta redação transcrita "
@@ -50,7 +54,7 @@ def render() -> None:
 
     try:
         arquivo = montador.em_bytes(
-            montador.montar(admin, colecoes, derivados, imagens)
+            montador.montar(admin, colecoes, derivados, imagens, quesitos, respostas)
         )
     except Exception as erro:  # falha de montagem é da ferramenta, não do perito
         st.error(f"Falha da ferramenta ao montar o documento: {erro}")

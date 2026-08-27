@@ -24,6 +24,16 @@ Este arquivo é a fonte de verdade do projeto. Leia antes de escrever código.
   igual, sem fim. A única mensagem padronizada permitida é a de falha de
   código (erro de rede, de autenticação, JSON inválido) — aí o problema não
   partiu da fala do perito e não há motivo do modelo para explicar.
+- **Leitura de documento ≠ interpretação de prova.** Transcrever um ofício com
+  visão do modelo é leitura de papel, e é permitido. Ler a FOTO DO MATERIAL para
+  descrever, pesar ou contar é inferência sobre prova física, e continua
+  proibido. A distinção é o tipo de objeto, não a tecnologia.
+- **Transcrição de digitalização é rascunho, nunca fato.** Medido neste projeto:
+  três leituras da mesma requisição real devolveram três redações diferentes
+  para o mesmo quesito, e nenhuma batia com o papel. O caminho da imagem roda
+  várias vezes e só propõe o que saiu igual em todas; o resto vira leitura
+  incerta. Mesmo o que passa no consenso é PROPOSTA — alucinação estável existe,
+  e foi observada. Quem confirma é o perito, com o documento na mão.
 - **Humano no controle.** A saída é uma MINUTA. Sempre há tela de confirmação
   antes de gerar o documento, onde o perito revisa e edita. A responsabilidade
   legal é do perito. A ferramenta é assistente de redação, não perito
@@ -64,7 +74,8 @@ formato de número (vírgula, ponto, por extenso) nunca são motivo de recusa.
   1. **extração estruturada** do que o perito disse (saída JSON estrita);
   2. **geração do texto narrativo final** a partir dos dados já confirmados.
 - **Fluxo de telas:**
-  `seleção do tipo de exame` → `formulário admin (transcrição)` →
+  `seleção do tipo de exame` → `requisição (anexo + leitura)` →
+  `formulário admin (transcrição)` →
   `conversa (slot-filling)` → `verificação de pendências` →
   `confirmação (humano no controle)` → `geração + export .docx`
 - **Registro de exames:** os tipos de exame vivem em `config/exams.py`. O select
@@ -83,6 +94,8 @@ config/
   exams.py                 # REGISTRO de exames (fonte da UI)
 core/
   state.py                 # session_state: init, navegação, helpers
+  requisicao.py            # leitura do ofício: PDF, OCR por visão, consenso
+  quesitos.py              # perguntas da autoridade + padrão de resposta
   numeros.py               # extenso de números, massas e datas
   derivados.py             # camada 3: descrições, conclusão, quesitos
   documento.py             # montagem do .docx
@@ -92,6 +105,7 @@ core/
   conversa.py              # controlador do slot-filling (sem Streamlit)
 screens/
   selecao.py               # tela 1 — seleção do tipo de exame
+  requisicao.py            # tela 2 — anexo e leitura da requisição
   admin.py                 # tela 2 — formulário administrativo
   conversa.py              # tela 3 — slot-filling (chat + painel de estado)
   confirmacao.py           # tela 4 — revisão editável + imagens + derivados
@@ -101,6 +115,7 @@ templates/
 referencia/                # laudos reais; fora do git (dados pessoais)
 verificacao/
   fluxo.py                 # controlador, com extrator falso (sem API)
+  requisicao.py            # consenso e descarte de leitura (sem API)
   confirmacao.py           # tela de revisão pela UI real (sem API)
   documento.py             # .docx conferido contra o laudo real (sem API)
   fidelidade.py            # tenta induzir invenção, com API real
@@ -130,6 +145,25 @@ superfície de alucinação. O LLM não "escreve o laudo inteiro": ele preenche 
 camada 1, deriva a camada 3 (para confirmação humana), e a camada 2 é template.
 
 ---
+
+## O processo legal que a ferramenta tem que respeitar
+
+Apreensão → **requisição da autoridade policial** → recebimento no Instituto →
+exame → laudo que responde aos quesitos. Os dois primeiros elos são documento
+de terceiro, não do perito:
+
+- A requisição é o que **autoriza** o exame, e o laudo a cita no preâmbulo
+  (órgão, número do ofício, data).
+- **Os quesitos são da autoridade, não do Instituto.** Eles são CAMADA 1 —
+  transcrição — e mudam a cada requisição. O que é boilerplate é o *padrão de
+  resposta* de cada pergunta conhecida (`RESPOSTAS_CONHECIDAS`). Pergunta fora
+  desse conjunto é respondida pelo perito, nunca por semelhança com outra.
+- A data que abre o preâmbulo é a do **carimbo de recebimento**, não a data em
+  que o exame foi bancado.
+- **A descrição do material na requisição é suspeita da autoridade**
+  ("aparentemente maconha", "semelhante a pasta base") e NÃO pode tocar a
+  camada 1. O que vai ao laudo é o que o perito mediu. A extração da requisição
+  é instruída a ignorar essa parte do documento.
 
 ## Primeiro (e único, no v1) exame: Identificação de Substância
 
@@ -176,8 +210,8 @@ texto boilerplate. NÃO inventar estrutura — extrair dos laudos reais.
   `session_state`.
 - Streamlit re-executa o script a cada interação: gerenciar estado com cuidado
   via `session_state`, sem presumir execução linear.
-- Dependências limitadas a: `streamlit`, `openai`, `python-dotenv`,
-  `python-docx`. Não adicionar outras sem necessidade real.
+- Dependências: `streamlit`, `openai`, `python-dotenv`, `python-docx` e `pypdf`
+  (leitura da requisição em PDF). Não adicionar outras sem necessidade real.
 - Python 3.12 (venv em `.venv`).
 
 ---
@@ -250,6 +284,7 @@ cp .env.example .env   # preencher OPENAI_API_KEY
 
 ```bash
 .venv/bin/python -m verificacao.fluxo        # sem API, determinístico
+.venv/bin/python -m verificacao.requisicao   # sem API, consenso e descarte
 .venv/bin/python -m verificacao.confirmacao  # sem API, pela UI real
 .venv/bin/python -m verificacao.documento    # sem API, contra o laudo real
 .venv/bin/python -m verificacao.fidelidade   # com API real, custa chamadas

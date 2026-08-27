@@ -19,6 +19,7 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Cm, Pt, RGBColor
 
 from core import derivados as camada3
+from core import quesitos as camada1_quesitos
 from core import numeros
 from templates.identificacao_substancia import boilerplate
 
@@ -175,7 +176,13 @@ def _exames(documento: Document, colecoes: dict, derivados: dict) -> None:
         _paragrafo(documento, secao["texto"])
 
 
-def _conclusao_e_quesitos(documento: Document, colecoes: dict, derivados: dict) -> None:
+def _conclusao_e_quesitos(
+    documento: Document,
+    colecoes: dict,
+    derivados: dict,
+    perguntas: list[str],
+    respostas: dict[str, str],
+) -> None:
     _titulo_secao(documento, "5. CONCLUSÃO")
     resultados = derivados.get(camada3.CHAVE_CONCLUSAO) or camada3.conclusao(colecoes)[0]
     _paragrafo(documento, boilerplate.CONCLUSAO.format(resultados=resultados.rstrip(".")))
@@ -183,17 +190,13 @@ def _conclusao_e_quesitos(documento: Document, colecoes: dict, derivados: dict) 
     documento.add_paragraph()
     _paragrafo(documento, boilerplate.ABERTURA_QUESITOS)
 
-    preenchimento = {
-        "natureza": derivados.get(camada3.CHAVE_NATUREZA) or camada3.natureza(colecoes),
-        "proscricao": derivados.get(camada3.CHAVE_PROSCRICAO) or camada3.proscricao(colecoes),
-    }
-    for quesito in boilerplate.QUESITOS:
+    for quesito in camada1_quesitos.montar(perguntas, colecoes, derivados, respostas):
         _paragrafo(
             documento,
-            f"{quesito['numero']} – {quesito['pergunta']}",
+            f"{quesito.numero} – {quesito.pergunta}",
             espaco_antes=6,
         )
-        _paragrafo(documento, "R – " + quesito["resposta"].format(**preenchimento))
+        _paragrafo(documento, "R – " + quesito.resposta)
 
 
 def _fecho(documento: Document, admin: dict) -> None:
@@ -228,6 +231,8 @@ def montar(
     colecoes: dict[str, list[dict]],
     derivados: dict,
     imagens: list[dict] | None = None,
+    quesitos: list[str] | None = None,
+    respostas_quesitos: dict[str, str] | None = None,
 ) -> Document:
     documento = Document()
     _configura(documento)
@@ -236,7 +241,13 @@ def montar(
     _historico(documento, admin)
     _material(documento, colecoes, derivados, imagens or [])
     _exames(documento, colecoes, derivados)
-    _conclusao_e_quesitos(documento, colecoes, derivados)
+    _conclusao_e_quesitos(
+        documento,
+        colecoes,
+        derivados,
+        quesitos if quesitos is not None else list(boilerplate.QUESITOS_DA_REQUISICAO_MODELO),
+        respostas_quesitos or {},
+    )
     _fecho(documento, admin)
     return documento
 
@@ -251,9 +262,20 @@ def pendencias_do_texto(
     admin: dict,
     colecoes: dict[str, list[dict]],
     derivados: dict,
+    quesitos: list[str] | None = None,
+    respostas_quesitos: dict[str, str] | None = None,
 ) -> list[str]:
     """Marcadores [PENDENTE: ...] que apareceriam no documento."""
+    perguntas = (
+        quesitos if quesitos is not None else list(boilerplate.QUESITOS_DA_REQUISICAO_MODELO)
+    )
     pedacos = [
+        *(
+            q.resposta
+            for q in camada1_quesitos.montar(
+                perguntas, colecoes, derivados, respostas_quesitos or {}
+            )
+        ),
         derivados.get(camada3.CHAVE_NATUREZA) or camada3.natureza(colecoes),
         derivados.get(camada3.CHAVE_PROSCRICAO) or camada3.proscricao(colecoes),
         *(s["texto"] for s in camada3.resultados_obtidos(colecoes)),

@@ -14,18 +14,20 @@ from core.state import (
     TELA_CONFIRMACAO,
     TELA_CONVERSA,
     TELA_DOCUMENTO,
+    TELA_REQUISICAO,
     TELA_SELECAO,
     indice_da_tela,
     init_state,
     ir_para,
     limpar_laudo,
 )
-from screens import admin, confirmacao, conversa, documento, selecao
+from screens import admin, confirmacao, conversa, documento, requisicao, selecao
 
 load_dotenv()
 
 TELAS = {
     TELA_SELECAO: selecao.render,
+    TELA_REQUISICAO: requisicao.render,
     TELA_ADMIN: admin.render,
     TELA_CONVERSA: conversa.render,
     TELA_CONFIRMACAO: confirmacao.render,

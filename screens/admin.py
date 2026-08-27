@@ -12,7 +12,7 @@ from datetime import date
 import streamlit as st
 
 from config.schema import CampoAdmin, Exame
-from core.state import TELA_CONVERSA, TELA_SELECAO, exame_atual, ir_para
+from core.state import TELA_CONVERSA, TELA_REQUISICAO, TELA_SELECAO, exame_atual, ir_para
 
 
 def _renderiza_campo(campo: CampoAdmin, valores: dict) -> object:
@@ -69,7 +69,7 @@ def render() -> None:
 
     if voltar:
         st.session_state["admin"] = {k: _normaliza(v) for k, v in coletado.items()}
-        ir_para(TELA_SELECAO)
+        ir_para(TELA_REQUISICAO)
         st.rerun()
 
     if avancar:

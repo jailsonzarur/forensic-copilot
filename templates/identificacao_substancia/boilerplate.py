@@ -65,42 +65,38 @@ ABERTURA_QUESITOS = (
     "da maneira como segue:"
 )
 
-#: Quesitos e o padrão de resposta. ``{...}`` é preenchido da camada 1/3;
-#: resposta sem marcador é fixa.
-QUESITOS: tuple[dict[str, str], ...] = (
-    {
-        "numero": "01",
-        "pergunta": "Qual a natureza do material apresentado a exame?",
-        "resposta": "{natureza}",
-    },
-    {
-        "numero": "02",
-        "pergunta": "Quais suas características e peso exato?",
-        "resposta": "Vide tópico IDENTIFICAÇÃO E DESCRIÇÃO DO MATERIAL.",
-    },
-    {
-        "numero": "03",
-        "pergunta": (
-            "O material apresentado para exame possui propriedade psicotrópica "
-            "ou que determine dependência física e/ou psíquica?"
-        ),
-        "resposta": "Sim. {proscricao}",
-    },
-    {
-        "numero": "04",
-        "pergunta": "Caso afirmativo, causa dependência física ou psíquica?",
-        "resposta": "Sim.",
-    },
-    {
-        "numero": "05",
-        "pergunta": "São substâncias venenosas?",
-        "resposta": "Não se aplica.",
-    },
-    {
-        "numero": "06",
-        "pergunta": "Há outros dados julgados úteis?",
-        "resposta": "Sem elementos.",
-    },
+#: Respostas já transcritas de laudo real, indexadas pela pergunta normalizada.
+#:
+#: Os quesitos NÃO são texto institucional: são a pergunta que o delegado
+#: formulou na requisição, e mudam a cada caso. O que é transcrito aqui é o
+#: PADRÃO DE RESPOSTA que o Instituto dá a cada pergunta conhecida. Quesito que
+#: não estiver aqui é respondido pelo perito — vira PENDÊNCIA, nunca uma
+#: resposta escolhida por semelhança.
+RESPOSTAS_CONHECIDAS: dict[str, str] = {
+    "qual a natureza do material apresentado a exame?": "{natureza}",
+    "quais suas caracteristicas e peso exato?": (
+        "Vide tópico IDENTIFICAÇÃO E DESCRIÇÃO DO MATERIAL."
+    ),
+    "o material apresentado para exame possui propriedade psicotropica ou que "
+    "determine dependencia fisica e/ou psiquica?": "Sim. {proscricao}",
+    "o material apresentado para exame possui propriedade psicotropica ou que "
+    "determine dependencia fisica ou psiquica?": "Sim. {proscricao}",
+    "caso afirmativo, causa dependencia fisica ou psiquica?": "Sim.",
+    "sao substancias venenosas?": "Não se aplica.",
+    "ha outros dados julgados uteis?": "Sem elementos.",
+}
+
+#: Conjunto que apareceu na requisição do laudo SB 1252/2019 (Ofício 152/2019-DRO).
+#: Serve como ponto de partida quando não há requisição anexada — o perito
+#: confere contra o papel dele antes de seguir.
+QUESITOS_DA_REQUISICAO_MODELO = (
+    "Qual a natureza do material apresentado a exame?",
+    "Quais suas características e peso exato?",
+    "O material apresentado para exame possui propriedade psicotrópica ou que "
+    "determine dependência física e/ou psíquica?",
+    "Caso afirmativo, causa dependência física ou psíquica?",
+    "São substâncias venenosas?",
+    "Há outros dados julgados úteis?",
 )
 
 REFERENCIAS = (
@@ -216,8 +212,8 @@ def blocos_pendentes() -> list[str]:
         pendencias.append("descrição técnica dos ensaios")
     if not PROSCRICAO_POR_SUBSTANCIA:
         pendencias.append("texto legal de proscrição")
-    if not QUESITOS:
-        pendencias.append("quesitos e padrão de resposta")
+    if not RESPOSTAS_CONHECIDAS:
+        pendencias.append("padrão de resposta dos quesitos")
     if not REFERENCIAS:
         pendencias.append("referências bibliográficas")
     return pendencias

@@ -27,43 +27,54 @@ _ADMIN_IDENTIFICACAO = (
     ),
     CampoAdmin(
         chave="numero_demanda",
+        da_requisicao=True,
         label="Número da demanda",
         ajuda="Ex.: 00024529-28.",
     ),
     CampoAdmin(
         chave="data_exame",
-        label="Data do exame",
+        da_requisicao=True,
+        label="Data de recebimento da solicitação",
         tipo="data",
-        ajuda="Data em que a solicitação foi recebida no Instituto.",
+        ajuda=(
+            "A data do carimbo de recebimento no Instituto — é ela que abre o "
+            "preâmbulo do laudo, não a data em que o exame foi bancado."
+        ),
     ),
     CampoAdmin(
         chave="orgao_solicitante",
+        da_requisicao=True,
         label="Órgão solicitante",
         ajuda="Delegacia ou unidade que requisitou o exame.",
     ),
     CampoAdmin(
         chave="documento_solicitacao",
+        da_requisicao=True,
         label="Documento de solicitação",
         ajuda="Ofício, requisição ou memorando que originou o exame.",
     ),
     CampoAdmin(
         chave="data_documento",
+        da_requisicao=True,
         label="Data do documento de solicitação",
         tipo="data",
         ajuda="A data do ofício, que o laudo cita separada da data do exame.",
     ),
     CampoAdmin(
         chave="tipo_procedimento",
+        da_requisicao=True,
         label="Tipo de procedimento",
         tipo="select",
         opcoes=("IP", "APF", "BO"),
     ),
     CampoAdmin(
         chave="numero_procedimento",
+        da_requisicao=True,
         label="Número do procedimento",
     ),
     CampoAdmin(
         chave="envolvido",
+        da_requisicao=True,
         label="Envolvido",
     ),
     CampoAdmin(

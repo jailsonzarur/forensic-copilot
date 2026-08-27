@@ -23,6 +23,10 @@ class CampoAdmin:
     ajuda: str = ""
     placeholder: str = ""
     opcoes: tuple[str, ...] = ()
+    #: True quando o campo costuma constar da requisição e pode ser transcrito
+    #: dela. Campo que só o Instituto atribui (número do laudo, perito
+    #: designado) fica False: procurá-lo na requisição só produziria invenção.
+    da_requisicao: bool = False
 
 
 @dataclass(frozen=True)

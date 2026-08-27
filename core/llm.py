@@ -7,6 +7,7 @@ modelo é um dicionário — quem decide o que fazer com as chaves é
 
 from __future__ import annotations
 
+import base64
 import json
 import os
 import re
@@ -64,6 +65,43 @@ def parse_json_seguro(texto: str) -> dict:
     if not isinstance(dados, dict):
         raise ErroLLM("O modelo devolveu JSON que não é um objeto.")
     return dados
+
+
+def chamar_visao(sistema: str, instrucao: str, imagens: list[bytes]) -> str:
+    """Lê imagens de DOCUMENTO e devolve a transcrição em texto.
+
+    Isto é leitura de papel, não interpretação de prova física. A foto do
+    material periciado continua sendo anexo documental e nunca passa por aqui:
+    peso, contagem e cor são medição do perito.
+    """
+    if not imagens:
+        raise ErroLLM("Nenhuma imagem para transcrever.")
+
+    conteudo: list[dict] = [{"type": "text", "text": instrucao}]
+    for dados in imagens:
+        codificada = base64.b64encode(dados).decode("ascii")
+        conteudo.append(
+            {
+                "type": "image_url",
+                "image_url": {"url": f"data:image/png;base64,{codificada}"},
+            }
+        )
+
+    try:
+        resposta = cliente().chat.completions.create(
+            model=modelo(),
+            temperature=0.0,
+            messages=[
+                {"role": "system", "content": sistema},
+                {"role": "user", "content": conteudo},
+            ],
+        )
+    except ErroLLM:
+        raise
+    except Exception as erro:
+        raise ErroLLM(f"Falha ao ler o documento: {erro}") from erro
+
+    return resposta.choices[0].message.content or ""
 
 
 def chamar_json(sistema: str, usuario: str, temperatura: float = 0.0) -> tuple[dict, str]:
