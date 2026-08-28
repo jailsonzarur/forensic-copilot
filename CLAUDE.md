@@ -380,6 +380,10 @@ modelo. Rodar sempre que mexer no prompt de extração ou trocar de modelo.
 
 ### Pontos em aberto do schema
 
+**Em aberto, dependendo do perito:** a seção 6 é bibliografia fixa do Setor de
+Química Forense ou varia com a substância? O bloco de assinatura
+("DOCUMENTO ASSINADO DIGITALMENTE", "PERITO CRIMINAL") tem variação real?
+
 Respondidos pelo perito em 2026-08-27: massa bruta é registrada (slots
 opcionais); "inconclusivo" é resultado válido; embalagem dentro de embalagem
 cabe numa frase só no tipo de acondicionamento; grama com decimal segue a
@@ -417,11 +421,21 @@ Auditoria do que o `.docx` imprime sem olhar para o caso, feita em 2026-08-28:
 | `SUBTITULO`, "Setor de Química Forense" no preâmbulo | presos ao TIPO de exame, não ao caso. Passam ao registro quando entrar um segundo tipo de laudo |
 | `ASSINATURA` ("DOCUMENTO ASSINADO DIGITALMENTE"), `CARGO` | fixos; laudo assinado à caneta, ou outra carreira, diriam outra coisa |
 
-**Referências:** as gerais valem sempre (o título de Moffat as define assim);
-as da ONU se prendem à substância pelo próprio título, e só entram quando a
-substância aparece no laudo. Citar o manual de cannabis num laudo sem cannabis
-apontaria método que não foi usado. Substância sem referência transcrita vira
-pendência, e a biblioteca aprende a do perito (`tipo="referencia"`).
+**Referências:** transcritas do laudo real — são a base técnica do EXAME, não
+da ferramenta, que não tem nem deve ter bibliografia própria. As gerais valem
+sempre (o título de Moffat as define assim); as da ONU se prendem à substância
+pelo próprio título, e só entram quando a substância aparece. Substância sem
+referência transcrita vira pendência, e a biblioteca aprende a do perito
+(`tipo="referencia"`).
+
+⚠️ **Isto é inferência, não transcrição.** O laudo de referência tinha as duas
+substâncias e listou as três obras: com um laudo só, é indistinguível se a
+seção 6 é bibliografia FIXA do Setor ou se varia com a substância. Adotei a
+segunda leitura porque o erro dela é mais brando — omitir uma referência é
+incompletude que o perito percebe; citar o manual de cannabis num laudo sem
+cannabis é afirmação falsa sobre a base do exame, e passa despercebida.
+**Pendente de confirmação com o perito.** Se for bibliografia fixa, reverter é
+voltar `derivados.referencias()` a devolver todas.
 
 ## O que a ferramenta NÃO julga
 
