@@ -23,6 +23,12 @@ class Quesito:
     padrao_conhecido: bool = False
 
 
+#: Marca que o perito aceitou o padrão do Instituto para aquele quesito. Fica
+#: como marca, não como texto: assim a resposta continua acompanhando os dados
+#: se ele corrigir uma substância depois.
+PADRAO_ACEITO = "__padrão__"
+
+
 def _chave(pergunta: str) -> str:
     return boilerplate.normaliza(pergunta).strip()
 
@@ -67,15 +73,23 @@ def montar(
     prontos: list[Quesito] = []
     for quesito in numerar(perguntas):
         resposta, conhecido = responder(quesito.pergunta, colecoes, derivados)
-        propria = escritas.get(quesito.numero, "")
-        if propria.strip():
+        propria = str(escritas.get(quesito.numero, "")).strip()
+        quesito.padrao_conhecido = conhecido
+        if propria and propria != PADRAO_ACEITO:
             quesito.resposta = propria
-            quesito.padrao_conhecido = conhecido
         else:
             quesito.resposta = resposta
-            quesito.padrao_conhecido = conhecido
         prontos.append(quesito)
     return prontos
+
+
+def respondido(numero: str, respostas: dict[str, str]) -> bool:
+    return bool(str(respostas.get(numero, "")).strip())
+
+
+def pendentes(perguntas: list[str], respostas: dict[str, str]) -> list[Quesito]:
+    """Quesitos que o perito ainda não respondeu nem confirmou."""
+    return [q for q in numerar(perguntas) if not respondido(q.numero, respostas)]
 
 
 def sem_padrao(perguntas: list[str]) -> list[str]:

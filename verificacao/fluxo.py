@@ -213,9 +213,8 @@ def main() -> int:
         fala,
     )
     checa(
-        not colecoes["exames_realizados"][0].get("item_material"),
-        "referência entre coleções não é coletada na conversa: quem aponta é o "
-        "perito na confirmação",
+        colecoes["exames_realizados"][0].get("item_material") == "Material 1",
+        "campo obrigatório do exame tem que ser capturado na conversa",
     )
     checa(
         not colecoes["exames_realizados"][0].get("resultado"),
@@ -243,8 +242,9 @@ def main() -> int:
     # porque sem ele não há como redigir o parágrafo da seção 4.
     fala = passo("sim", {}, fala)
     fala = passo(
-        "fiz o Ensaio de Scott Modificado",
-        {"exames_realizados": [{"indice": 2, "campos": {"nome_teste": "Ensaio de Scott Modificado"}}]},
+        "fiz o Ensaio de Scott Modificado no material 2",
+        {"exames_realizados": [{"indice": 2, "campos": {
+            "nome_teste": "Ensaio de Scott Modificado", "item_material": "2"}}]},
         fala,
     )
     fala = passo(
@@ -263,15 +263,15 @@ def main() -> int:
     )
     fala = passo("não", {}, fala)
 
-    checa(
-        pendencias.completo(exame, colecoes, fechadas, so_conversa=True),
-        "a parte da conversa devia estar completa ao fim",
-    )
     faltam = [p.rotulo() for p in pendencias.todas(exame, colecoes)]
-    print("\npendente para a confirmação:", faltam)
+    print("\nainda pendente:", faltam or "(nada)")
     checa(
-        all("Material examinado" in r for r in faltam),
-        "só a referência de material devia sobrar para a confirmação",
+        not faltam,
+        "nenhum campo obrigatório pode sobrar ao fim da conversa",
+    )
+    checa(
+        pendencias.completo(exame, colecoes, fechadas),
+        "a camada 1 devia estar completa ao fim",
     )
     checa(fala.tipo == conversa.COMPLETO, "fala final devia ser a de conclusão")
 

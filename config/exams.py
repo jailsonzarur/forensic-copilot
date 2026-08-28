@@ -237,12 +237,12 @@ _EXAMES_REALIZADOS = Colecao(
         Slot(
             chave="item_material",
             label="Material examinado",
-            na_conversa=False,
             referencia_colecao="materiais",
             pergunta="Esse exame se aplica a qual material?",
             instrucao_extracao=(
-                "Identificação do item de material ao qual o exame se aplica, "
-                "referenciando os materiais já descritos pelo perito."
+                "Número do material ao qual o exame se aplica, SOMENTE quando o "
+                "perito disser qual é. Havendo um único material registrado, isso "
+                "não autoriza preencher: sem ele dizer, omita a chave."
             ),
         ),
         Slot(

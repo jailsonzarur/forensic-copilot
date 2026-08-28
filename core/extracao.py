@@ -222,7 +222,7 @@ def descreve_schema(exame: Exame) -> str:
         linhas.append(f'Coleção "{colecao.chave}" ({colecao.label_plural}):')
         for slot in colecao.slots:
             if not slot.na_conversa:
-                continue  # referência entre coleções: quem aponta é o perito
+                continue  # preenchido só na confirmação
             partes = [f'  - "{slot.chave}" ({slot.label})']
             if slot.instrucao_extracao:
                 partes.append(slot.instrucao_extracao)

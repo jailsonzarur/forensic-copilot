@@ -16,6 +16,7 @@ from typing import Callable
 
 from config.schema import Exame
 from core import pendencias
+from core import quesitos as camada1_quesitos
 from core.extracao import (
     Alteracao,
     Recusa,
@@ -29,6 +30,7 @@ from core.llm import ErroLLM
 
 PERGUNTA = "pergunta"
 CONFIRMAR_MAIS = "confirmar_mais"
+QUESITO = "quesito"
 COMPLETO = "completo"
 
 #: Frases inteiras que encerram uma coleção ("não tem mais material").
@@ -84,6 +86,17 @@ def eh_negativa(texto: str) -> bool:
     return tokens[0] in _TOKENS_NEGATIVOS
 
 
+_CONFIRMACOES = {
+    "confirmo", "confirmado", "confirma", "ok", "certo", "isso", "esse mesmo",
+    "pode usar", "usa esse", "de acordo", "concordo", "sim", "padrao", "o padrao",
+}
+
+
+def _confirma(texto: str) -> bool:
+    """O perito aceitou a resposta padrão em vez de escrever a dele."""
+    return _chave(texto) in _CONFIRMACOES
+
+
 def eh_afirmativa(texto: str) -> bool:
     """O perito disse que há mais um item, sem descrevê-lo ainda."""
     if _chave(texto) in _AFIRMATIVAS:
@@ -105,6 +118,12 @@ class Fala:
     colecao_chave: str = ""
     slot_chave: str = ""
     indice: int = 0
+    quesito_numero: str = ""
+    quesito_pergunta: str = ""
+    #: Rótulo do item e campos que ainda faltam nele. Servem para o assistente
+    #: formular uma pergunta que cubra mais de um campo de uma vez.
+    rotulo_item: str = ""
+    campos_faltando: tuple[str, ...] = ()
 
     def alvo(self) -> str:
         """Endereço do slot perguntado, para o extrator saber onde cai a resposta."""
@@ -124,6 +143,7 @@ class Resultado:
     bruto: str = ""
     chamou_modelo: bool = False
     abriu_item: bool = False
+    quesito_respondido: str = ""
 
 
 def _itens_referenciaveis(
@@ -143,7 +163,46 @@ def _itens_referenciaveis(
     return "\n\nJá registrados: " + "; ".join(rotulos) + "."
 
 
-def proxima_fala(exame: Exame, colecoes: dict[str, list[dict]], fechadas: list[str]) -> Fala:
+def _fala_de_quesito(perguntas: list[str], respostas: dict[str, str]) -> Fala | None:
+    """Próximo quesito da requisição a ser perguntado ao perito.
+
+    O laudo responde ao que a autoridade perguntou, e quem responde é o perito.
+    Quando existe padrão transcrito de laudo real, ele é oferecido para o perito
+    confirmar — oferecer não é preencher.
+    """
+    faltando = camada1_quesitos.pendentes(perguntas, respostas)
+    if not faltando:
+        return None
+
+    quesito = faltando[0]
+    modelo = camada1_quesitos.padrao_de_resposta(quesito.pergunta)
+    texto = f"Quesito {quesito.numero} da requisição — {quesito.pergunta}"
+
+    if modelo and "{" not in modelo:
+        texto += (
+            f"\n\nA resposta padrão do Instituto para este quesito é: «{modelo}». "
+            "Responda «confirmo» para usá-la, ou escreva a sua."
+        )
+    elif modelo:
+        texto += (
+            "\n\nEste quesito tem resposta padrão, montada a partir do que você já "
+            "registrou. Responda «confirmo» para usá-la, ou escreva a sua."
+        )
+    else:
+        texto += (
+            "\n\nNão há resposta padrão transcrita para este quesito. Responda com "
+            "as suas palavras."
+        )
+    return Fala(QUESITO, texto, quesito_numero=quesito.numero, quesito_pergunta=quesito.pergunta)
+
+
+def proxima_fala(
+    exame: Exame,
+    colecoes: dict[str, list[dict]],
+    fechadas: list[str],
+    quesitos: list[str] | None = None,
+    respostas: dict[str, str] | None = None,
+) -> Fala:
     """Uma coleção por vez, na ordem do registro.
 
     Só depois de a coleção estar completa E o perito dizer que não há mais itens
@@ -160,27 +219,48 @@ def proxima_fala(exame: Exame, colecoes: dict[str, list[dict]], fechadas: list[s
             texto = pendente.pergunta(total) + _itens_referenciaveis(
                 exame, colecoes, pendente.slot
             )
+            # Campos que faltam NESTE item: a pergunta pode cobrir vários.
+            no_item = [
+                p.slot.label for p in encontradas if p.indice == pendente.indice
+            ]
+            rotulo = (
+                f"{colecao.label_singular} {pendente.indice}"
+                if total > 1 or pendente.indice > 1
+                else colecao.label_singular
+            )
             return Fala(
                 PERGUNTA,
                 texto,
                 colecao.chave,
                 pendente.slot.chave,
                 pendente.indice,
+                rotulo_item=rotulo,
+                campos_faltando=tuple(no_item),
             )
 
         if colecao.chave not in fechadas:
             pergunta = colecao.pergunta_mais_um or f"Há mais algum {colecao.label_singular.lower()}?"
             return Fala(CONFIRMAR_MAIS, pergunta, colecao.chave)
 
+    fala = _fala_de_quesito(quesitos or [], respostas if respostas is not None else {})
+    if fala is not None:
+        return fala
+
     return Fala(
         COMPLETO,
-        "Todos os campos obrigatórios foram informados. Revise o painel ao lado e "
-        "avance para a confirmação.",
+        "Tudo registrado, inclusive os quesitos da requisição. Revise o painel ao "
+        "lado e avance para a confirmação.",
     )
 
 
-def saudacao(exame: Exame, colecoes: dict[str, list[dict]], fechadas: list[str]) -> str:
-    fala = proxima_fala(exame, colecoes, fechadas)
+def saudacao(
+    exame: Exame,
+    colecoes: dict[str, list[dict]],
+    fechadas: list[str],
+    quesitos: list[str] | None = None,
+    respostas: dict[str, str] | None = None,
+) -> str:
+    fala = proxima_fala(exame, colecoes, fechadas, quesitos, respostas)
     return (
         "Vamos registrar o que você examinou. Pode falar como você fala — eu só "
         "anoto o que você disser, e pergunto o que faltar.\n\n" + fala.texto
@@ -199,11 +279,31 @@ def processar(
     mensagem: str,
     fala_anterior: Fala | None = None,
     extrator: Callable = extrair,
+    quesitos: list[str] | None = None,
+    respostas: dict[str, str] | None = None,
 ) -> Resultado:
     """Aplica uma mensagem do perito ao estado e decide a próxima fala.
 
     ``colecoes`` e ``fechadas`` são alterados no lugar.
     """
+    quesitos = quesitos or []
+    if respostas is None:
+        respostas = {}
+
+    # Resposta a quesito é a palavra do perito: entra como ele escreveu, sem
+    # passar por leitura automática. "Confirmo" registra o padrão do Instituto.
+    if fala_anterior is not None and fala_anterior.tipo == QUESITO:
+        numero = fala_anterior.quesito_numero
+        modelo = camada1_quesitos.padrao_de_resposta(fala_anterior.quesito_pergunta)
+        if modelo and _confirma(mensagem):
+            respostas[numero] = camada1_quesitos.PADRAO_ACEITO
+        else:
+            respostas[numero] = mensagem.strip()
+        return Resultado(
+            fala=proxima_fala(exame, colecoes, fechadas, quesitos, respostas),
+            quesito_respondido=numero,
+        )
+
     aguardando = fala_anterior.colecao_chave if (
         fala_anterior is not None and fala_anterior.tipo == CONFIRMAR_MAIS
     ) else ""
@@ -212,7 +312,7 @@ def processar(
     if aguardando and eh_negativa(mensagem):
         if aguardando not in fechadas:
             fechadas.append(aguardando)
-        fala = proxima_fala(exame, colecoes, fechadas)
+        fala = proxima_fala(exame, colecoes, fechadas, quesitos, respostas)
         return Resultado(fala=fala)
 
     pergunta_pendente = fala_anterior.texto if fala_anterior else ""
@@ -241,10 +341,10 @@ def processar(
     if not alteracoes and not recusas and not abriu_item:
         # Com tudo preenchido, um "certo" do perito é assentimento, não dado
         # que faltou entender: não há por que devolver recusa.
-        if proxima_fala(exame, colecoes, fechadas).tipo != COMPLETO:
+        if proxima_fala(exame, colecoes, fechadas, quesitos, respostas).tipo != COMPLETO:
             recusas = [Recusa(SEM_EXTRACAO)]
 
-    fala = proxima_fala(exame, colecoes, fechadas)
+    fala = proxima_fala(exame, colecoes, fechadas, quesitos, respostas)
     return Resultado(
         fala=fala,
         alteracoes=alteracoes,
@@ -271,6 +371,9 @@ def resposta_do_assistente(resultado: Resultado) -> str:
             f"ferramenta: {resultado.erro}"
         )
         return "\n\n".join(partes)
+
+    if resultado.quesito_respondido:
+        partes.append(f"Quesito {resultado.quesito_respondido} respondido.")
 
     if resultado.alteracoes:
         partes.append(_texto_alteracoes(resultado.alteracoes))

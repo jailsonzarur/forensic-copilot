@@ -11,6 +11,8 @@ import streamlit as st
 from config.schema import Colecao, Exame
 from core import conversa as controlador
 from core import pendencias
+from core import pergunta as formulador
+from core import quesitos as camada1_quesitos
 from core.llm import chave_configurada, modelo
 from core.state import (
     TELA_ADMIN,
@@ -21,14 +23,31 @@ from core.state import (
 )
 
 
+def _fala_para_o_perito(fala: controlador.Fala) -> str:
+    """Texto exibido. Só a forma da pergunta passa por leitura automática; o
+    que falta continua sendo decidido pela varredura de pendências."""
+    if fala.tipo != controlador.PERGUNTA or len(fala.campos_faltando) < 2:
+        return fala.texto
+    return formulador.formular(fala.rotulo_item, list(fala.campos_faltando), fala.texto)
+
+
 def _inicia_conversa(exame: Exame) -> None:
     if st.session_state["mensagens"]:
         return
     colecoes = st.session_state["colecoes"]
     fechadas = st.session_state["colecoes_fechadas"]
-    st.session_state["fala_atual"] = controlador.proxima_fala(exame, colecoes, fechadas)
+    quesitos = st.session_state["quesitos"]
+    respostas = st.session_state["respostas_quesitos"]
+    st.session_state["fala_atual"] = controlador.proxima_fala(
+        exame, colecoes, fechadas, quesitos, respostas
+    )
+    fala = st.session_state["fala_atual"]
+    abertura = (
+        "Vamos registrar o que você examinou. Pode falar como você fala — eu só "
+        "anoto o que você disser, e pergunto o que faltar."
+    )
     st.session_state["mensagens"].append(
-        {"role": "assistant", "content": controlador.saudacao(exame, colecoes, fechadas)}
+        {"role": "assistant", "content": f"{abertura}\n\n{_fala_para_o_perito(fala)}"}
     )
 
 
@@ -40,15 +59,17 @@ def _envia(exame: Exame, texto: str) -> None:
         st.session_state["colecoes_fechadas"],
         texto,
         st.session_state.get("fala_atual"),
+        quesitos=st.session_state["quesitos"],
+        respostas=st.session_state["respostas_quesitos"],
     )
     st.session_state["fala_atual"] = resultado.fala
     st.session_state["ultima_extracao"] = resultado.bruto
-    st.session_state["mensagens"].append(
-        {
-            "role": "assistant",
-            "content": controlador.resposta_do_assistente(resultado),
-        }
-    )
+    partes = controlador.resposta_do_assistente(resultado)
+    # A fala determinística já está no fim do texto; troca-se só a pergunta.
+    natural = _fala_para_o_perito(resultado.fala)
+    if natural != resultado.fala.texto:
+        partes = partes.replace(resultado.fala.texto, natural)
+    st.session_state["mensagens"].append({"role": "assistant", "content": partes})
 
 
 def _tabela_colecao(colecao: Colecao, itens: list[dict]) -> None:
@@ -96,12 +117,24 @@ def _painel_estado(exame: Exame) -> None:
             ):
                 colecoes.setdefault(colecao.chave, []).append({})
                 fechadas.remove(colecao.chave)
-                fala = controlador.proxima_fala(exame, colecoes, fechadas)
+                fala = controlador.proxima_fala(
+                    exame, colecoes, fechadas, st.session_state["quesitos"],
+                    st.session_state["respostas_quesitos"],
+                )
                 st.session_state["fala_atual"] = fala
                 st.session_state["mensagens"].append(
                     {"role": "assistant", "content": fala.texto}
                 )
                 st.rerun()
+
+    perguntas = st.session_state["quesitos"]
+    if perguntas:
+        respondidos = sum(
+            1 for q in camada1_quesitos.numerar(perguntas)
+            if camada1_quesitos.respondido(q.numero, st.session_state["respostas_quesitos"])
+        )
+        st.subheader("Quesitos da requisição")
+        st.caption(f"{respondidos} de {len(perguntas)} respondidos por você.")
 
     with st.expander("Detalhes técnicos da última leitura", expanded=False):
         st.caption(
@@ -171,11 +204,15 @@ def render() -> None:
 
     # so_conversa: a referência entre coleções é escolhida pelo perito na
     # confirmação, então cobrá-la aqui travava o avanço para sempre.
-    completo = pendencias.completo(
-        exame,
-        st.session_state["colecoes"],
-        st.session_state["colecoes_fechadas"],
-        so_conversa=True,
+    completo = (
+        controlador.proxima_fala(
+            exame,
+            st.session_state["colecoes"],
+            st.session_state["colecoes_fechadas"],
+            st.session_state["quesitos"],
+            st.session_state["respostas_quesitos"],
+        ).tipo
+        == controlador.COMPLETO
     )
     st.divider()
     esquerda, direita = st.columns([1, 1])

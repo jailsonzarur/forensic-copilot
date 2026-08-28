@@ -15,8 +15,8 @@ from streamlit.testing.v1 import AppTest
 
 APP = str(Path(__file__).resolve().parent.parent / "app.py")
 
-#: Exatamente o estado ao fim de uma conversa completa: a referência de material
-#: NÃO está preenchida, porque quem a escolhe é o perito na confirmação.
+#: Estado ao fim de uma conversa completa. Nenhum campo obrigatório pode faltar:
+#: o avanço só libera quando a conversa capturou tudo o que ela coleta.
 COLECOES = {
     "materiais": [
         {
@@ -31,6 +31,7 @@ COLECOES = {
     "exames_realizados": [
         {
             "nome_teste": "Scott",
+            "item_material": "1",
             "resultado": "positivo",
             "substancia": "crack",
             "procedimento": "apliquei o reagente de Scott e observei coloração azul",
@@ -39,13 +40,14 @@ COLECOES = {
 }
 
 
-def _abre(colecoes: dict, fechadas: list[str]) -> AppTest:
+def _abre(colecoes: dict, fechadas: list[str], quesitos: list[str] | None = None) -> AppTest:
     at = AppTest.from_file(APP, default_timeout=90)
     at.session_state["tela"] = "conversa"
     at.session_state["exame_id"] = "identificacao_substancia"
     at.session_state["admin"] = {"perito_designado": "PERITO DE TESTE"}
     at.session_state["colecoes"] = {c: [dict(i) for i in itens] for c, itens in colecoes.items()}
     at.session_state["colecoes_fechadas"] = list(fechadas)
+    at.session_state["quesitos"] = list(quesitos or [])
     at.run()
     return at
 
@@ -67,7 +69,7 @@ def main() -> int:
     ultima = at.session_state["mensagens"][-1]["content"]
     print("assistente:", ultima)
     checa(
-        "Todos os campos obrigatórios foram informados" in ultima,
+        "Tudo registrado" in ultima,
         "com tudo preenchido, o assistente devia declarar concluído",
     )
     botao = avancar(at)
@@ -80,12 +82,25 @@ def main() -> int:
     # 2. O contador não conta o que a conversa não coleta.
     textos = " ".join(m.value for m in at.caption) if hasattr(at, "caption") else ""
     print("progresso:", [c.value for c in at.caption if "obrigatórios" in c.value])
+    contador = [c.value for c in at.caption if "obrigatórios" in c.value]
     checa(
-        any("10 de 10" in c.value for c in at.caption if "obrigatórios" in c.value),
-        "o contador devia considerar só o que a conversa coleta",
+        bool(contador) and contador[0].split(" de ")[0] == contador[0].split(" de ")[1].split()[0],
+        "com tudo preenchido, o contador devia bater",
     )
 
-    # 3. Coleção ainda aberta mantém o avanço travado.
+    # 3. Quesito da requisição sem resposta trava o avanço: o laudo responde ao
+    #    que a autoridade perguntou, e quem responde é o perito.
+    at = _abre(COLECOES, ["materiais", "exames_realizados"], quesitos=["São substâncias venenosas?"])
+    ultima = at.session_state["mensagens"][-1]["content"]
+    print("com quesito pendente:", ultima[:90])
+    checa("Quesito 01" in ultima, "devia perguntar o quesito da requisição")
+    botao = avancar(at)
+    checa(
+        botao is not None and botao.disabled,
+        "quesito sem resposta devia travar o avanço",
+    )
+
+    # 4. Coleção ainda aberta mantém o avanço travado.
     at = _abre(COLECOES, ["materiais"])
     botao = avancar(at)
     checa(
@@ -93,7 +108,7 @@ def main() -> int:
         "com exame ainda em aberto, o avanço deve continuar travado",
     )
 
-    # 4. Clicar avança para a confirmação.
+    # 5. Clicar avança para a confirmação.
     at = _abre(COLECOES, ["materiais", "exames_realizados"])
     botao = avancar(at)
     if botao is not None and not botao.disabled:

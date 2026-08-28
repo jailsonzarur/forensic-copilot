@@ -78,6 +78,18 @@ formato de número (vírgula, ponto, por extenso) nunca são motivo de recusa.
 - **OpenAI (GPT)** como LLM, com dois papéis distintos e separados:
   1. **extração estruturada** do que o perito disse (saída JSON estrita);
   2. **geração do texto narrativo final** a partir dos dados já confirmados.
+- **A conversa termina nos quesitos.** Depois das coleções, o assistente
+  pergunta, um a um, os quesitos transcritos da requisição. Onde existe padrão
+  transcrito de laudo real, ele é OFERECIDO para o perito confirmar ("confirmo")
+  — oferecer não é preencher, e a confirmação fica gravada como marca, não como
+  texto, para a resposta continuar acompanhando os dados se ele corrigir uma
+  substância depois. Quesito sem resposta trava o avanço: o laudo responde ao
+  que a autoridade perguntou, e quem responde é o perito.
+- **A pergunta é formulada, o que falta é calculado.** `core/pendencias.py`
+  decide QUAIS campos faltam, sem modelo nenhum; `core/pergunta.py` só escolhe
+  as palavras, podendo cobrir até três campos de uma vez. O modelo é proibido de
+  sugerir resposta — "a coloração é branca?" plantaria no laudo um dado que o
+  perito não disse. Se a formulação falhar, a pergunta determinística é usada.
 - **Fluxo de telas:**
   `seleção do tipo de exame` → `requisição (anexo + leitura)` →
   `formulário admin (transcrição)` →
@@ -359,9 +371,11 @@ cabe numa frase só no tipo de acondicionamento; grama com decimal segue a
 convenção do laudo (fração vira sub-unidade). Ainda em aberto: mais de um
 envolvido (hoje campo único).
 
-**Referência entre coleções sai da conversa.** `item_material` tem
-`na_conversa=False`: o extrator não o enxerga nem o grava, e o perito escolhe o
-material num seletor na confirmação. Dedução não é transcrição.
+**Nenhum campo obrigatório escapa da conversa.** O avanço só libera quando a
+varredura de pendências não encontra nada — incluindo a referência de material,
+que é PERGUNTADA ao perito em vez de deduzida pelo extrator (a instrução do slot
+diz explicitamente que um único material registrado não autoriza preencher). A
+confirmação continua oferecendo o seletor, agora como revisão.
 
 ## Plano de milestones
 
