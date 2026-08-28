@@ -40,6 +40,11 @@ COLECOES = {
 }
 
 
+#: Fechamento dos exames é por material: "exames_realizados:1" encerra os do
+#: Material 1. Assim a conversa nunca pergunta "de qual material?".
+FECHADAS_COMPLETAS = ["exames_realizados:1", "materiais"]
+
+
 def _abre(colecoes: dict, fechadas: list[str], quesitos: list[str] | None = None) -> AppTest:
     at = AppTest.from_file(APP, default_timeout=90)
     at.session_state["tela"] = "conversa"
@@ -64,7 +69,7 @@ def main() -> int:
         return next((b for b in at.button if "Avançar" in b.label), None)
 
     # 1. Conversa completa: o avanço tem que liberar.
-    at = _abre(COLECOES, ["materiais", "exames_realizados"])
+    at = _abre(COLECOES, FECHADAS_COMPLETAS)
     checa(not at.exception, "a tela não pode levantar exceção")
     ultima = at.session_state["mensagens"][-1]["content"]
     print("assistente:", ultima)
@@ -90,7 +95,7 @@ def main() -> int:
 
     # 3. Quesito da requisição sem resposta trava o avanço: o laudo responde ao
     #    que a autoridade perguntou, e quem responde é o perito.
-    at = _abre(COLECOES, ["materiais", "exames_realizados"], quesitos=["São substâncias venenosas?"])
+    at = _abre(COLECOES, FECHADAS_COMPLETAS, quesitos=["São substâncias venenosas?"])
     ultima = at.session_state["mensagens"][-1]["content"]
     print("com quesito pendente:", ultima[:90])
     checa("Quesito 01" in ultima, "devia perguntar o quesito da requisição")
@@ -101,15 +106,15 @@ def main() -> int:
     )
 
     # 4. Coleção ainda aberta mantém o avanço travado.
-    at = _abre(COLECOES, ["materiais"])
+    at = _abre(COLECOES, ["exames_realizados:1"])
     botao = avancar(at)
     checa(
         botao is not None and botao.disabled,
-        "com exame ainda em aberto, o avanço deve continuar travado",
+        "com a coleção de materiais ainda aberta, o avanço deve continuar travado",
     )
 
     # 5. Clicar avança para a confirmação.
-    at = _abre(COLECOES, ["materiais", "exames_realizados"])
+    at = _abre(COLECOES, FECHADAS_COMPLETAS)
     botao = avancar(at)
     if botao is not None and not botao.disabled:
         botao.click().run()

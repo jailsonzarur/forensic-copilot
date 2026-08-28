@@ -93,6 +93,11 @@ class Colecao:
     minimo: int = 1
     aceita_imagens: bool = False
     pergunta_mais_um: str = ""
+    #: Chave da coleção à qual cada item desta pertence. A conversa percorre
+    #: item por item da coleção-mãe e, dentro de cada um, os filhos — assim a
+    #: referência entre eles é consequência de onde a conversa está, e não algo
+    #: perguntado de novo nem deduzido pelo extrator.
+    vinculada_a: str = ""
 
     def slot(self, chave: str) -> Slot | None:
         return next((s for s in self.slots if s.chave == chave), None)

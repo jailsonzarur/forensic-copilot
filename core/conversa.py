@@ -14,7 +14,7 @@ import unicodedata
 from dataclasses import dataclass, field
 from typing import Callable
 
-from config.schema import Exame
+from config.schema import Colecao, Exame
 from core import pendencias
 from core import quesitos as camada1_quesitos
 from core.extracao import (
@@ -124,6 +124,11 @@ class Fala:
     #: formular uma pergunta que cubra mais de um campo de uma vez.
     rotulo_item: str = ""
     campos_faltando: tuple[str, ...] = ()
+    #: Material de que a conversa está tratando. É ele que vincula o exame ao
+    #: material, sem perguntar de novo e sem o extrator deduzir.
+    material_contexto: int = 0
+    #: Marca a gravar em ``fechadas`` quando o perito disser que não há mais.
+    token_fechamento: str = ""
 
     def alvo(self) -> str:
         """Endereço do slot perguntado, para o extrator saber onde cai a resposta."""
@@ -196,6 +201,57 @@ def _fala_de_quesito(perguntas: list[str], respostas: dict[str, str]) -> Fala | 
     return Fala(QUESITO, texto, quesito_numero=quesito.numero, quesito_pergunta=quesito.pergunta)
 
 
+def _chave_fechada(colecao: Colecao, indice_mae: int = 0) -> str:
+    """Marca de coleção encerrada. Coleção vinculada encerra por item da mãe."""
+    return f"{colecao.chave}:{indice_mae}" if colecao.vinculada_a else colecao.chave
+
+
+def _filhos(colecao: Colecao, colecoes: dict, indice_mae: int) -> list[tuple[int, dict]]:
+    """(índice global, item) dos filhos que pertencem ao item ``indice_mae``."""
+    referencia = str(indice_mae)
+    return [
+        (posicao, item)
+        for posicao, item in enumerate(colecoes.get(colecao.chave, []), start=1)
+        if str(item.get("item_material", "")).strip() == referencia
+    ]
+
+
+def _pergunta_do_item(
+    exame: Exame,
+    colecao: Colecao,
+    colecoes: dict,
+    indice: int,
+    item: dict,
+    total: int,
+    material_contexto: int = 0,
+) -> Fala | None:
+    """Fala pedindo o que falta NESTE item, ou None se ele já está completo."""
+    faltando = [
+        slot
+        for slot in colecao.slots
+        if pendencias._exigido(slot, item, so_conversa=True)
+        and not str(item.get(slot.chave, "")).strip()
+    ]
+    if not faltando:
+        return None
+
+    primeiro = faltando[0]
+    base = primeiro.pergunta or f"Qual o valor de {primeiro.label}?"
+    rotulo = f"{colecao.label_singular} {indice}" if total > 1 or indice > 1 else ""
+    texto = f"{rotulo} — {base}" if rotulo else base
+    texto += _itens_referenciaveis(exame, colecoes, primeiro)
+    return Fala(
+        PERGUNTA,
+        texto,
+        colecao.chave,
+        primeiro.chave,
+        indice,
+        rotulo_item=rotulo or colecao.label_singular,
+        campos_faltando=tuple(s.label for s in faltando),
+        material_contexto=material_contexto,
+    )
+
+
 def proxima_fala(
     exame: Exame,
     colecoes: dict[str, list[dict]],
@@ -203,44 +259,70 @@ def proxima_fala(
     quesitos: list[str] | None = None,
     respostas: dict[str, str] | None = None,
 ) -> Fala:
-    """Uma coleção por vez, na ordem do registro.
+    """Percorre material por material e, dentro de cada um, os seus exames.
 
-    Só depois de a coleção estar completa E o perito dizer que não há mais itens
-    é que a conversa passa para a coleção seguinte — perguntar sobre exames no
-    meio da descrição do material confundiria a transcrição.
+    A ordem é Material 1 → exames do Material 1 → Material 2 → exames do
+    Material 2 → quesitos. Assim o exame nunca precisa perguntar "de qual
+    material?": ele é do material de que a conversa acabou de tratar.
     """
-    for colecao in exame.colecoes:
-        itens = colecoes.get(colecao.chave, [])
+    principais = [c for c in exame.colecoes if not c.vinculada_a]
+    for principal in principais:
+        vinculadas = [c for c in exame.colecoes if c.vinculada_a == principal.chave]
+        itens = colecoes.get(principal.chave, [])
+        total = max(len(itens), principal.minimo)
 
-        encontradas = pendencias.pendencias_da_colecao(colecao, itens, so_conversa=True)
-        if encontradas:
-            pendente = encontradas[0]
-            total = max(len(itens), colecao.minimo)
-            texto = pendente.pergunta(total) + _itens_referenciaveis(
-                exame, colecoes, pendente.slot
+        for indice in range(1, total + 1):
+            item = itens[indice - 1] if indice <= len(itens) else {}
+
+            fala = _pergunta_do_item(
+                exame, principal, colecoes, indice, item, total, material_contexto=indice
             )
-            # Campos que faltam NESTE item: a pergunta pode cobrir vários.
-            no_item = [
-                p.slot.label for p in encontradas if p.indice == pendente.indice
-            ]
-            rotulo = (
-                f"{colecao.label_singular} {pendente.indice}"
-                if total > 1 or pendente.indice > 1
-                else colecao.label_singular
+            if fala is not None:
+                return fala
+
+            for filha in vinculadas:
+                filhos = _filhos(filha, colecoes, indice)
+                if len(filhos) < filha.minimo:
+                    fala = _pergunta_do_item(
+                        exame, filha, colecoes,
+                        len(colecoes.get(filha.chave, [])) + 1, {}, 1,
+                        material_contexto=indice,
+                    )
+                    if fala is not None:
+                        return fala
+
+                for posicao, filho in filhos:
+                    fala = _pergunta_do_item(
+                        exame, filha, colecoes, posicao, filho,
+                        len(colecoes.get(filha.chave, [])), material_contexto=indice,
+                    )
+                    if fala is not None:
+                        return fala
+
+                if _chave_fechada(filha, indice) not in fechadas:
+                    pergunta = filha.pergunta_mais_um or (
+                        f"Há mais algum {filha.label_singular.lower()}?"
+                    )
+                    if total > 1:
+                        pergunta = f"{principal.label_singular} {indice} — {pergunta}"
+                    return Fala(
+                        CONFIRMAR_MAIS,
+                        pergunta,
+                        filha.chave,
+                        material_contexto=indice,
+                        token_fechamento=_chave_fechada(filha, indice),
+                    )
+
+        if _chave_fechada(principal) not in fechadas:
+            pergunta = principal.pergunta_mais_um or (
+                f"Há mais algum {principal.label_singular.lower()}?"
             )
             return Fala(
-                PERGUNTA,
-                texto,
-                colecao.chave,
-                pendente.slot.chave,
-                pendente.indice,
-                rotulo_item=rotulo,
-                campos_faltando=tuple(no_item),
+                CONFIRMAR_MAIS,
+                pergunta,
+                principal.chave,
+                token_fechamento=_chave_fechada(principal),
             )
-
-        if colecao.chave not in fechadas:
-            pergunta = colecao.pergunta_mais_um or f"Há mais algum {colecao.label_singular.lower()}?"
-            return Fala(CONFIRMAR_MAIS, pergunta, colecao.chave)
 
     fala = _fala_de_quesito(quesitos or [], respostas if respostas is not None else {})
     if fala is not None:
@@ -265,6 +347,18 @@ def saudacao(
         "Vamos registrar o que você examinou. Pode falar como você fala — eu só "
         "anoto o que você disser, e pergunto o que faltar.\n\n" + fala.texto
     )
+
+
+def _vincula(exame: Exame, colecoes: dict[str, list[dict]], material: int) -> None:
+    """Prende ao material em foco os itens vinculados que ainda estão soltos."""
+    if not material:
+        return
+    for colecao in exame.colecoes:
+        if not colecao.vinculada_a:
+            continue
+        for item in colecoes.get(colecao.chave, []):
+            if not str(item.get("item_material", "")).strip():
+                item["item_material"] = str(material)
 
 
 def _texto_alteracoes(alteracoes: list[Alteracao]) -> str:
@@ -304,11 +398,15 @@ def processar(
             quesito_respondido=numero,
         )
 
-    aguardando = fala_anterior.colecao_chave if (
-        fala_anterior is not None and fala_anterior.tipo == CONFIRMAR_MAIS
-    ) else ""
+    aguardando = (
+        fala_anterior.token_fechamento
+        if fala_anterior is not None and fala_anterior.tipo == CONFIRMAR_MAIS
+        else ""
+    )
+    colecao_aguardada = fala_anterior.colecao_chave if aguardando else ""
+    contexto = fala_anterior.material_contexto if fala_anterior else 0
 
-    # "Não, é só isso" fecha a coleção sem gastar chamada de modelo.
+    # "Não, é só isso" fecha a coleção sem gastar chamada de leitura.
     if aguardando and eh_negativa(mensagem):
         if aguardando not in fechadas:
             fechadas.append(aguardando)
@@ -330,10 +428,18 @@ def processar(
         houve_registro=bool(alteracoes),
     )
 
+    # Todo exame descrito enquanto se fala de um material pertence a ele: a
+    # referência vem de onde a conversa está, não de dedução do extrator.
+    _vincula(exame, colecoes, contexto)
+
     # "Sim" sem descrever nada: abre o próximo item para receber as perguntas.
     abriu_item = bool(aguardando) and not alteracoes and eh_afirmativa(mensagem)
     if abriu_item:
-        colecoes.setdefault(aguardando, []).append({})
+        novo_item: dict = {}
+        colecao = exame.colecao(colecao_aguardada)
+        if colecao is not None and colecao.vinculada_a and contexto:
+            novo_item["item_material"] = str(contexto)
+        colecoes.setdefault(colecao_aguardada, []).append(novo_item)
 
     # O modelo às vezes devolve {} sem dizer por quê, ou com um motivo que não
     # resistiu à conferência. Nada volta ao perito sem explicação — e a explicação

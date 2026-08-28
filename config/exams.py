@@ -215,7 +215,8 @@ _EXAMES_REALIZADOS = Colecao(
     label_singular="Exame realizado",
     label_plural="Exames realizados",
     minimo=1,
-    pergunta_mais_um="Foi realizado mais algum exame?",
+    vinculada_a="materiais",
+    pergunta_mais_um="Foi realizado mais algum exame neste material?",
     slots=(
         Slot(
             chave="nome_teste",
@@ -237,12 +238,12 @@ _EXAMES_REALIZADOS = Colecao(
         Slot(
             chave="item_material",
             label="Material examinado",
+            na_conversa=False,
             referencia_colecao="materiais",
             pergunta="Esse exame se aplica a qual material?",
             instrucao_extracao=(
-                "Número do material ao qual o exame se aplica, SOMENTE quando o "
-                "perito disser qual é. Havendo um único material registrado, isso "
-                "não autoriza preencher: sem ele dizer, omita a chave."
+                "Não extrair: a ferramenta preenche pelo material de que a "
+                "conversa está tratando."
             ),
         ),
         Slot(

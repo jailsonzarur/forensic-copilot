@@ -78,6 +78,14 @@ formato de número (vírgula, ponto, por extenso) nunca são motivo de recusa.
 - **OpenAI (GPT)** como LLM, com dois papéis distintos e separados:
   1. **extração estruturada** do que o perito disse (saída JSON estrita);
   2. **geração do texto narrativo final** a partir dos dados já confirmados.
+- **A conversa alterna material e exames DELE.** A ordem é `Material 1 →
+  exames do Material 1 → Material 2 → exames do Material 2 → quesitos`, e não
+  todos os materiais seguidos de todos os exames. Isso não é só ergonomia: com
+  os exames vindo logo depois do material de que tratam, a pergunta "de qual
+  material?" some — a referência é consequência de ONDE a conversa está, não
+  algo perguntado de novo nem deduzido pelo extrator. `Colecao.vinculada_a`
+  declara esse aninhamento no registro, e o encerramento passa a ser por item
+  da coleção-mãe (`exames_realizados:1`).
 - **A conversa termina nos quesitos.** Depois das coleções, o assistente
   pergunta, um a um, os quesitos transcritos da requisição. Onde existe padrão
   transcrito de laudo real, ele é OFERECIDO para o perito confirmar ("confirmo")
@@ -379,10 +387,11 @@ convenção do laudo (fração vira sub-unidade). Ainda em aberto: mais de um
 envolvido (hoje campo único).
 
 **Nenhum campo obrigatório escapa da conversa.** O avanço só libera quando a
-varredura de pendências não encontra nada — incluindo a referência de material,
-que é PERGUNTADA ao perito em vez de deduzida pelo extrator (a instrução do slot
-diz explicitamente que um único material registrado não autoriza preencher). A
-confirmação continua oferecendo o seletor, agora como revisão.
+varredura de pendências não encontra nada. A referência de material não é
+exceção: ela é preenchida pela travessia, a partir do material em foco — nem
+perguntada ("é óbvio, só existe um material"), nem deduzida pelo extrator, que
+está proibido de tocá-la. A confirmação continua oferecendo o seletor, como
+revisão.
 
 ## Plano de milestones
 
