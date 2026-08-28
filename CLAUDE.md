@@ -302,6 +302,12 @@ cp .env.example .env   # preencher OPENAI_API_KEY
   pericial — o parágrafo da seção 4 **declara como o exame foi conduzido**
   (qual padrão de referência, qual grandeza comparada), e um modelo escrevendo
   isso afirma procedimento que ninguém relatou.
+- **O relato do perito vira o parágrafo, sozinho.** A conversa promete "conte
+  como conduziu que eu redijo" — e a promessa se cumpre ao entrar na
+  confirmação: o parágrafo é escrito a partir do relato, entra na seção 4 deste
+  laudo e fica editável. Salvar na biblioteca é opcional, e serve só para
+  reaproveitar nos próximos laudos. Antes, quem não achasse o botão exportava
+  com `[PENDENTE]` no lugar.
 - **Sem redação transcrita, a conversa pergunta o procedimento.** O slot
   `procedimento` só é exigido quando não existe parágrafo para aquele
   (ensaio, substância): o perito conta como conduziu — reagente, padrão, o que
@@ -323,9 +329,10 @@ cp .env.example .env   # preencher OPENAI_API_KEY
     oitenta gramas)`, `02 (dois) invólucros`, `redigido em duas páginas` (com
     flexão de gênero). Grama com decimal aplica a MESMA convenção do laudo — a
     fração vira a sub-unidade: `15,3 g (quinze gramas e trezentos miligramas)`.
-  - **Paginação é do editor, não da montagem.** O perito baixa a minuta, lê a
-    contagem no Word e informa o número na confirmação; em branco, o fecho sai
-    marcado como pendente. Estimar poria número inventado no fecho de um laudo.
+  - **Paginação é do editor, não da montagem.** O fecho sai com um campo
+    `NUMPAGES`, que o Word preenche ao abrir o arquivo — o número fica certo
+    sozinho. O perito só informa a contagem se o Instituto exigir por extenso
+    ("duas páginas"). Estimar aqui poria número inventado no fecho de um laudo.
   - **A resposta do quesito 01 muda por substância** e é transcrita: "trata-se
     de Cannabis sativa Lineu" para a vegetal, "apresentou resultado positivo
     para presença de cocaína" para a sólida. Não são construções

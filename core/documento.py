@@ -16,6 +16,8 @@ import io
 
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.oxml import OxmlElement
+from docx.oxml.ns import qn
 from docx.shared import Cm, Pt, RGBColor
 
 from core import derivados as camada3
@@ -30,13 +32,46 @@ MARCADOR = "[PENDENTE:"
 
 
 def _paginas(derivados: dict) -> str:
-    """Contagem de páginas por extenso, ou pendência.
+    """Contagem por extenso quando o perito informou; vazio quando não."""
+    return numeros.paginas_por_extenso(derivados.get(camada3.CHAVE_PAGINAS, ""))
 
-    Paginação é do editor de texto, não desta montagem: o perito lê no Word e
-    informa. Estimar aqui poria um número inventado no fecho de um laudo.
+
+def _insere_contagem_automatica(paragrafo) -> None:
+    """Campo NUMPAGES: o editor de texto conta as páginas ao abrir o arquivo.
+
+    Paginação não existe nesta montagem — quem pagina é o Word. Em vez de pedir
+    ao perito que conte e volte, o número entra como campo e sai certo sozinho.
     """
-    extenso = numeros.paginas_por_extenso(derivados.get(camada3.CHAVE_PAGINAS, ""))
-    return extenso or camada3.PENDENTE.format(o_que="número de páginas por extenso")
+    corrida = paragrafo.add_run()
+    abertura = OxmlElement("w:fldChar")
+    abertura.set(qn("w:fldCharType"), "begin")
+    instrucao = OxmlElement("w:instrText")
+    instrucao.set(qn("xml:space"), "preserve")
+    instrucao.text = " NUMPAGES "
+    separador = OxmlElement("w:fldChar")
+    separador.set(qn("w:fldCharType"), "separate")
+    provisorio = OxmlElement("w:t")
+    provisorio.text = "2"
+    fechamento = OxmlElement("w:fldChar")
+    fechamento.set(qn("w:fldCharType"), "end")
+    for elemento in (abertura, instrucao, separador, provisorio, fechamento):
+        corrida._r.append(elemento)
+
+
+def _paragrafo_fecho(documento: Document, derivados: dict) -> None:
+    """Fecho do laudo, com a contagem de páginas por extenso ou automática."""
+    extenso = _paginas(derivados)
+    if extenso:
+        _paragrafo(documento, boilerplate.FECHO.format(paginas_extenso=extenso))
+        return
+
+    antes, _, depois = boilerplate.FECHO.partition("{paginas_extenso}")
+    paragrafo = documento.add_paragraph()
+    paragrafo.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+    paragrafo.paragraph_format.space_after = Pt(6)
+    paragrafo.add_run(antes)
+    _insere_contagem_automatica(paragrafo)
+    paragrafo.add_run(depois)
 
 
 def _configura(documento: Document) -> None:
@@ -175,7 +210,7 @@ def _exames(documento: Document, colecoes: dict, derivados: dict) -> None:
     )
 
     _titulo_secao(documento, "4. RESULTADOS OBTIDOS")
-    for ordem, secao in enumerate(camada3.resultados_obtidos(colecoes), start=1):
+    for ordem, secao in enumerate(camada3.resultados_obtidos(colecoes, derivados), start=1):
         _paragrafo(
             documento,
             f"4.{ordem}. {secao['titulo']}",
@@ -215,7 +250,7 @@ def _fecho(documento: Document, admin: dict, derivados: dict) -> None:
         _paragrafo(documento, referencia)
 
     documento.add_paragraph()
-    _paragrafo(documento, boilerplate.FECHO.format(paginas_extenso=_paginas(derivados)))
+    _paragrafo_fecho(documento, derivados)
 
     documento.add_paragraph()
     for linha, negrito in (
@@ -283,14 +318,13 @@ def pendencias_do_texto(
         ),
         derivados.get(camada3.CHAVE_NATUREZA) or camada3.natureza(colecoes),
         derivados.get(camada3.CHAVE_PROSCRICAO) or camada3.proscricao(colecoes),
-        *(s["texto"] for s in camada3.resultados_obtidos(colecoes)),
+        *(s["texto"] for s in camada3.resultados_obtidos(colecoes, derivados)),
         *(
             derivados.get(f"{camada3.PREFIXO_MATERIAL}{i}")
             or camada3.descricao_material(m)
             for i, m in enumerate(colecoes.get("materiais", []), start=1)
         ),
     ]
-    pedacos.append(_paginas(derivados))
     encontradas: list[str] = []
     for pedaco in pedacos:
         restante = str(pedaco)

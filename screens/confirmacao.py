@@ -276,9 +276,49 @@ def _lacunas_institucionais(exame: Exame) -> list[dict]:
     return lacunas
 
 
+def _redige_o_que_o_perito_contou(lacunas: list[dict]) -> None:
+    """Transforma o relato dado na conversa no parágrafo da seção 4.
+
+    A conversa prometeu: "conte como conduziu que eu redijo o parágrafo". A
+    promessa se cumpre aqui, sozinha — sem depender de o perito achar um botão.
+    O texto entra neste laudo e fica editável logo abaixo.
+    """
+    derivados = st.session_state["derivados"]
+    falhas = st.session_state.setdefault("redacoes_que_falharam", [])
+    refazer = st.session_state.setdefault("redacoes_a_refazer", [])
+
+    for lacuna in lacunas:
+        if lacuna["tipo"] != "resultado" or not lacuna.get("procedimento"):
+            continue
+        chave = camada3.chave_redacao(lacuna["ensaio"], lacuna["substancia"])
+        pedido = lacuna["id"] in refazer
+        if pedido:
+            refazer.remove(lacuna["id"])
+            derivados.pop(chave, None)
+            st.session_state.pop(f"bib_texto_resultado_{lacuna['id']}", None)
+            st.session_state.pop(f"bib_titulo_resultado_{lacuna['id']}", None)
+            if chave in falhas:
+                falhas.remove(chave)
+        if derivados.get(chave) or chave in falhas:
+            continue
+        with st.spinner(f"Redigindo o parágrafo de {lacuna['ensaio']}…"):
+            try:
+                proposta, _ = redacao.redigir(
+                    lacuna["ensaio"], lacuna["substancia"], lacuna["procedimento"]
+                )
+                derivados[chave] = proposta
+            except Exception as erro:
+                falhas.append(chave)
+                st.error(
+                    "Não consegui redigir o parágrafo a partir do seu relato. "
+                    f"Escreva-o abaixo. Detalhe para quem instalou: {erro}"
+                )
+
+
 def _painel_biblioteca(exame: Exame) -> None:
     """Onde o perito escreve a redação institucional que falta — uma vez só."""
     lacunas = _lacunas_institucionais(exame)
+    _redige_o_que_o_perito_contou(lacunas)
     if not lacunas:
         contagem = biblioteca.resumo()
         st.success(
@@ -300,19 +340,41 @@ def _painel_biblioteca(exame: Exame) -> None:
     for lacuna in lacunas:
         with st.expander(lacuna["rotulo"], expanded=False):
             st.caption(lacuna["ajuda"])
+
+            chave_texto = f"bib_texto_{lacuna['tipo']}_{lacuna['id']}"
+            chave_titulo = f"bib_titulo_{lacuna['tipo']}_{lacuna['id']}"
+            relato = lacuna.get("procedimento", "")
+
+            # Redação já feita para este laudo a partir do relato do perito: ela
+            # entra no documento mesmo sem ser salva na biblioteca. Semear os
+            # campos ANTES de criá-los — o Streamlit proíbe o contrário.
+            deste_laudo = None
+            if lacuna["tipo"] == "resultado":
+                deste_laudo = st.session_state["derivados"].get(
+                    camada3.chave_redacao(lacuna["ensaio"], lacuna["substancia"])
+                )
+            if isinstance(deste_laudo, dict):
+                st.session_state.setdefault(chave_texto, deste_laudo.get("texto", ""))
+                st.session_state.setdefault(chave_titulo, deste_laudo.get("titulo", ""))
+
+            if deste_laudo:
+                st.success(
+                    "Escrito a partir do seu relato e **já em uso neste laudo**. "
+                    "Revise o texto abaixo; salvar na biblioteca serve para "
+                    "reaproveitá-lo nos próximos laudos."
+                )
+            if relato:
+                st.caption(f"Você contou na conversa: «{relato}»")
+
             titulo = ""
             if lacuna["tipo"] == "resultado":
                 titulo = st.text_input(
                     "Título da subseção",
-                    value=lacuna.get("titulo_sugerido", ""),
-                    key=f"bib_titulo_{lacuna['tipo']}_{lacuna['id']}",
+                    key=chave_titulo,
+                    placeholder=lacuna.get("titulo_sugerido", ""),
                 )
-            chave_texto = f"bib_texto_{lacuna['tipo']}_{lacuna['id']}"
-            relato = lacuna.get("procedimento", "")
-            if relato:
-                st.caption(f"Você contou na conversa: «{relato}»")
-                if st.button(
-                    "Redigir a partir do seu relato",
+                if relato and st.button(
+                    "Escrever de novo a partir do seu relato",
                     key=f"bib_redigir_{lacuna['tipo']}_{lacuna['id']}",
                     help=(
                         "A ferramenta apenas dá forma de laudo ao que VOCÊ contou. "
@@ -320,28 +382,27 @@ def _painel_biblioteca(exame: Exame) -> None:
                         "citou — leia antes de salvar."
                     ),
                 ):
-                    with st.spinner("Redigindo…"):
-                        try:
-                            proposta, _ = redacao.redigir(
-                                lacuna["ensaio"], lacuna["substancia"], relato
-                            )
-                            st.session_state[chave_texto] = proposta["texto"]
-                            st.session_state[
-                                f"bib_titulo_{lacuna['tipo']}_{lacuna['id']}"
-                            ] = proposta["titulo"]
-                        except Exception as erro:
-                            st.error(f"Falha da ferramenta ao redigir: {erro}")
+                    st.session_state["redacoes_a_refazer"] = [
+                        *st.session_state.get("redacoes_a_refazer", []),
+                        lacuna["id"],
+                    ]
                     st.rerun()
 
-            texto = st.text_area(
-                "Redação",
-                key=chave_texto,
-                height=140,
-            )
+            texto = st.text_area("Redação", key=chave_texto, height=140)
+
+            if lacuna["tipo"] == "resultado" and texto.strip():
+                st.session_state["derivados"][
+                    camada3.chave_redacao(lacuna["ensaio"], lacuna["substancia"])
+                ] = {
+                    "titulo": titulo.strip() or lacuna.get("titulo_sugerido", ""),
+                    "texto": texto.strip(),
+                }
+
             if st.button(
                 "Salvar na biblioteca",
                 key=f"bib_salvar_{lacuna['tipo']}_{lacuna['id']}",
                 disabled=not texto.strip(),
+                help="Passa a valer para os próximos laudos, com a sua autoria.",
             ):
                 conteudo = {"texto": texto.strip()}
                 if lacuna["tipo"] == "resultado":

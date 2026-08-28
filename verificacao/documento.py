@@ -132,17 +132,54 @@ def main() -> int:
         not montador.pendencias_do_texto(ADMIN, COLECOES, derivados),
         "o laudo de referência não devia ter pendência de redação",
     )
-    # Contagem de páginas: informada sai por extenso no feminino; em branco fica
-    # pendente, porque paginação é do editor e estimar poria número inventado.
+    # Contagem de páginas: informada sai por extenso no feminino; em branco vira
+    # campo do editor, que conta sozinho ao abrir o arquivo. Paginação não existe
+    # nesta montagem, e estimar poria número inventado no fecho de um laudo.
     documento_sem_paginas, derivados_sem, _ = _monta(derivados_extra={"paginas": ""})
+    fecho = next(
+        p for p in documento_sem_paginas.paragraphs if "findo o presente" in p.text
+    )
+    checa("NUMPAGES" in fecho._p.xml, "sem contagem informada, devia entrar o campo do editor")
     checa(
-        "[PENDENTE: número de páginas" in _texto(documento_sem_paginas),
-        "sem a contagem informada, o fecho devia ficar pendente",
+        "[PENDENTE" not in fecho.text,
+        "a contagem de páginas não pode mais sair como pendência",
     )
     checa(
-        "número de páginas por extenso"
-        in montador.pendencias_do_texto(ADMIN, COLECOES, derivados_sem),
-        "a contagem em branco devia aparecer na lista de pendências",
+        not montador.pendencias_do_texto(ADMIN, COLECOES, derivados_sem),
+        "com o campo automático, a contagem não é mais pendência",
+    )
+
+    # Relato do perito vira o parágrafo da seção 4 deste laudo, sem depender da
+    # biblioteca: é o que a conversa prometeu ao pedir o relato.
+    from core.derivados import chave_redacao
+
+    com_relato = {
+        "materiais": COLECOES["materiais"],
+        "exames_realizados": [
+            {"nome_teste": "Ensaio de Scott Modificado", "item_material": "2",
+             "resultado": "positivo", "substancia": "cocaína",
+             "procedimento": "apliquei o reagente e observei coloração azul"},
+        ],
+    }
+    redigido = {
+        chave_redacao("Ensaio de Scott Modificado", "cocaína"): {
+            "titulo": "Análise por ensaio de Scott Modificado",
+            "texto": "Parágrafo escrito a partir do relato do perito.",
+        }
+    }
+    documento, derivados, _ = _monta(colecoes=com_relato, derivados_extra=redigido)
+    texto_com_relato = _texto(documento)
+    checa(
+        "Parágrafo escrito a partir do relato do perito." in texto_com_relato,
+        "a redação feita a partir do relato devia ir para a seção 4",
+    )
+    checa(
+        "[PENDENTE: descrição técnica" not in texto_com_relato,
+        "com redação feita, a seção 4 não pode continuar pendente",
+    )
+    checa(
+        not montador.pendencias_do_texto(ADMIN, com_relato, derivados),
+        "a seção 4 redigida não é mais pendência",
     )
 
     # Ensaio sem texto transcrito: PENDENTE visível, nunca preenchido por semelhança.

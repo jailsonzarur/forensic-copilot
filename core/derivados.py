@@ -24,6 +24,12 @@ CHAVE_EXAMES = "exames_realizados_texto"
 CHAVE_NATUREZA = "natureza"
 CHAVE_PROSCRICAO = "proscricao"
 CHAVE_PAGINAS = "paginas"
+PREFIXO_REDACAO = "redacao_ensaio_"
+
+
+def chave_redacao(nome_teste: str, substancia: str) -> str:
+    """Onde fica a redação da seção 4 deste laudo, por ensaio e substância."""
+    return PREFIXO_REDACAO + biblioteca.chave(nome_teste, substancia)
 PREFIXO_MATERIAL = "descricao_material_"
 
 #: Marcador que aparece no texto quando falta redação transcrita de laudo real.
@@ -197,8 +203,16 @@ def proscricao(colecoes: dict[str, list[dict]]) -> str:
     return " ".join(trechos)
 
 
-def resultados_obtidos(colecoes: dict[str, list[dict]]) -> list[dict[str, str]]:
-    """Subseções de RESULTADOS OBTIDOS, uma por exame registrado."""
+def resultados_obtidos(
+    colecoes: dict[str, list[dict]], derivados: dict | None = None
+) -> list[dict[str, str]]:
+    """Subseções de RESULTADOS OBTIDOS, uma por exame registrado.
+
+    Ordem das fontes: texto transcrito de laudo real, redação já escrita por
+    perito na biblioteca, redação feita para ESTE laudo a partir do relato do
+    perito, e só então pendência.
+    """
+    guardadas = derivados or {}
     secoes: list[dict[str, str]] = []
     for item in colecoes.get("exames_realizados", []):
         nome = str(item.get("nome_teste", "")).strip()
@@ -212,6 +226,14 @@ def resultados_obtidos(colecoes: dict[str, list[dict]]) -> list[dict[str, str]]:
         if aprendido:
             secoes.append({"titulo": aprendido["titulo"], "texto": aprendido["texto"]})
             continue
+
+        deste_laudo = guardadas.get(chave_redacao(nome, substancia))
+        if isinstance(deste_laudo, dict) and deste_laudo.get("texto"):
+            secoes.append(
+                {"titulo": deste_laudo.get("titulo") or nome, "texto": deste_laudo["texto"]}
+            )
+            continue
+
         alvo = f"{nome} para {substancia}" if substancia else nome
         secoes.append(
             {
@@ -346,11 +368,11 @@ def montar(exame: Exame, colecoes: dict[str, list[dict]]) -> list[Derivado]:
             chave=CHAVE_PAGINAS,
             label="Número de páginas do laudo",
             valor="",
-            origem="só o editor sabe, depois da paginação",
+            origem="o editor de texto conta sozinho ao abrir o arquivo",
             ajuda=(
-                "O fecho diz 'redigido em X páginas'. Baixe a minuta, veja a "
-                "contagem no Word e escreva o número aqui — ele sai por extenso. "
-                "Em branco, o fecho sai marcado como pendente."
+                "Deixe em branco: o fecho sai com um campo que o Word preenche "
+                "sozinho, e o número fica sempre certo. Preencha aqui só se o "
+                "Instituto exigir a contagem por extenso ('duas páginas')."
             ),
         )
     )
