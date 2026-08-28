@@ -247,24 +247,16 @@ def resultados_obtidos(
 def referencias(colecoes: dict[str, list[dict]]) -> list[str]:
     """Referências que este laudo deve citar.
 
-    As gerais sempre; as de substância, só das substâncias efetivamente
-    encontradas. Citar o manual de cannabis num laudo sem cannabis apontaria
-    método que não foi usado. Substância sem referência transcrita vira
-    pendência, como qualquer outra lacuna de redação institucional.
+    Saem da base (``core/referencias.py``), casadas com as substâncias e os
+    métodos registrados. Substância que nenhuma referência confirmada cobre
+    vira pendência — inclusive quando existe candidata, porque candidata não
+    tem ano nem edição conferidos e citação falsa é pior que citação faltando.
     """
-    lista = list(boilerplate.REFERENCIAS_GERAIS)
-    for substancia in _positivos(colecoes):
-        chave = boilerplate.chave_substancia(substancia)
-        entradas = boilerplate.REFERENCIAS_POR_SUBSTANCIA.get(chave, ())
-        if not entradas:
-            aprendida = biblioteca.buscar("referencia", biblioteca.chave(substancia))
-            entradas = (aprendida["texto"],) if aprendida else ()
-        if not entradas:
-            lista.append(PENDENTE.format(o_que=f"referência bibliográfica de {substancia}"))
-            continue
-        for entrada in entradas:
-            if entrada not in lista:
-                lista.append(entrada)
+    from core import referencias as base
+
+    lista = [r.citacao for r in base.para_o_laudo(colecoes) if r.citacao]
+    for substancia in base.substancias_sem_referencia(colecoes):
+        lista.append(PENDENTE.format(o_que=f"referência bibliográfica de {substancia}"))
     return lista
 
 

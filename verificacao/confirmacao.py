@@ -122,7 +122,9 @@ def main() -> int:
             print(f"    ❌ {descricao}")
 
     def confirmar(at: AppTest):
-        return next((b for b in at.button if "Confirmar" in b.label), None)
+        # Rótulo exato: a tela tem outros botões que começam com "Confirmar"
+        # (confirmar referência), e pegar o errado dava falha fantasma.
+        return next((b for b in at.button if b.label == "Confirmar e gerar minuta"), None)
 
     at = _abre()
     checa(not at.exception, "a tela não pode levantar exceção")

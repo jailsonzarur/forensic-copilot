@@ -16,6 +16,7 @@ from core import derivados as camada3
 from core import biblioteca
 from core import conferencia
 from core import redacao
+from core import referencias as base_referencias
 from core import pendencias
 from core import quesitos as camada1_quesitos
 from core.state import (
@@ -418,6 +419,71 @@ def _painel_biblioteca(exame: Exame) -> None:
                 st.rerun()
 
 
+def _painel_referencias() -> None:
+    """Seção 6: o que embasa ESTE exame, não uma bibliografia fixa."""
+    colecoes = st.session_state["colecoes"]
+    autor = st.session_state["admin"].get("perito_designado", "")
+
+    escolhidas = base_referencias.para_o_laudo(colecoes)
+    if escolhidas:
+        st.caption("Vão para o laudo, por casarem com as substâncias e ensaios deste caso:")
+        for referencia in escolhidas:
+            st.write(f"- {referencia.citacao}")
+            st.caption(f"  {referencia.descricao}")
+    else:
+        st.warning("Nenhuma referência confirmada se aplica a este laudo.")
+
+    faltando = base_referencias.substancias_sem_referencia(colecoes)
+    if faltando:
+        st.error(
+            "Sem referência confirmada para: "
+            + ", ".join(faltando)
+            + ". Sai como pendência em vermelho no documento."
+        )
+
+    candidatas = base_referencias.candidatas(colecoes)
+    if candidatas:
+        st.markdown("**Obras encontradas que ainda não foram conferidas**")
+        st.caption(
+            "Encontradas em busca na internet. **Ano, edição e código não foram "
+            "conferidos** — ferramenta nenhuma deve inventar citação num laudo "
+            "assinado. Abra a obra, escreva a citação completa e ela passa a valer."
+        )
+        for referencia in candidatas:
+            with st.expander(referencia.titulo or referencia.id, expanded=False):
+                st.caption(referencia.descricao)
+                st.caption(f"Onde foi encontrada: {referencia.fonte}")
+                citacao = st.text_area(
+                    "Citação completa, como o laudo deve imprimir",
+                    key=f"ref_citacao_{referencia.id}",
+                    height=80,
+                )
+                if st.button(
+                    "Confirmar referência",
+                    key=f"ref_confirmar_{referencia.id}",
+                    disabled=not citacao.strip(),
+                ):
+                    base_referencias.confirmar(referencia.id, citacao, autor)
+                    st.rerun()
+
+    with st.expander("Acrescentar uma referência própria", expanded=False):
+        nova = st.text_area("Citação completa", key="ref_nova_citacao", height=80)
+        descricao = st.text_input("Do que ela trata", key="ref_nova_descricao")
+        substancias = st.text_input(
+            "Substâncias a que se aplica (separadas por vírgula; em branco = vale para todo laudo)",
+            key="ref_nova_substancias",
+        )
+        if st.button("Adicionar à base", disabled=not nova.strip(), key="ref_nova_salvar"):
+            base_referencias.adicionar(
+                identificador=base_referencias.boilerplate.normaliza(nova)[:40].replace(" ", "-"),
+                citacao=nova,
+                descricao=descricao,
+                substancias=[s.strip() for s in substancias.split(",") if s.strip()],
+                autor=autor,
+            )
+            st.rerun()
+
+
 def _painel_conferencia() -> bool:
     """Confronta o declarado na requisição com o descrito pelo perito.
 
@@ -514,6 +580,9 @@ def render() -> None:
         "declara como o exame foi conduzido."
     )
     _painel_biblioteca(exame)
+
+    st.subheader("Referências (seção 6)")
+    _painel_referencias()
 
     st.subheader("Conferência com a requisição")
     st.caption(

@@ -1,0 +1,137 @@
+{
+  "_leia_me": "Base de referências da seção 6. Só entram no laudo as entradas com confirmada=true. As candidatas foram encontradas em busca (o campo fonte traz o endereço), mas NÃO têm ano, edição nem código conferidos: modelo de linguagem inventa citação com facilidade, e citação falsa num laudo assinado é pior que referência faltando. O perito confirma na tela de confirmação, completando os dados a partir da obra.",
+  "referencias": [
+    {
+      "id": "moffat-clarkes",
+      "citacao": "MOFFAT, A. C. (Ed). Clarke's isolation and identification of drugs. Londres: Pharmaceutical Press, 1986.",
+      "descricao": "Obra de referência para isolamento e identificação de fármacos e drogas em geral.",
+      "geral": true,
+      "substancias": [],
+      "metodos": [],
+      "origem": "transcrita",
+      "fonte": "laudo SB 1252/2019 (demanda 00024529-28), Instituto de Criminalística da PC-PI",
+      "confirmada": true
+    },
+    {
+      "id": "onu-cannabis-1987",
+      "citacao": "UNITED NATIONS, Manual for use by national narcotics laboratories. Recommended methods for testing cannabis. New York, 1987.",
+      "descricao": "Métodos recomendados pela ONU para exame de cannabis.",
+      "geral": false,
+      "substancias": ["cannabis sativa l."],
+      "metodos": [],
+      "origem": "transcrita",
+      "fonte": "laudo SB 1252/2019 (demanda 00024529-28), Instituto de Criminalística da PC-PI",
+      "confirmada": true
+    },
+    {
+      "id": "onu-cocaina-1986",
+      "citacao": "UNITED NATIONS, Manual for use by national narcotics laboratories. Recommended methods for testing cocaine. New York, 1986.",
+      "descricao": "Métodos recomendados pela ONU para exame de cocaína.",
+      "geral": false,
+      "substancias": ["cocaina"],
+      "metodos": [],
+      "origem": "transcrita",
+      "fonte": "laudo SB 1252/2019 (demanda 00024529-28), Instituto de Criminalística da PC-PI",
+      "confirmada": true
+    },
+    {
+      "id": "swgdrug-recomendacoes",
+      "citacao": "SCIENTIFIC WORKING GROUP FOR THE ANALYSIS OF SEIZED DRUGS. SWGDRUG Recommendations. Edição 8.2, 27 jun. 2024.",
+      "descricao": "Padrões mínimos para o exame forense de drogas apreendidas, incluindo a exigência de técnicas não correlacionadas para identificação.",
+      "geral": true,
+      "substancias": [],
+      "metodos": [],
+      "origem": "verificada",
+      "fonte": "https://www.swgdrug.org/approved.htm (conferido em 2026-08-28: edição 8.2, 2024-06-27)",
+      "confirmada": true
+    },
+    {
+      "id": "unodc-cannabis",
+      "titulo": "Recommended Methods for the Identification and Analysis of Cannabis and Cannabis Products",
+      "descricao": "Manual da UNODC para identificação e análise de cannabis e produtos de cannabis. Sucede o manual de 1987.",
+      "geral": false,
+      "substancias": ["cannabis sativa l."],
+      "metodos": [],
+      "origem": "candidata",
+      "fonte": "https://www.unodc.org/documents/scientific/Recommended_methods_for_the_Identification_and_Analysis_of_Cannabis_and_Cannabis_products.pdf",
+      "confirmada": false
+    },
+    {
+      "id": "unodc-cocaina",
+      "titulo": "Recommended Methods for the Identification and Analysis of Cocaine in Seized Materials",
+      "descricao": "Manual da UNODC para identificação e análise de cocaína em material apreendido. Sucede o manual de 1986.",
+      "geral": false,
+      "substancias": ["cocaina"],
+      "metodos": [],
+      "origem": "candidata",
+      "fonte": "https://www.unodc.org/unodc/en/scientists/recommended-methods-for-the-identification-and-analysis-of-cocaine-in-seized-materials.html",
+      "confirmada": false
+    },
+    {
+      "id": "unodc-anfetaminas",
+      "titulo": "Recommended Methods for the Identification and Analysis of Amphetamine, Methamphetamine and their Ring-substituted Analogues in Seized Materials",
+      "descricao": "Manual da UNODC para anfetamina, metanfetamina e análogos com substituição no anel — inclui MDMA e congêneres.",
+      "geral": false,
+      "substancias": ["anfetamina", "metanfetamina", "mdma", "ecstasy"],
+      "metodos": [],
+      "origem": "candidata",
+      "fonte": "https://www.unodc.org/unodc/en/scientists/recommended-methods-for-the-identification-and-analysis-of-amphetamine--methamphetamine-and-their-ring-substituted-analogues-in-seized-materials.html",
+      "confirmada": false
+    },
+    {
+      "id": "unodc-canabinoides-sinteticos",
+      "titulo": "Recommended Methods for the Identification and Analysis of Synthetic Cannabinoid Receptor Agonists in Seized Materials (ST/NAR/48 Rev.1)",
+      "descricao": "Manual da UNODC para agonistas sintéticos do receptor canabinoide (\"K2\", \"Spice\" e congêneres).",
+      "geral": false,
+      "substancias": ["canabinoides sinteticos", "k2", "spice"],
+      "metodos": [],
+      "origem": "candidata",
+      "fonte": "https://syntheticdrugs.unodc.org/uploads/syntheticdrugs/res/library/forensics_html/Recommended_methods_for_the_Identification_and_Analysis_of_Synthetic_Cannabinoid_Receptor_Agonists_in_Seized_Materials_ST-NAR-48-Rev.1.pdf",
+      "confirmada": false
+    },
+    {
+      "id": "unodc-catinonas-sinteticas",
+      "titulo": "Recommended Methods for the Identification and Analysis of Synthetic Cathinones in Seized Materials (ST/NAR/49)",
+      "descricao": "Manual da UNODC para catinonas sintéticas.",
+      "geral": false,
+      "substancias": ["catinonas sinteticas", "mefedrona"],
+      "metodos": [],
+      "origem": "candidata",
+      "fonte": "https://www.unodc.org/documents/scientific/STNAR49_Synthetic_Cathinones_E.pdf",
+      "confirmada": false
+    },
+    {
+      "id": "unodc-fentanil",
+      "titulo": "Recommended Methods for the Identification and Analysis of Fentanyl and its Analogues in Biological Specimens",
+      "descricao": "Manual da UNODC para fentanil e análogos. Atenção: trata de espécimes biológicos, não de material apreendido.",
+      "geral": false,
+      "substancias": ["fentanil"],
+      "metodos": [],
+      "origem": "candidata",
+      "fonte": "https://www.unodc.org/documents/scientific/Recommended_methods_for_the_identification_and_analysis_of_Fentanyl.pdf",
+      "confirmada": false
+    },
+    {
+      "id": "unodc-barbituricos-benzodiazepinicos",
+      "titulo": "Recommended Methods for the Identification and Analysis of Barbiturates and Benzodiazepines under International Control (ST/NAR/46)",
+      "descricao": "Manual da UNODC para barbitúricos e benzodiazepínicos sob controle internacional.",
+      "geral": false,
+      "substancias": ["barbituricos", "benzodiazepinicos", "benzodiazepinas"],
+      "metodos": [],
+      "origem": "candidata",
+      "fonte": "https://syntheticdrugs.unodc.org/uploads/syntheticdrugs/res/library/forensics_html/Recommended_methods_for_the_Identification_and_Analysis_of_Barbiturates_and_Benzodiazepines_under_International_Control_ST-NAR-46.pdf",
+      "confirmada": false
+    },
+    {
+      "id": "unodc-perfil-heroina-cocaina",
+      "titulo": "Recommended Methods for the Profiling of Heroin and Cocaine",
+      "descricao": "Manual da UNODC para perfilamento (profiling) de heroína e cocaína — caracterização de impurezas, além da identificação.",
+      "geral": false,
+      "substancias": ["heroina", "cocaina"],
+      "metodos": ["perfilamento", "profiling"],
+      "origem": "candidata",
+      "fonte": "https://www.unodc.org/documents/scientific/Heroin_and_cocaine_profiling_e_eBook.pdf",
+      "confirmada": false
+    }
+  ]
+}
