@@ -239,7 +239,10 @@ def processar(
     # resistiu à conferência. Nada volta ao perito sem explicação — e a explicação
     # aqui assume a falha em vez de culpar a mensagem dele.
     if not alteracoes and not recusas and not abriu_item:
-        recusas = [Recusa(SEM_EXTRACAO)]
+        # Com tudo preenchido, um "certo" do perito é assentimento, não dado
+        # que faltou entender: não há por que devolver recusa.
+        if proxima_fala(exame, colecoes, fechadas).tipo != COMPLETO:
+            recusas = [Recusa(SEM_EXTRACAO)]
 
     fala = proxima_fala(exame, colecoes, fechadas)
     return Resultado(

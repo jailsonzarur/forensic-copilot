@@ -23,6 +23,9 @@ from core.llm import chave_configurada, modelo  # noqa: E402
 #:  slots que devem vir recusados com motivo explicado; "*" = qualquer recusa,
 #:  desde que exista uma — nenhuma mensagem pode ficar sem explicação)
 #:
+#: Valor esperado prefixado por "#" é comparado como NÚMERO: "1,2" e "1.2" são o
+#: mesmo valor, e a notação que o perito usou é preservada em vez de reescrita.
+#:
 #: Valor esperado prefixado por "~" é conferido por conteúdo, não por igualdade:
 #: quanto da frase do perito o extrator transcreve varia, e desde que as palavras
 #: dele estejam lá, a transcrição é fiel.
@@ -99,7 +102,7 @@ CASOS = (
     ("massa por extenso", ["1,2 quilos"], [], (("massa_liquida_valor", "1,2"),), ()),
     # Ponto decimal digitado sai com vírgula: é a notação do laudo ("3,0 g",
     # "1,98 kg"), e o valor é o mesmo. Trocar separador é notação, não conversão.
-    ("massa com ponto decimal", ["1.2 kg"], [], (("massa_liquida_valor", "1,2"),), ()),
+    ("massa com ponto decimal", ["1.2 kg"], [], (("massa_liquida_valor", "#1.2"),), ()),
     # Fala natural: o perito dita, não digita. Número por extenso ou em fração é
     # valor exato e tem que ser transcrito em algarismos, sem virar estimativa.
     ("massa com fração falada", ["17 gramas e meio"], [],
@@ -180,7 +183,15 @@ def main() -> int:
                 problemas.append(f"{nome}: inventou {chave}={estado[chave]!r}")
         for chave, valor in esperados:
             obtido = str(estado.get(chave) or "")
-            ok = valor[1:] in obtido if valor.startswith("~") else obtido == valor
+            if valor.startswith("#"):
+                from core.extracao import _numero
+
+                esperado, lido = _numero(valor[1:]), _numero(obtido)
+                ok = esperado is not None and esperado == lido
+            elif valor.startswith("~"):
+                ok = valor[1:] in obtido
+            else:
+                ok = obtido == valor
             if not ok:
                 problemas.append(
                     f"{nome}: esperava {chave}={valor!r}, veio {estado.get(chave)!r}"

@@ -186,8 +186,22 @@ def _valor_limpo(valor: object) -> str:
 
 
 def _numero(texto: str) -> float | None:
-    """Valor numérico de um campo de medição, ou None se não for número."""
-    limpo = str(texto).strip().replace(" ", "").replace(".", "").replace(",", ".")
+    """Valor numérico de um campo de medição, ou None se não for número.
+
+    Aceita as duas notações que aparecem na prática — "1,2" e "1.2" — porque o
+    valor gravado é o do perito e não se reescreve aqui. Quando os dois
+    separadores aparecem, o último é o decimal ("1.234,5").
+    """
+    limpo = str(texto).strip().replace(" ", "")
+    if not limpo:
+        return None
+    if "," in limpo and "." in limpo:
+        if limpo.rfind(",") > limpo.rfind("."):
+            limpo = limpo.replace(".", "").replace(",", ".")
+        else:
+            limpo = limpo.replace(",", "")
+    else:
+        limpo = limpo.replace(",", ".")
     try:
         return float(limpo)
     except ValueError:

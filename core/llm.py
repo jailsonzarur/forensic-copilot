@@ -87,39 +87,57 @@ def chamar_visao(sistema: str, instrucao: str, imagens: list[bytes]) -> str:
             }
         )
 
+    resposta = _completar(
+        [
+            {"role": "system", "content": sistema},
+            {"role": "user", "content": conteudo},
+        ],
+        temperatura=0.0,
+        json=False,
+    )
+    return resposta.choices[0].message.content or ""
+
+
+def _sem_temperatura(erro: Exception) -> bool:
+    """O modelo recusou a temperatura fixa? Os mais novos só aceitam a padrão."""
+    return "temperature" in str(erro) and "does not support" in str(erro)
+
+
+def _completar(mensagens: list[dict], temperatura: float | None, json: bool = True):
+    """Chama o serviço, reagindo ao que cada geração de modelo aceita."""
+    argumentos: dict = {"model": modelo(), "messages": mensagens}
+    if json:
+        argumentos["response_format"] = {"type": "json_object"}
+    if temperatura is not None:
+        argumentos["temperature"] = temperatura
+
     try:
-        resposta = cliente().chat.completions.create(
-            model=modelo(),
-            temperature=0.0,
-            messages=[
-                {"role": "system", "content": sistema},
-                {"role": "user", "content": conteudo},
-            ],
-        )
+        return cliente().chat.completions.create(**argumentos)
     except ErroLLM:
         raise
     except Exception as erro:
-        raise ErroLLM(f"Não consegui ler o documento: {erro}") from erro
-
-    return resposta.choices[0].message.content or ""
+        if temperatura is not None and _sem_temperatura(erro):
+            # Modelo novo: só aceita a temperatura padrão. Repete sem ela em vez
+            # de obrigar quem instalou a saber disso.
+            argumentos.pop("temperature")
+            try:
+                return cliente().chat.completions.create(**argumentos)
+            except Exception as segundo:
+                raise ErroLLM(
+                    f"Não consegui falar com o serviço de leitura: {segundo}"
+                ) from segundo
+        raise ErroLLM(f"Não consegui falar com o serviço de leitura: {erro}") from erro
 
 
 def chamar_json(sistema: str, usuario: str, temperatura: float = 0.0) -> tuple[dict, str]:
     """Chama o modelo em modo JSON. Devolve (dados, resposta bruta)."""
-    try:
-        resposta = cliente().chat.completions.create(
-            model=modelo(),
-            temperature=temperatura,
-            response_format={"type": "json_object"},
-            messages=[
-                {"role": "system", "content": sistema},
-                {"role": "user", "content": usuario},
-            ],
-        )
-    except ErroLLM:
-        raise
-    except Exception as erro:  # falha de rede, autenticação, cota
-        raise ErroLLM(f"Não consegui falar com o serviço de leitura: {erro}") from erro
+    resposta = _completar(
+        [
+            {"role": "system", "content": sistema},
+            {"role": "user", "content": usuario},
+        ],
+        temperatura,
+    )
 
     bruto = resposta.choices[0].message.content or ""
     return parse_json_seguro(bruto), bruto

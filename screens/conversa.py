@@ -79,7 +79,7 @@ def _painel_estado(exame: Exame) -> None:
     colecoes = st.session_state["colecoes"]
     fechadas = st.session_state["colecoes_fechadas"]
 
-    preenchidos, total = pendencias.resumo(exame, colecoes)
+    preenchidos, total = pendencias.resumo(exame, colecoes, so_conversa=True)
     st.progress(preenchidos / total if total else 0.0)
     st.caption(f"{preenchidos} de {total} campos obrigatórios preenchidos")
 
@@ -169,8 +169,13 @@ def render() -> None:
         st.markdown("### Estado coletado")
         _painel_estado(exame)
 
+    # so_conversa: a referência entre coleções é escolhida pelo perito na
+    # confirmação, então cobrá-la aqui travava o avanço para sempre.
     completo = pendencias.completo(
-        exame, st.session_state["colecoes"], st.session_state["colecoes_fechadas"]
+        exame,
+        st.session_state["colecoes"],
+        st.session_state["colecoes_fechadas"],
+        so_conversa=True,
     )
     st.divider()
     esquerda, direita = st.columns([1, 1])

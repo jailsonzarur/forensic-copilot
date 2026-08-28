@@ -238,6 +238,15 @@ texto boilerplate. NÃO inventar estrutura — extrair dos laudos reais.
   OCR. A orientação é detectada e corrigida antes de ler — na requisição de
   referência foram 90°.
 - Python 3.12 (venv em `.venv`).
+- **Modelo é configurável** (`OPENAI_MODEL` no `.env`) e a chamada se adapta ao
+  que cada geração aceita: os modelos novos recusam `temperature` fixa, e a
+  chamada repete sem ela em vez de obrigar quem instalou a saber disso. A suíte
+  de fidelidade passa igual em `gpt-4o` e `gpt-5.6-terra` — trocar de modelo é
+  decisão de custo e latência, não de fidelidade.
+- **O estado inteiro vai em toda leitura.** `descreve_estado` manda todos os
+  itens já registrados junto de cada mensagem: é context offloading em forma
+  estruturada, melhor que um rascunho de conversa. O painel lateral é esse
+  mesmo estado, visível ao perito.
 
 ---
 
@@ -364,6 +373,18 @@ material num seletor na confirmação. Dedução não é transcrição.
   laudo real.
 
 Parar em cada CHECKPOINT e pedir validação antes de avançar.
+
+## O que a ferramenta NÃO julga
+
+Ela não avalia a coerência técnica do achado. Se o perito registra um ensaio e
+uma substância que, no entender de alguém, não combinam, a ferramenta não
+opina: julgar achado é trabalho do perito, e um modelo "corrigindo" resultado
+de exame é exatamente o que este projeto existe para impedir.
+
+O que ela faz é **apontar contagem que não bate** (cadeia de custódia), porque
+ali a comparação é aritmética entre dois documentos, não juízo técnico. A
+diferença é essa: comparar números declarados é objetivo; dizer que um ensaio
+não poderia ter dado aquele resultado é perícia.
 
 ## Linguagem com o perito
 

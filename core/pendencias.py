@@ -82,14 +82,16 @@ def completo(
     return all(colecao.chave in fechadas for colecao in exame.colecoes)
 
 
-def resumo(exame: Exame, colecoes: dict[str, list[dict]]) -> tuple[int, int]:
+def resumo(
+    exame: Exame, colecoes: dict[str, list[dict]], so_conversa: bool = False
+) -> tuple[int, int]:
     """(campos obrigatórios preenchidos, total de campos obrigatórios)."""
     preenchidos = total = 0
     for colecao in exame.colecoes:
         itens = colecoes.get(colecao.chave, [])
         for item in _itens_efetivos(colecao, itens):
             for slot in colecao.slots:
-                if not _exigido(slot, item, so_conversa=False):
+                if not _exigido(slot, item, so_conversa):
                     continue
                 total += 1
                 if str(item.get(slot.chave, "")).strip():
