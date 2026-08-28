@@ -244,9 +244,9 @@ def _conclusao_e_quesitos(
         _paragrafo(documento, "R – " + quesito.resposta)
 
 
-def _fecho(documento: Document, admin: dict, derivados: dict) -> None:
+def _fecho(documento: Document, admin: dict, derivados: dict, colecoes: dict) -> None:
     _titulo_secao(documento, "6. REFERÊNCIAS")
-    for referencia in boilerplate.REFERENCIAS:
+    for referencia in camada3.referencias(colecoes):
         _paragrafo(documento, referencia)
 
     documento.add_paragraph()
@@ -288,7 +288,7 @@ def montar(
         quesitos if quesitos is not None else list(boilerplate.QUESITOS_DA_REQUISICAO_MODELO),
         respostas_quesitos or {},
     )
-    _fecho(documento, admin, derivados)
+    _fecho(documento, admin, derivados, colecoes)
     return documento
 
 
@@ -310,6 +310,7 @@ def pendencias_do_texto(
         quesitos if quesitos is not None else list(boilerplate.QUESITOS_DA_REQUISICAO_MODELO)
     )
     pedacos = [
+        *camada3.referencias(colecoes),
         *(
             q.resposta
             for q in camada1_quesitos.montar(

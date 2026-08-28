@@ -30,7 +30,8 @@ ARQUIVO = (
 #: "resultado" = parágrafo da seção 4 (ensaio + substância);
 #: "proscricao" = texto legal do quesito 03 (substância);
 #: "natureza"   = construção da resposta do quesito 01 (substância).
-TIPOS = ("resultado", "proscricao", "natureza")
+#: "referencia" = referência bibliográfica da substância (seção 6).
+TIPOS = ("resultado", "proscricao", "natureza", "referencia")
 
 
 def chave(*partes: str) -> str:

@@ -244,6 +244,30 @@ def resultados_obtidos(
     return secoes
 
 
+def referencias(colecoes: dict[str, list[dict]]) -> list[str]:
+    """Referências que este laudo deve citar.
+
+    As gerais sempre; as de substância, só das substâncias efetivamente
+    encontradas. Citar o manual de cannabis num laudo sem cannabis apontaria
+    método que não foi usado. Substância sem referência transcrita vira
+    pendência, como qualquer outra lacuna de redação institucional.
+    """
+    lista = list(boilerplate.REFERENCIAS_GERAIS)
+    for substancia in _positivos(colecoes):
+        chave = boilerplate.chave_substancia(substancia)
+        entradas = boilerplate.REFERENCIAS_POR_SUBSTANCIA.get(chave, ())
+        if not entradas:
+            aprendida = biblioteca.buscar("referencia", biblioteca.chave(substancia))
+            entradas = (aprendida["texto"],) if aprendida else ()
+        if not entradas:
+            lista.append(PENDENTE.format(o_que=f"referência bibliográfica de {substancia}"))
+            continue
+        for entrada in entradas:
+            if entrada not in lista:
+                lista.append(entrada)
+    return lista
+
+
 def legenda(material: dict, indice_material: int, numero_imagem: int) -> str:
     """Legenda da foto, como o laudo real escreve.
 

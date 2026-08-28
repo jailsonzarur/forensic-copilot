@@ -264,6 +264,13 @@ def _lacunas_institucionais(exame: Exame) -> list[dict]:
                 "Use {forma} onde entra a forma do material. Ex.: "
                 "'A substância {forma} trata-se de ...'",
             ),
+            (
+                "referencia",
+                f"Seção 6 — referência bibliográfica de {substancia}",
+                texto_fixo.REFERENCIAS_POR_SUBSTANCIA,
+                "Obra ou manual que embasa o exame desta substância. Só as "
+                "referências das substâncias encontradas vão ao laudo.",
+            ),
         ):
             if fonte.get(chave_sub) or biblioteca.buscar(tipo, identificador):
                 continue

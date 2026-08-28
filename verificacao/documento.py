@@ -91,6 +91,8 @@ ESPERADOS = (
     "Não se aplica.",
     "Sem elementos.",
     "MOFFAT, A. C. (Ed). Clarke's isolation and identification of drugs.",
+    "Recommended methods for testing cannabis. New York, 1987.",
+    "Recommended methods for testing cocaine. New York, 1986.",
     "DOCUMENTO ASSINADO DIGITALMENTE",
     "CRISTIANO RIBEIRO GONÇALVES AFFONSO",
     "Primeira Classe – Matrícula: 218909-7",
@@ -204,6 +206,30 @@ def main() -> int:
         "o marcador do ensaio pendente devia estar no documento",
     )
 
+    # Referência bibliográfica segue as substâncias do caso: citar o manual de
+    # cannabis num laudo sem cannabis apontaria método que não foi usado.
+    so_cocaina = {
+        "materiais": COLECOES["materiais"],
+        "exames_realizados": [
+            {"nome_teste": "Cromatografia em Camada Delgada (CCD)", "item_material": "2",
+             "resultado": "positivo", "substancia": "cocaína"},
+        ],
+    }
+    documento, _, _ = _monta(colecoes=so_cocaina)
+    texto_cocaina = _texto(documento)
+    checa(
+        "testing cocaine" in texto_cocaina,
+        "a referência da substância encontrada devia ser citada",
+    )
+    checa(
+        "testing cannabis" not in texto_cocaina,
+        "não pode citar o manual de cannabis num laudo sem cannabis",
+    )
+    checa(
+        "Clarke's isolation" in texto_cocaina,
+        "a referência geral vale para qualquer identificação",
+    )
+
     # Substância sem texto legal transcrito.
     com_crack = {
         "materiais": COLECOES["materiais"],
@@ -218,6 +244,10 @@ def main() -> int:
     checa(
         any("proscrição" in p for p in pendentes),
         "substância sem texto legal devia virar pendência",
+    )
+    checa(
+        any("referência" in p for p in pendentes),
+        "substância sem referência transcrita devia virar pendência",
     )
 
     # Texto confirmado pelo perito manda sobre a regra.

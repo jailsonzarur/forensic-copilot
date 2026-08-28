@@ -404,6 +404,25 @@ revisão.
 
 Parar em cada CHECKPOINT e pedir validação antes de avançar.
 
+## Texto fixo que NÃO deveria ser fixo
+
+Auditoria do que o `.docx` imprime sem olhar para o caso, feita em 2026-08-28:
+
+| Bloco | Situação |
+|---|---|
+| Cabeçalho, título | institucional — correto ser fixo |
+| Preâmbulo, histórico, fecho | moldura fixa com campos do caso — ok |
+| Conclusão, quesitos | derivados/transcritos do caso — ok |
+| **Referências (seção 6)** | **corrigido**: seguem as substâncias do caso |
+| `SUBTITULO`, "Setor de Química Forense" no preâmbulo | presos ao TIPO de exame, não ao caso. Passam ao registro quando entrar um segundo tipo de laudo |
+| `ASSINATURA` ("DOCUMENTO ASSINADO DIGITALMENTE"), `CARGO` | fixos; laudo assinado à caneta, ou outra carreira, diriam outra coisa |
+
+**Referências:** as gerais valem sempre (o título de Moffat as define assim);
+as da ONU se prendem à substância pelo próprio título, e só entram quando a
+substância aparece no laudo. Citar o manual de cannabis num laudo sem cannabis
+apontaria método que não foi usado. Substância sem referência transcrita vira
+pendência, e a biblioteca aprende a do perito (`tipo="referencia"`).
+
 ## O que a ferramenta NÃO julga
 
 Ela não avalia a coerência técnica do achado. Se o perito registra um ensaio e

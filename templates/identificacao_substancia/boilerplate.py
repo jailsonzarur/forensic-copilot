@@ -99,14 +99,25 @@ QUESITOS_DA_REQUISICAO_MODELO = (
     "Há outros dados julgados úteis?",
 )
 
-REFERENCIAS = (
+#: Referência que vale para qualquer identificação de substância — o próprio
+#: título a define como geral ("identification of drugs").
+REFERENCIAS_GERAIS = (
     "MOFFAT, A. C. (Ed). Clarke's isolation and identification of drugs. "
     "Londres: Pharmaceutical Press, 1986.",
-    "UNITED NATIONS, Manual for use by national narcotics laboratories. "
-    "Recommended methods for testing cannabis. New York, 1987.",
-    "UNITED NATIONS, Manual for use by national narcotics laboratories. "
-    "Recommended methods for testing cocaine. New York, 1986.",
 )
+
+#: Referências que o próprio título prende a uma substância. Citar o manual de
+#: cannabis num laudo sem cannabis seria apontar método que não foi usado.
+REFERENCIAS_POR_SUBSTANCIA: dict[str, tuple[str, ...]] = {
+    "cannabis sativa l.": (
+        "UNITED NATIONS, Manual for use by national narcotics laboratories. "
+        "Recommended methods for testing cannabis. New York, 1987.",
+    ),
+    "cocaina": (
+        "UNITED NATIONS, Manual for use by national narcotics laboratories. "
+        "Recommended methods for testing cocaine. New York, 1986.",
+    ),
+}
 
 FECHO = (
     "Nada mais havendo a acrescentar, deu-se por findo o presente laudo de exame "
@@ -220,7 +231,7 @@ def blocos_pendentes() -> list[str]:
         pendencias.append("texto legal de proscrição")
     if not RESPOSTAS_CONHECIDAS:
         pendencias.append("padrão de resposta dos quesitos")
-    if not REFERENCIAS:
+    if not REFERENCIAS_GERAIS and not REFERENCIAS_POR_SUBSTANCIA:
         pendencias.append("referências bibliográficas")
     return pendencias
 
