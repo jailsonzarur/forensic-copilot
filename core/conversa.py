@@ -193,11 +193,6 @@ def _fala_de_quesito(perguntas: list[str], respostas: dict[str, str]) -> Fala | 
             "\n\nEste quesito tem resposta padrão, montada a partir do que você já "
             "registrou. Responda «confirmo» para usá-la, ou escreva a sua."
         )
-    else:
-        texto += (
-            "\n\nNão há resposta padrão transcrita para este quesito. Responda com "
-            "as suas palavras."
-        )
     return Fala(QUESITO, texto, quesito_numero=quesito.numero, quesito_pergunta=quesito.pergunta)
 
 

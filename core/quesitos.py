@@ -8,6 +8,7 @@ para o perito redigir.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 
 from core import derivados as camada3
@@ -29,8 +30,18 @@ class Quesito:
 PADRAO_ACEITO = "__padrão__"
 
 
+#: Enumerador com que a requisição lista os quesitos: "a)", "b.", "1 -", "I)".
+#: O laudo renumera como 01, 02, então o prefixo não pode ir junto do texto —
+#: nem atrapalhar o casamento com o padrão de resposta transcrito.
+_ENUMERADOR = re.compile(r"^\s*[a-zA-Z0-9]{1,3}\s*[)\.\-–:]\s+")
+
+
+def sem_enumerador(pergunta: str) -> str:
+    return _ENUMERADOR.sub("", str(pergunta)).strip()
+
+
 def _chave(pergunta: str) -> str:
-    return boilerplate.normaliza(pergunta).strip()
+    return boilerplate.normaliza(sem_enumerador(pergunta)).strip()
 
 
 def padrao_de_resposta(pergunta: str) -> str:
@@ -56,9 +67,9 @@ def responder(pergunta: str, colecoes: dict[str, list[dict]], derivados: dict) -
 def numerar(perguntas: list[str]) -> list[Quesito]:
     """Transforma as perguntas transcritas em quesitos numerados 01, 02, ..."""
     return [
-        Quesito(numero=f"{i:02d}", pergunta=pergunta.strip())
+        Quesito(numero=f"{i:02d}", pergunta=sem_enumerador(pergunta))
         for i, pergunta in enumerate(perguntas, start=1)
-        if pergunta and pergunta.strip()
+        if pergunta and sem_enumerador(pergunta)
     ]
 
 

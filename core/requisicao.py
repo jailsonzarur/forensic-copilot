@@ -31,6 +31,7 @@ from dataclasses import dataclass, field
 
 from config.schema import Exame
 from core import ocr
+from core import quesitos as camada1_quesitos
 from core.llm import chamar_json, chamar_visao
 from templates.identificacao_substancia import boilerplate
 
@@ -246,7 +247,7 @@ def extrair(exame: Exame, texto: str) -> Leitura:
             if boilerplate.normaliza(texto_pergunta) not in referencia:
                 leitura.descartados.append(f"quesito: {texto_pergunta[:40]}...")
                 continue
-            leitura.quesitos.append(texto_pergunta)
+            leitura.quesitos.append(camada1_quesitos.sem_enumerador(texto_pergunta))
 
     return leitura
 

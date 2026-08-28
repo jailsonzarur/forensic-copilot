@@ -150,7 +150,26 @@ def main() -> int:
     print("\nquesitos com ruído de OCR sem padrão:", sem_padrao or "(nenhum)")
     checa(not sem_padrao, "ruído de OCR não podia quebrar o casamento dos quesitos")
 
-    # 5. O caminho de leitura precisa preferir OCR ao modelo de visão.
+    # 5. A requisição lista os quesitos como "a)", "b)". O enumerador não pode ir
+    #    junto do texto: o laudo renumera como 01, 02, e o prefixo quebrava o
+    #    casamento com o padrão de resposta transcrito.
+    com_letra = [
+        "a) Qual a natureza do material apresentado a exame?",
+        "b. Quais suas características e peso exato?",
+        "1 - São substâncias venenosas?",
+    ]
+    limpos = camada1_quesitos.numerar(com_letra)
+    print("\nquesitos sem enumerador:", [q.pergunta for q in limpos])
+    checa(
+        all(not q.pergunta[:3].strip(" ").startswith(("a)", "b.", "1 ")) for q in limpos),
+        "o enumerador da requisição não podia ficar no texto do quesito",
+    )
+    checa(
+        all(camada1_quesitos.padrao_de_resposta(p) for p in com_letra),
+        "o enumerador não podia impedir o casamento com o padrão de resposta",
+    )
+
+    # 6. O caminho de leitura precisa preferir OCR ao modelo de visão.
     print("tesseract disponível nesta máquina:", ocr.disponivel())
 
     print("\n" + "=" * 60)
