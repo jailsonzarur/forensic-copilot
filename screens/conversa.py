@@ -24,9 +24,11 @@ from core.state import (
 
 
 def _fala_para_o_perito(fala: controlador.Fala) -> str:
-    """Texto exibido. Só a forma da pergunta passa por leitura automática; o
-    que falta continua sendo decidido pela varredura de pendências."""
-    if fala.tipo != controlador.PERGUNTA or len(fala.campos_faltando) < 2:
+    """Texto exibido. Só a FORMA da pergunta passa por leitura automática; o
+    que falta continua sendo decidido pela varredura de pendências, e o
+    formulador é proibido de sugerir resposta. Se a chamada falhar, o texto
+    determinístico volta."""
+    if fala.tipo != controlador.PERGUNTA or not fala.campos_faltando:
         return fala.texto
     return formulador.formular(fala.rotulo_item, list(fala.campos_faltando), fala.texto)
 
@@ -43,8 +45,8 @@ def _inicia_conversa(exame: Exame) -> None:
     )
     fala = st.session_state["fala_atual"]
     abertura = (
-        "Vamos registrar o que você examinou. Pode falar como você fala — eu só "
-        "anoto o que você disser, e pergunto o que faltar."
+        "Vamos anotar esse exame. Fala como preferir — vou registrando o que "
+        "você disser e pergunto o que faltar. Nada entra no laudo por mim."
     )
     st.session_state["mensagens"].append(
         {"role": "assistant", "content": f"{abertura}\n\n{_fala_para_o_perito(fala)}"}

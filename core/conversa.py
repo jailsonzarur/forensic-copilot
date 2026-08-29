@@ -183,17 +183,17 @@ def _fala_de_quesito(
 
     quesito = faltando[0]
     modelo = camada1_quesitos.padrao_de_resposta(quesito.pergunta, exame)
-    texto = f"Quesito {quesito.numero} da requisição — {quesito.pergunta}"
+    texto = f"Quesito {quesito.numero}: {quesito.pergunta}"
 
     if modelo and "{" not in modelo:
         texto += (
-            f"\n\nA resposta padrão do Instituto para este quesito é: «{modelo}». "
-            "Responda «confirmo» para usá-la, ou escreva a sua."
+            f"\n\nO Instituto costuma responder assim: «{modelo}». "
+            "Se serve pro caso, escreva «confirmo». Se não, escreva a sua."
         )
     elif modelo:
         texto += (
-            "\n\nEste quesito tem resposta padrão, montada a partir do que você já "
-            "registrou. Responda «confirmo» para usá-la, ou escreva a sua."
+            "\n\nJá tem uma resposta padrão montada a partir do que você "
+            "registrou. Escreva «confirmo» pra usar essa, ou digite a sua."
         )
     return Fala(QUESITO, texto, quesito_numero=quesito.numero, quesito_pergunta=quesito.pergunta)
 
@@ -329,8 +329,9 @@ def proxima_fala(
 
     return Fala(
         COMPLETO,
-        "Tudo registrado, inclusive os quesitos da requisição. Revise o painel ao "
-        "lado e avance para a confirmação.",
+        "Pronto, tá tudo aqui — inclusive as respostas aos quesitos. Dá uma "
+        "olhada no painel do lado e, quando estiver de acordo, siga pra "
+        "confirmação.",
     )
 
 
@@ -343,8 +344,9 @@ def saudacao(
 ) -> str:
     fala = proxima_fala(exame, colecoes, fechadas, quesitos, respostas)
     return (
-        "Vamos registrar o que você examinou. Pode falar como você fala — eu só "
-        "anoto o que você disser, e pergunto o que faltar.\n\n" + fala.texto
+        "Vamos anotar esse exame. Fala como preferir — vou registrando o que "
+        "você disser e pergunto o que faltar. Nada entra no laudo por mim.\n\n"
+        + fala.texto
     )
 
 
@@ -361,8 +363,31 @@ def _vincula(exame: Exame, colecoes: dict[str, list[dict]], material: int) -> No
 
 
 def _texto_alteracoes(alteracoes: list[Alteracao]) -> str:
-    linhas = "\n".join(f"- {a.descricao()}" for a in alteracoes)
-    return f"Registrei:\n{linhas}"
+    """Confirmação humana do que foi gravado.
+
+    O texto sai da lista de ``alteracoes`` que voltou de ``aplicar`` — por
+    construção, o assistente não pode afirmar ter anotado nada que não gravou.
+    Agrupa por item para não sair uma linha por campo, o que soaria formulário.
+    """
+    grupos: dict[tuple[str, int], list[Alteracao]] = {}
+    ordem: list[tuple[str, int]] = []
+    for alteracao in alteracoes:
+        chave = (alteracao.colecao.chave, alteracao.indice)
+        if chave not in grupos:
+            ordem.append(chave)
+            grupos[chave] = []
+        grupos[chave].append(alteracao)
+
+    partes: list[str] = []
+    for chave in ordem:
+        do_item = grupos[chave]
+        rotulo = f"{do_item[0].colecao.label_singular} {do_item[0].indice}"
+        pares = ", ".join(f"{a.slot.label.lower()}: {a.valor}" for a in do_item)
+        partes.append(f"{rotulo} — {pares}")
+
+    texto = "Anotei: " + "; ".join(partes)
+    # Alguns valores já vêm com ponto ("Cannabis sativa L."); evita ".." no fim.
+    return texto if texto.endswith(".") else texto + "."
 
 
 def processar(

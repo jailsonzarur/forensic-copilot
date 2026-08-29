@@ -160,34 +160,33 @@ class Recusa:
 
         if self.motivo == "aproximado":
             return (
-                f"Você disse {self._citacao()}. {campo.capitalize()} vai ao laudo "
-                "como medição sua, então não registro estimativa — me diga o valor "
-                "exato."
+                f"Você disse {self._citacao()}, mas {campo} vai ao laudo como "
+                "medição sua — estimativa aqui viraria número medido. Me diga "
+                "o valor exato que você aferiu."
             )
         if self.motivo == "ambiguo":
             return (
-                f"Você falou de {campo}, mas {self._citacao()} não me deixa seguro "
-                "de qual é o valor, e eu não vou adivinhar. Pode repetir de outro jeito?"
+                f"Você tocou em {campo}, só que {self._citacao()} não me deixa "
+                "seguro de qual é o valor — e eu não vou chutar. Pode repetir "
+                "de outro jeito?"
             )
         if self.motivo == "fora_do_escopo":
             return (
-                f"{self._citacao().capitalize()} não corresponde a nada que este "
-                "laudo registre, então não anotei nada."
+                f"{self._citacao().capitalize()} não é campo desse laudo, "
+                "então deixei passar."
             )
         if self.motivo == "sem_extracao":
             return (
-                "Não consegui aproveitar nada dessa mensagem. Se você informou algum "
-                "dado aí, quem não entendeu fui eu, não você — tente dizer de outro "
-                "jeito, com outras palavras."
+                "Aqui a culpa foi minha — não peguei nada dessa mensagem. Se "
+                "tem dado aí, tenta dizer de outro jeito que eu registro."
             )
         if self.motivo == "pergunta":
             return (
-                "Entendi isso como uma pergunta, não como um dado do exame, então "
-                "não anotei nada."
+                "Entendi isso como pergunta pra mim, não como dado do exame, "
+                "então não anotei nada."
             )
         return (
-            "Não vi nessa mensagem nenhuma informação que entre no laudo, então "
-            "não anotei nada."
+            "Não vi dado do laudo nessa mensagem, então não anotei nada."
         )
 
 
