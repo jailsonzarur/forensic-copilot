@@ -26,11 +26,16 @@ from core.state import (
 def _fala_para_o_perito(fala: controlador.Fala) -> str:
     """Texto exibido. Só a FORMA da pergunta passa por leitura automática; o
     que falta continua sendo decidido pela varredura de pendências, e o
-    formulador é proibido de sugerir resposta. Se a chamada falhar, o texto
-    determinístico volta."""
+    formulador é proibido de sugerir resposta ou engolir opções fechadas. Se
+    a chamada falhar, o texto determinístico volta."""
     if fala.tipo != controlador.PERGUNTA or not fala.campos_faltando:
         return fala.texto
-    return formulador.formular(fala.rotulo_item, list(fala.campos_faltando), fala.texto)
+    return formulador.formular(
+        fala.rotulo_item,
+        list(fala.campos_faltando),
+        fala.texto,
+        list(fala.opcoes_por_campo) or None,
+    )
 
 
 def _inicia_conversa(exame: Exame) -> None:

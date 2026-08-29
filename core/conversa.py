@@ -124,6 +124,11 @@ class Fala:
     #: formular uma pergunta que cubra mais de um campo de uma vez.
     rotulo_item: str = ""
     campos_faltando: tuple[str, ...] = ()
+    #: Para cada campo em ``campos_faltando``, as opções fechadas dele (tupla
+    #: vazia quando o campo é aberto). O formulador precisa listá-las na
+    #: pergunta reformulada; senão o perito responde algo que a ferramenta
+    #: descarta em silêncio.
+    opcoes_por_campo: tuple[tuple[str, ...], ...] = ()
     #: Material de que a conversa está tratando. É ele que vincula o exame ao
     #: material, sem perguntar de novo e sem o extrator deduzir.
     material_contexto: int = 0
@@ -245,6 +250,9 @@ def _pergunta_do_item(
         indice,
         rotulo_item=rotulo or colecao.label_singular,
         campos_faltando=tuple(s.label for s in faltando),
+        opcoes_por_campo=tuple(
+            tuple(s.opcoes) if s.opcoes_fechadas else () for s in faltando
+        ),
         material_contexto=material_contexto,
     )
 
