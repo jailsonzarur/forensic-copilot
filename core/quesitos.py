@@ -11,8 +11,9 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
+from config.schema import Exame
 from core import derivados as camada3
-from templates.identificacao_substancia import boilerplate
+from core import templates as texto_fixo
 
 
 @dataclass
@@ -41,27 +42,53 @@ def sem_enumerador(pergunta: str) -> str:
 
 
 def _chave(pergunta: str) -> str:
-    return boilerplate.normaliza(sem_enumerador(pergunta)).strip()
+    return texto_fixo.boilerplate(None).normaliza(sem_enumerador(pergunta)).strip()
 
 
-def padrao_de_resposta(pergunta: str) -> str:
-    """Modelo de resposta transcrito, ou string vazia se a pergunta é nova."""
-    return boilerplate.RESPOSTAS_CONHECIDAS.get(_chave(pergunta), "")
+def padrao_de_resposta(pergunta: str, exame: Exame | None = None) -> str:
+    """Modelo de resposta transcrito, ou string vazia se a pergunta é nova.
+
+    O conjunto de padrões é do TIPO DE EXAME: "Vide item 2. EXAMES" existe no
+    laudo veicular e não no de substância.
+    """
+    conhecidas = texto_fixo.texto(exame, "RESPOSTAS_CONHECIDAS", {})
+    return conhecidas.get(_chave(pergunta), "")
 
 
-def responder(pergunta: str, colecoes: dict[str, list[dict]], derivados: dict) -> tuple[str, bool]:
+class _Preenchimento(dict):
+    """Marcadores do padrão de resposta, calculados só quando o texto os pede."""
+
+    def __init__(self, colecoes: dict, derivados: dict):
+        super().__init__()
+        self._colecoes = colecoes
+        self._derivados = derivados
+
+    def __missing__(self, chave: str) -> str:
+        if chave == "natureza":
+            return self._derivados.get(camada3.CHAVE_NATUREZA) or camada3.natureza(
+                self._colecoes
+            )
+        if chave == "proscricao":
+            return self._derivados.get(camada3.CHAVE_PROSCRICAO) or camada3.proscricao(
+                self._colecoes
+            )
+        return ""
+
+
+def responder(
+    pergunta: str,
+    colecoes: dict[str, list[dict]],
+    derivados: dict,
+    exame: Exame | None = None,
+) -> tuple[str, bool]:
     """(resposta preenchida, se veio de padrão conhecido)."""
-    modelo = padrao_de_resposta(pergunta)
+    modelo = padrao_de_resposta(pergunta, exame)
     if not modelo:
         return (
             camada3.PENDENTE.format(o_que=f"resposta ao quesito: {pergunta}"),
             False,
         )
-    preenchimento = {
-        "natureza": derivados.get(camada3.CHAVE_NATUREZA) or camada3.natureza(colecoes),
-        "proscricao": derivados.get(camada3.CHAVE_PROSCRICAO) or camada3.proscricao(colecoes),
-    }
-    return modelo.format(**preenchimento), True
+    return modelo.format_map(_Preenchimento(colecoes, derivados)), True
 
 
 def numerar(perguntas: list[str]) -> list[Quesito]:
@@ -78,12 +105,13 @@ def montar(
     colecoes: dict[str, list[dict]],
     derivados: dict,
     respostas_do_perito: dict[str, str] | None = None,
+    exame: Exame | None = None,
 ) -> list[Quesito]:
     """Quesitos prontos para o documento, com a resposta do perito prevalecendo."""
     escritas = respostas_do_perito or {}
     prontos: list[Quesito] = []
     for quesito in numerar(perguntas):
-        resposta, conhecido = responder(quesito.pergunta, colecoes, derivados)
+        resposta, conhecido = responder(quesito.pergunta, colecoes, derivados, exame)
         propria = str(escritas.get(quesito.numero, "")).strip()
         quesito.padrao_conhecido = conhecido
         if propria and propria != PADRAO_ACEITO:
@@ -103,6 +131,8 @@ def pendentes(perguntas: list[str], respostas: dict[str, str]) -> list[Quesito]:
     return [q for q in numerar(perguntas) if not respondido(q.numero, respostas)]
 
 
-def sem_padrao(perguntas: list[str]) -> list[str]:
+def sem_padrao(perguntas: list[str], exame: Exame | None = None) -> list[str]:
     """Perguntas para as quais não há resposta transcrita de laudo real."""
-    return [p.strip() for p in perguntas if p.strip() and not padrao_de_resposta(p)]
+    return [
+        p.strip() for p in perguntas if p.strip() and not padrao_de_resposta(p, exame)
+    ]

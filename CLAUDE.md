@@ -146,6 +146,7 @@ referencia/                # laudos reais; fora do git (dados pessoais)
 verificacao/
   fluxo.py                 # controlador, com extrator falso (sem API)
   referencias.py           # base da seção 6 e sua seleção (sem API)
+  veicular.py              # laudo veicular contra os reais (sem API)
   biblioteca.py            # redação aprendida e pendências (sem API)
   tela_requisicao.py       # a tela do anexo pela UI real (sem API)
   requisicao.py            # consenso e descarte de leitura (sem API)
@@ -205,7 +206,45 @@ de terceiro, não do perito:
   impressos**: o laudo de referência não os traz. Entram no documento quando
   algum laudo real mostrar onde.
 
-## Primeiro (e único, no v1) exame: Identificação de Substância
+## Tudo que é do TIPO DE EXAME sai do código
+
+Um segundo laudo não podia existir enquanto o montador soubesse o que é
+"substância". Hoje o tipo de exame declara, no registro:
+
+- **as seções do documento** (`Exame.secoes`) — identificação de substância tem
+  histórico e referências; identificação veicular não tem nenhum dos dois;
+- **o seu pacote de texto fixo** (`Exame.template`), resolvido por
+  `core/templates.py`;
+- **grupos de campos repetíveis** (`Exame.grupos_admin`) — o laudo veicular
+  pode ser assinado por dois peritos, com matrícula própria, e o preâmbulo vai
+  ao plural;
+- **onde ficam as imagens** (`Exame.imagens_em_apendice`) — no corpo, como no
+  laudo de substância, ou em APÊNDICE FOTOGRÁFICO ao fim, como no veicular;
+- **como descrever o objeto e cada exame**: se o template traz
+  `descricao_objeto` e `paragrafo_do_exame`, o montador chama; senão vale a
+  montagem do laudo de substância. Regra de veículo não entra no `core`.
+
+Os padrões de resposta dos quesitos também são por exame: "Vide item 2. EXAMES"
+existe no veicular e não no de substância.
+
+## Segundo exame: Identificação Veicular
+
+Transcrito dos laudos reais das demandas 00078413-75 e 00082450-35. Estrutura:
+preâmbulo → 1. DO VEÍCULO → 2. EXAMES (2.1 NIV, 2.2 Motor, 2.3 Placa) →
+3. CONCLUSÃO → quesitos → fecho → assinaturas → apêndice fotográfico.
+
+Os parágrafos da seção 2 são altamente templatizados: variam a numeração, o
+local da gravação, quais caracteres divergiam, o tratamento aplicado e o
+resultado da revelação. `verificacao/veicular.py` confere os três casos reais
+caractere por caractere, inclusive a concordância ("o 17º caractere
+apresentava … do caractere latente original" contra "todos os caracteres
+apresentavam … dos caracteres latentes originais").
+
+**Pendente:** derivar as respostas dos quesitos 1 e 5 dos resultados
+registrados (hoje o perito as escreve na conversa), e a consulta ao SINESP, que
+aparece na conclusão e no quesito 6.
+
+## Primeiro exame: Identificação de Substância
 
 Química Forense, baseado em laudos reais do Instituto de Criminalística da
 PC-PI. Os 4 laudos de exemplo são a **fonte de verdade** para tom, estrutura e

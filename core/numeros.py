@@ -182,6 +182,19 @@ def data_curta(iso: str) -> str:
     return dia.strftime("%d/%m/%y")
 
 
+def data_dmy(iso: str) -> str:
+    """"2024-08-08" -> "08/08/2024".
+
+    O laudo de identificação veicular escreve o ano com quatro dígitos; o de
+    substância, com dois ("23/04/19"). Cada template escolhe a sua.
+    """
+    try:
+        dia = date.fromisoformat(str(iso).strip())
+    except ValueError:
+        return str(iso).strip()
+    return dia.strftime("%d/%m/%Y")
+
+
 def com_zero(valor: str) -> str:
     """"2" -> "02", como o laudo grafa a contagem de invólucros."""
     texto = str(valor).strip()

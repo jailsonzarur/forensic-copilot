@@ -43,6 +43,26 @@ def _edita_admin(exame: Exame) -> None:
             if novo != atual:
                 admin[campo.chave] = novo
 
+    # Grupos repetíveis — quantos peritos assinam varia por caso.
+    for grupo in exame.grupos_admin:
+        entradas = admin.get(grupo.chave)
+        if not isinstance(entradas, list) or not entradas:
+            continue
+        st.markdown(f"**{grupo.label_plural if hasattr(grupo, 'label_plural') else grupo.label_singular}**")
+        for indice, entrada in enumerate(entradas, start=1):
+            st.caption(f"{grupo.label_singular} {indice}")
+            colunas = st.columns(max(len(grupo.campos), 1))
+            for posicao, campo in enumerate(grupo.campos):
+                with colunas[posicao % len(colunas)]:
+                    atual = entrada.get(campo.chave, "")
+                    novo = st.text_input(
+                        campo.label + (" *" if campo.obrigatorio else ""),
+                        value=atual,
+                        key=f"conf_grupo_{grupo.chave}_{indice}_{campo.chave}",
+                    )
+                    if novo != atual:
+                        entrada[campo.chave] = novo
+
 
 def _escolhe_referencia(slot, indice: int, item: dict) -> None:
     """Referência entre coleções: quem aponta é o perito, não o extrator."""
@@ -612,6 +632,11 @@ def render() -> None:
         for c in exame.campos_admin
         if c.obrigatorio and not str(st.session_state["admin"].get(c.chave, "")).strip()
     ]
+    for grupo in exame.grupos_admin:
+        for indice, entrada in enumerate(st.session_state["admin"].get(grupo.chave, []), start=1):
+            for campo in grupo.campos:
+                if campo.obrigatorio and not str(entrada.get(campo.chave, "")).strip():
+                    admin_faltando.append(f"{grupo.label_singular} {indice}: {campo.label}")
     conclusao_vazia = not str(
         st.session_state["derivados"].get(camada3.CHAVE_CONCLUSAO, "")
     ).strip()

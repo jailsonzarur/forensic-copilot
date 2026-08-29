@@ -162,7 +162,7 @@ def render() -> None:
 
     with st.expander("Dados administrativos transcritos", expanded=False):
         admin = st.session_state["admin"]
-        rotulos = {c.chave: c.label for c in exame.campos_admin}
+        rotulos = {c.chave: c.label for c in exame.todos_campos_admin()}
         preenchidos = {rotulos[k]: v for k, v in admin.items() if v}
         if preenchidos:
             st.dataframe(

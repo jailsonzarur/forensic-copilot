@@ -65,11 +65,13 @@ def _paragrafo_fecho(documento: Document, ctx) -> None:
     modelo = ctx.texto("FECHO", "")
     if not modelo:
         return
+    valores = _campos_do_preambulo(ctx)
     extenso = _paginas(ctx.derivados)
     if extenso:
-        _paragrafo(documento, _formata(modelo, {"paginas_extenso": extenso}))
+        _paragrafo(documento, _formata(modelo, {**valores, "paginas_extenso": extenso}))
         return
 
+    modelo = _formata(modelo, {**valores, "paginas_extenso": "{paginas_extenso}"})
     antes, _, depois = modelo.partition("{paginas_extenso}")
     paragrafo = documento.add_paragraph()
     paragrafo.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
@@ -202,6 +204,10 @@ def _campos_do_preambulo(ctx: Contexto) -> dict:
         ctx.admin.get("data_recebimento") or ctx.admin.get("data_exame", "")
     )
     valores["data_realizacao"] = numeros.data_curta(ctx.admin.get("data_realizacao", ""))
+    valores["data_encerramento_extenso"] = numeros.data_por_extenso(
+        ctx.admin.get("data_encerramento", "")
+    )
+    valores["paginas_apendice"] = "1" if ctx.imagens else "0"
 
     peritos = ctx.peritos()
     nomes = [str(p.get("perito_designado", "")).strip() for p in peritos]
@@ -241,10 +247,17 @@ def _objetos(documento: Document, ctx: Contexto, secao: Secao) -> None:
     chave = secao.chave or "materiais"
     itens = ctx.colecoes.get(chave, [])
     varios = len(itens) > 1
+    # O template do exame descreve o próprio objeto quando sabe fazê-lo; o
+    # montador não conhece nem material nem veículo.
+    proprio = getattr(ctx.boiler, "descricao_objeto", None)
     for indice, item in enumerate(itens, start=1):
-        descricao = ctx.derivados.get(
-            f"{camada3.PREFIXO_MATERIAL}{indice}"
-        ) or camada3.descricao_material(item)
+        guardada = ctx.derivados.get(f"{camada3.PREFIXO_MATERIAL}{indice}")
+        if guardada:
+            descricao = guardada
+        elif proprio is not None:
+            descricao = proprio(item, ctx.admin)
+        else:
+            descricao = camada3.descricao_material(item)
         prefixo = f"{chr(ord('a') + indice - 1)}) " if varios else ""
         _paragrafo(documento, f"{prefixo}{descricao}")
 
@@ -277,9 +290,7 @@ def _resultados(documento: Document, ctx: Contexto, secao: Secao) -> None:
     if secao.titulo:
         _titulo_secao(documento, secao.titulo)
     numero = secao.titulo.split(".")[0].strip() if secao.titulo else ""
-    for ordem, item in enumerate(
-        camada3.resultados_obtidos(ctx.colecoes, ctx.derivados), start=1
-    ):
+    for ordem, item in enumerate(_subsecoes(ctx, secao), start=1):
         rotulo = f"{numero}.{ordem}. {item['titulo']}" if numero else item["titulo"]
         _paragrafo(
             documento,
@@ -291,12 +302,33 @@ def _resultados(documento: Document, ctx: Contexto, secao: Secao) -> None:
         _paragrafo(documento, item["texto"])
 
 
+def _subsecoes(ctx: Contexto, secao: Secao) -> list[dict]:
+    """Subseções da seção de resultados, montadas por quem sabe montá-las.
+
+    Se o template do exame traz ``paragrafo_do_exame``, ele redige cada item da
+    coleção indicada; senão vale a montagem do laudo de substância.
+    """
+    proprio = getattr(ctx.boiler, "paragrafo_do_exame", None)
+    if proprio is None or not secao.chave:
+        return camada3.resultados_obtidos(ctx.colecoes, ctx.derivados)
+
+    partes: list[dict] = []
+    for item in ctx.colecoes.get(secao.chave, []):
+        titulo, texto = proprio(item)
+        partes.append({"titulo": titulo, "texto": texto})
+    return partes
+
+
 def _conclusao(documento: Document, ctx: Contexto, secao: Secao) -> None:
     if secao.titulo:
         _titulo_secao(documento, secao.titulo)
     resultados = ctx.derivados.get(camada3.CHAVE_CONCLUSAO) or camada3.conclusao(ctx.colecoes)[0]
     modelo = ctx.texto("CONCLUSAO", "{resultados}")
-    _paragrafo(documento, _formata(modelo, {"resultados": resultados.rstrip(".")}))
+    # Alguns templates já fecham a frase com ponto depois do marcador; outros
+    # esperam que a pontuação venha no próprio resultado.
+    if "{resultados}." in modelo:
+        resultados = resultados.rstrip(".")
+    _paragrafo(documento, _formata(modelo, {"resultados": resultados}))
 
 
 def _quesitos(documento: Document, ctx: Contexto, secao: Secao) -> None:
@@ -309,7 +341,7 @@ def _quesitos(documento: Document, ctx: Contexto, secao: Secao) -> None:
 
     perguntas = ctx.quesitos or list(ctx.texto("QUESITOS_DA_REQUISICAO_MODELO", ()))
     for quesito in camada1_quesitos.montar(
-        perguntas, ctx.colecoes, ctx.derivados, ctx.respostas_quesitos
+        perguntas, ctx.colecoes, ctx.derivados, ctx.respostas_quesitos, ctx.exame
     ):
         _paragrafo(documento, f"{quesito.numero} – {quesito.pergunta}", espaco_antes=6)
         _paragrafo(documento, "R – " + quesito.resposta)
@@ -355,7 +387,7 @@ def _apendice(documento: Document, ctx: Contexto, secao: Secao) -> None:
     documento.add_page_break()
     _paragrafo(
         documento,
-        secao.titulo or "APÊNDICE FOTOGRÁFICO",
+        secao.titulo or ctx.texto("TITULO_APENDICE", "APÊNDICE FOTOGRÁFICO"),
         alinhamento=WD_ALIGN_PARAGRAPH.CENTER,
         negrito=True,
     )
@@ -456,19 +488,34 @@ def pendencias_do_texto(
     derivados: dict,
     quesitos: list[str] | None = None,
     respostas_quesitos: dict[str, str] | None = None,
+    exame: Exame | None = None,
 ) -> list[str]:
     """Marcadores [PENDENTE: ...] que apareceriam no documento."""
     perguntas = quesitos or []
+    tipos = {s.tipo for s in (exame.secoes if exame and exame.secoes else SECOES_PADRAO)}
+    # Derivações que só alguns tipos de laudo usam: o veicular não tem natureza
+    # de substância nem texto de proscrição, e cobrá-las ali seria pendência
+    # fantasma.
+    derivadas_de_substancia = bool(
+        texto_fixo.texto(exame, "NATUREZA_POR_SUBSTANCIA", {})
+        or texto_fixo.texto(exame, "PROSCRICAO_POR_SUBSTANCIA", {})
+    )
     pedacos = [
-        *camada3.referencias(colecoes),
+        *(camada3.referencias(colecoes) if "referencias" in tipos else []),
+        *(
+            [
+                derivados.get(camada3.CHAVE_NATUREZA) or camada3.natureza(colecoes),
+                derivados.get(camada3.CHAVE_PROSCRICAO) or camada3.proscricao(colecoes),
+            ]
+            if derivadas_de_substancia
+            else []
+        ),
         *(
             q.resposta
             for q in camada1_quesitos.montar(
-                perguntas, colecoes, derivados, respostas_quesitos or {}
+                perguntas, colecoes, derivados, respostas_quesitos or {}, exame
             )
         ),
-        derivados.get(camada3.CHAVE_NATUREZA) or camada3.natureza(colecoes),
-        derivados.get(camada3.CHAVE_PROSCRICAO) or camada3.proscricao(colecoes),
         *(s["texto"] for s in camada3.resultados_obtidos(colecoes, derivados)),
         *(
             derivados.get(f"{camada3.PREFIXO_MATERIAL}{i}")

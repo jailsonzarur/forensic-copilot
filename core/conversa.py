@@ -168,7 +168,9 @@ def _itens_referenciaveis(
     return "\n\nJá registrados: " + "; ".join(rotulos) + "."
 
 
-def _fala_de_quesito(perguntas: list[str], respostas: dict[str, str]) -> Fala | None:
+def _fala_de_quesito(
+    perguntas: list[str], respostas: dict[str, str], exame: Exame | None = None
+) -> Fala | None:
     """Próximo quesito da requisição a ser perguntado ao perito.
 
     O laudo responde ao que a autoridade perguntou, e quem responde é o perito.
@@ -180,7 +182,7 @@ def _fala_de_quesito(perguntas: list[str], respostas: dict[str, str]) -> Fala | 
         return None
 
     quesito = faltando[0]
-    modelo = camada1_quesitos.padrao_de_resposta(quesito.pergunta)
+    modelo = camada1_quesitos.padrao_de_resposta(quesito.pergunta, exame)
     texto = f"Quesito {quesito.numero} da requisição — {quesito.pergunta}"
 
     if modelo and "{" not in modelo:
@@ -319,7 +321,9 @@ def proxima_fala(
                 token_fechamento=_chave_fechada(principal),
             )
 
-    fala = _fala_de_quesito(quesitos or [], respostas if respostas is not None else {})
+    fala = _fala_de_quesito(
+        quesitos or [], respostas if respostas is not None else {}, exame
+    )
     if fala is not None:
         return fala
 
@@ -383,7 +387,7 @@ def processar(
     # passar por leitura automática. "Confirmo" registra o padrão do Instituto.
     if fala_anterior is not None and fala_anterior.tipo == QUESITO:
         numero = fala_anterior.quesito_numero
-        modelo = camada1_quesitos.padrao_de_resposta(fala_anterior.quesito_pergunta)
+        modelo = camada1_quesitos.padrao_de_resposta(fala_anterior.quesito_pergunta, exame)
         if modelo and _confirma(mensagem):
             respostas[numero] = camada1_quesitos.PADRAO_ACEITO
         else:
