@@ -54,7 +54,9 @@ def render() -> None:
 
     try:
         arquivo = montador.em_bytes(
-            montador.montar(admin, colecoes, derivados, imagens, quesitos, respostas)
+            montador.montar(
+                admin, colecoes, derivados, imagens, quesitos, respostas, exame=exame
+            )
         )
     except Exception as erro:  # falha de montagem é da ferramenta, não do perito
         st.error(f"Falha da ferramenta ao montar o documento: {erro}")

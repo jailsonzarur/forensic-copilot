@@ -104,6 +104,41 @@ class Colecao:
 
 
 @dataclass(frozen=True)
+class Secao:
+    """Uma seção do documento, na ordem em que é impressa.
+
+    A sequência de seções é do TIPO DE EXAME, não do montador: identificação de
+    substância tem histórico e referências, identificação veicular não tem
+    nenhum dos dois. Declarar aqui evita que o `documento.py` conheça os tipos.
+    """
+
+    #: "cabecalho", "preambulo", "texto", "objetos", "exames", "resultados",
+    #: "conclusao", "quesitos", "referencias", "fecho", "assinatura", "apendice".
+    tipo: str
+    #: Título impresso, já com a numeração do laudo ("1. DO VEÍCULO").
+    titulo: str = ""
+    #: Para "texto", o nome da constante no template; para "objetos" e "exames",
+    #: a chave da coleção.
+    chave: str = ""
+
+
+@dataclass(frozen=True)
+class GrupoAdmin:
+    """Campos administrativos repetíveis — ex.: dois peritos signatários.
+
+    Existe porque a quantidade varia por tipo de exame e por caso: um laudo de
+    identificação veicular pode sair assinado por dois peritos, e o formulário
+    precisa acompanhar isso sem campo morto nos outros tipos.
+    """
+
+    chave: str
+    label_singular: str
+    campos: tuple[CampoAdmin, ...]
+    minimo: int = 1
+    maximo: int = 0  # 0 = sem limite
+
+
+@dataclass(frozen=True)
 class Exame:
     """Uma entrada do registro: um tipo de laudo."""
 
@@ -112,8 +147,25 @@ class Exame:
     descricao: str
     campos_admin: tuple[CampoAdmin, ...]
     colecoes: tuple[Colecao, ...] = ()
+    #: Grupos de campos administrativos que se repetem (peritos signatários).
+    grupos_admin: tuple[GrupoAdmin, ...] = ()
+    #: Ordem das seções do documento. Vazio = usa a ordem clássica do laudo de
+    #: substância, para não quebrar o que já existe.
+    secoes: tuple[Secao, ...] = ()
+    #: Pacote em ``templates/`` de onde sai o texto fixo deste exame.
+    template: str = ""
+    #: Imagens em apêndice fotográfico ao fim, em vez de embutidas no corpo.
+    imagens_em_apendice: bool = False
     disponivel: bool = True
     observacao_indisponivel: str = ""
 
     def colecao(self, chave: str) -> Colecao | None:
         return next((c for c in self.colecoes if c.chave == chave), None)
+
+    def grupo(self, chave: str) -> GrupoAdmin | None:
+        return next((g for g in self.grupos_admin if g.chave == chave), None)
+
+    def todos_campos_admin(self) -> tuple[CampoAdmin, ...]:
+        """Campos simples mais os dos grupos repetíveis, para rótulos e busca."""
+        dos_grupos = tuple(c for g in self.grupos_admin for c in g.campos)
+        return (*self.campos_admin, *dos_grupos)

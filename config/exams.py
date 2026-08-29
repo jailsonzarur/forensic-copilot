@@ -13,7 +13,7 @@ sugerem conteúdo.
 
 from __future__ import annotations
 
-from config.schema import CampoAdmin, Colecao, Exame, Slot
+from config.schema import CampoAdmin, Colecao, Exame, GrupoAdmin, Secao, Slot
 
 # --------------------------------------------------------------------------
 # Identificação de Substância (Química Forense)
@@ -287,8 +287,27 @@ _EXAMES_REALIZADOS = Colecao(
     ),
 )
 
+#: Ordem das seções do laudo de identificação de substância, como no laudo real
+#: SB 1252/2019. Cada tipo de exame declara a sua: identificação veicular, por
+#: exemplo, não tem histórico nem referências.
+_SECOES_IDENTIFICACAO = (
+    Secao("cabecalho"),
+    Secao("preambulo"),
+    Secao("texto", "1. HISTÓRICO", "HISTORICO,HISTORICO_FECHO"),
+    Secao("objetos", "2. IDENTIFICAÇÃO E DESCRIÇÃO DO MATERIAL", "materiais"),
+    Secao("exames", "3. EXAMES REALIZADOS"),
+    Secao("resultados", "4. RESULTADOS OBTIDOS"),
+    Secao("conclusao", "5. CONCLUSÃO"),
+    Secao("quesitos"),
+    Secao("referencias", "6. REFERÊNCIAS"),
+    Secao("fecho"),
+    Secao("assinatura"),
+)
+
 IDENTIFICACAO_SUBSTANCIA = Exame(
     id="identificacao_substancia",
+    template="identificacao_substancia",
+    secoes=_SECOES_IDENTIFICACAO,
     label="Identificação de Substância (Química Forense)",
     descricao=(
         "Exame de identificação de substância entorpecente: descrição do "
