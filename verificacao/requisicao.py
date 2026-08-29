@@ -153,15 +153,20 @@ def main() -> int:
     # 5. A requisição lista os quesitos como "a)", "b)". O enumerador não pode ir
     #    junto do texto: o laudo renumera como 01, 02, e o prefixo quebrava o
     #    casamento com o padrão de resposta transcrito.
+    # Traço em todas as formas: hífen do ofício nativo, meia-risca e travessão
+    # da requisição digitalizada. O travessão escapou uma vez e deixou "4 —"
+    # colado na pergunta.
     com_letra = [
         "a) Qual a natureza do material apresentado a exame?",
         "b. Quais suas características e peso exato?",
         "1 - São substâncias venenosas?",
+        "2 – Há outros dados julgados úteis?",
+        "4 — Qual a natureza do material apresentado a exame?",
     ]
     limpos = camada1_quesitos.numerar(com_letra)
     print("\nquesitos sem enumerador:", [q.pergunta for q in limpos])
     checa(
-        all(not q.pergunta[:3].strip(" ").startswith(("a)", "b.", "1 ")) for q in limpos),
+        all(q.pergunta[0].isupper() for q in limpos),
         "o enumerador da requisição não podia ficar no texto do quesito",
     )
     checa(

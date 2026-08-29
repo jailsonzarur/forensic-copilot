@@ -34,7 +34,14 @@ PADRAO_ACEITO = "__padrão__"
 #: Enumerador com que a requisição lista os quesitos: "a)", "b.", "1 -", "I)".
 #: O laudo renumera como 01, 02, então o prefixo não pode ir junto do texto —
 #: nem atrapalhar o casamento com o padrão de resposta transcrito.
-_ENUMERADOR = re.compile(r"^\s*[a-zA-Z0-9]{1,3}\s*[)\.\-–:]\s+")
+#:
+#: Os traços vêm em todas as formas: hífen no ofício nativo, meia-risca e
+#: travessão na requisição digitalizada. Faltar uma delas deixa o número
+#: colado na pergunta.
+#: O hífen fica por ÚLTIMO na classe: no meio, ele vira intervalo e come os
+#: outros caracteres.
+_TRACOS = "\u2010\u2011\u2012\u2013\u2014\u2015\u2212-"
+_ENUMERADOR = re.compile(rf"^\s*[a-zA-Z0-9]{{1,3}}\s*[).:{_TRACOS}]\s+")
 
 
 def sem_enumerador(pergunta: str) -> str:
