@@ -56,8 +56,26 @@ REGRAS ABSOLUTAS
 
 FORMATO DA SAÍDA
 Responda APENAS com um objeto JSON no formato:
-{"<colecao>": [{"indice": <n>, "campos": {"<slot>": "<valor>"}}],
+{"intencao": "<intenção>",
+ "<colecao>": [{"indice": <n>, "campos": {"<slot>": "<valor>"}}],
  "nao_registrado": [{"colecao": "<colecao>", "slot": "<slot>", "motivo": "<motivo>"}]}
+
+- "intencao" diz o que o perito quis fazer com esta mensagem. Valores possíveis,
+  e só estes:
+  - "conteudo": está informando dados do exame (o caso comum).
+  - "encerrar": está dizendo que NÃO há mais itens ("não", "só isso", "é isso").
+  - "mais_um": está dizendo que HÁ mais um item, sem descrevê-lo ainda ("sim",
+    "tem mais um").
+  - "confirmar": está aceitando o que foi proposto a ele ("confirmo", "pode
+    usar esse mesmo", "ok").
+  - "responder_quesito": está respondendo à pergunta de um quesito.
+  - "pergunta": está perguntando algo ao assistente, não informando.
+  - "fora_do_escopo": falou de algo que não pertence a este laudo.
+  - "sem_dado": saudação, agradecimento, desabafo — nada aproveitável.
+- Uma mensagem pode ter intenção "mais_um" ou "encerrar" E trazer dados: nesse
+  caso use "conteudo", que os dados são o que importa.
+- Julgue a intenção pela PERGUNTA QUE ESTÁ NO AR. "Sim" depois de "há mais algum
+  material?" é "mais_um"; depois de um quesito, é "responder_quesito".
 
 - "indice" é o número do item na coleção, começando em 1. Use um índice existente para completar um item já iniciado; use o próximo índice livre para um item novo, e só quando o perito estiver claramente falando de outro item.
 - Inclua em "campos" apenas os slots informados nesta mensagem.
@@ -96,6 +114,25 @@ Responda APENAS com um objeto JSON no formato:
   - "sem_dado": a mensagem não traz informação sobre nenhum campo.
 - Omitir a chave e listar em "nao_registrado" são coisas diferentes: omita quando
   o perito não falou do campo; liste quando falou e o valor não serve."""
+
+
+#: Intenções que o perito pode ter. Fora desta lista, o código decide sozinho.
+INTENCOES = (
+    "conteudo",
+    "encerrar",
+    "mais_um",
+    "confirmar",
+    "responder_quesito",
+    "pergunta",
+    "fora_do_escopo",
+    "sem_dado",
+)
+
+
+def ler_intencao(operacoes: dict) -> str:
+    """Intenção declarada, validada contra o conjunto fechado."""
+    valor = str(operacoes.get("intencao", "")).strip().lower()
+    return valor if valor in INTENCOES else ""
 
 
 @dataclass(frozen=True)
