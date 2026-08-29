@@ -162,8 +162,21 @@ def render() -> None:
 
     with st.expander("Dados administrativos transcritos", expanded=False):
         admin = st.session_state["admin"]
-        rotulos = {c.chave: c.label for c in exame.todos_campos_admin()}
-        preenchidos = {rotulos[k]: v for k, v in admin.items() if v}
+        rotulos = {c.chave: c.label for c in exame.campos_admin}
+        preenchidos = {
+            rotulos[chave]: valor
+            for chave, valor in admin.items()
+            if valor and chave in rotulos and not isinstance(valor, list)
+        }
+        # Grupos repetíveis (peritos signatários) viram uma linha por entrada.
+        for grupo in exame.grupos_admin:
+            campos = {c.chave: c.label for c in grupo.campos}
+            for indice, entrada in enumerate(admin.get(grupo.chave) or [], start=1):
+                partes = [
+                    f"{campos[k]}: {v}" for k, v in entrada.items() if v and k in campos
+                ]
+                if partes:
+                    preenchidos[f"{grupo.label_singular} {indice}"] = " · ".join(partes)
         if preenchidos:
             st.dataframe(
                 {"Campo": list(preenchidos), "Valor": list(preenchidos.values())},

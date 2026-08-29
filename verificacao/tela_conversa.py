@@ -45,6 +45,28 @@ COLECOES = {
 FECHADAS_COMPLETAS = ["exames_realizados:1", "materiais"]
 
 
+def _abre_veicular() -> AppTest:
+    """Tela da conversa no exame veicular, com dois peritos no formulário.
+
+    Regressão: o painel de dados administrativos indexava rótulos por chave e
+    quebrava com KeyError ao topar com o grupo repetível de peritos, que não é
+    um campo simples.
+    """
+    at = AppTest.from_file(APP, default_timeout=90)
+    at.session_state["tela"] = "conversa"
+    at.session_state["exame_id"] = "identificacao_veicular"
+    at.session_state["admin"] = {
+        "numero_demanda": "00078413-75",
+        "tipo_procedimento": "BO",
+        "peritos": [
+            {"perito_designado": "FLÁVIO FELINTO MOURA", "matricula": "402.340-4"},
+            {"perito_designado": "HAMILTON CARVALHO FORTES JÚNIOR", "matricula": "357.724-4"},
+        ],
+    }
+    at.run()
+    return at
+
+
 def _abre(colecoes: dict, fechadas: list[str], quesitos: list[str] | None = None) -> AppTest:
     at = AppTest.from_file(APP, default_timeout=90)
     at.session_state["tela"] = "conversa"
@@ -120,6 +142,16 @@ def main() -> int:
         botao.click().run()
         print("tela final:", at.session_state["tela"])
         checa(at.session_state["tela"] == "confirmacao", "devia seguir para a confirmação")
+
+    # 6. Outro tipo de exame, com grupo repetível no formulário.
+    at = _abre_veicular()
+    print("\nveicular — exceção:", [e.value for e in at.exception] or "(nenhuma)")
+    checa(
+        not at.exception,
+        "o painel não pode quebrar com grupo repetível no formulário",
+    )
+    ultima = at.session_state["mensagens"][-1]["content"]
+    checa("veículo" in ultima.lower(), "a conversa devia começar pelo veículo")
 
     print("\n" + "=" * 60)
     if falhas:
