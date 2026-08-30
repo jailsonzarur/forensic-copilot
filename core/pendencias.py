@@ -76,10 +76,18 @@ def completo(
     fechadas: list[str],
     so_conversa: bool = False,
 ) -> bool:
-    """Camada 1 completa: sem pendência e nenhuma coleção em aberto."""
+    """Camada 1 completa por DADOS — encerramento é sinal, não gate.
+
+    Cada coleção obrigatória tem itens suficientes com todos os campos
+    obrigatórios preenchidos. O perito não precisa dizer "não há mais" pra
+    avançar; se sobrou item, ele adiciona pelo painel.
+    """
     if todas(exame, colecoes, so_conversa):
         return False
-    return all(colecao.chave in fechadas for colecao in exame.colecoes)
+    for colecao in exame.colecoes:
+        if not _etapa_de_colecao_completa(colecao, colecoes, fechadas):
+            return False
+    return True
 
 
 def resumo(
@@ -104,18 +112,35 @@ def _etapa_de_colecao_completa(
     colecoes: dict[str, list[dict]],
     fechadas: list[str],
 ) -> bool:
-    """A coleção-mãe desta etapa está completa: sem pendência e encerrada."""
-    if pendencias_da_colecao(colecao, colecoes.get(colecao.chave, []), so_conversa=True):
+    """A coleção-mãe desta etapa tem dados suficientes pra prosseguir.
+
+    Regra permissiva: se todos os campos obrigatórios dos itens registrados
+    estão preenchidos E temos pelo menos ``colecao.minimo`` itens, a etapa
+    está logicamente completa — a conversa segue pra próxima etapa mesmo sem
+    o perito dizer "não há mais". Ele pode adicionar itens depois via o
+    painel de estado se lembrar de algo.
+
+    Encerramento explícito (``fechadas``) continua sendo um sinal que o agente
+    pode registrar quando o perito diz "acabou", pra não perguntar "algo
+    mais?" desnecessariamente. Mas não é gate: o fluxo é ditado pelos DADOS.
+    """
+    itens = colecoes.get(colecao.chave, [])
+    if len(itens) < colecao.minimo:
         return False
-    # Vinculadas: fechadas por item da mãe. Só está completa quando todos os
-    # itens da mãe encerraram seus filhos.
+    if pendencias_da_colecao(colecao, itens, so_conversa=True):
+        return False
+    # Vinculadas: cada item da coleção-mãe precisa ter pelo menos ``minimo``
+    # filhos (ex.: cada material precisa ter ao menos 1 exame realizado).
     if colecao.vinculada_a:
         itens_mae = colecoes.get(colecao.vinculada_a, [])
-        for indice in range(1, len(itens_mae) + 1):
-            if f"{colecao.chave}:{indice}" not in fechadas:
+        for indice_mae in range(1, len(itens_mae) + 1):
+            filhos = [
+                item for item in itens
+                if str(item.get("item_material", "")).strip() == str(indice_mae)
+            ]
+            if len(filhos) < colecao.minimo:
                 return False
-        return True
-    return colecao.chave in fechadas
+    return True
 
 
 def _etapa_de_quesitos_completa(

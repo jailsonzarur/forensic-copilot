@@ -406,10 +406,11 @@ INTENÇÃO — SOMENTE uma de:
 "conteudo", "encerrar", "mais_um", "confirmar", "responder_quesito", "pergunta", "fora_do_escopo", "sem_dado".
 
 FLUXO DA CONVERSA
-1. As ETAPAS estão declaradas no bloco ETAPAS DEFINIDAS. É o roteiro que a ferramenta impõe — você executa em conversa livre, mas NÃO pula pra frente. Cada turno, fale do que a etapa ATUAL pede. Se o perito trouxer algo de outra etapa, anote (sempre respeitando o schema) e traga a conversa de volta ao objetivo da etapa atual.
-2. Coleção só encerra quando o perito diz explicitamente ("não", "só isso", "acabou"). Registre em "encerramentos_de_colecao" o token (nome da coleção, ou "colecao:indice_da_mae" pra vinculada).
-3. Na etapa de quesitos, ofereça o padrão do Instituto quando existir (vem no bloco QUESITOS já resolvido com os dados do caso). Se o perito disser "confirmo", grave em "confirmou_padrao_quesito". Se ele digitar sua resposta, grave em "resposta_quesito".
-4. Só marque "propoe_completo": true quando NADA houver pendente e todos os quesitos tiverem resposta.
+1. As ETAPAS estão declaradas no bloco ETAPAS DEFINIDAS. É o roteiro que a ferramenta impõe. Cada turno, fale do que a etapa ATUAL pede.
+2. A etapa AVANÇA POR DADOS — a ferramenta calcula a etapa atual a partir do estado: quando os campos obrigatórios de uma etapa já estão preenchidos, ela é considerada completa mesmo sem o perito dizer "não há mais". Se o perito, na etapa 1, trouxer sem querer dados da etapa 2, ANOTE tudo, e no próximo turno o "ETAPA ATUAL" já vai refletir isso — você trata a etapa 2 sem restart. NÃO force o perito a passar por perguntas cujas respostas ele já deu.
+3. Encerramento explícito ("não há mais", "só isso", "acabou") é um SINAL útil que você pode registrar em "encerramentos_de_colecao" pra ninguém perguntar "algo mais?" depois — mas NÃO é obrigatório pra avançar. Se você não teve confirmação explícita mas todos os obrigatórios já estão lá, avance sem forçar a pergunta.
+4. Na etapa de quesitos, ofereça o padrão do Instituto quando existir (vem no bloco QUESITOS já resolvido com os dados do caso). Se o perito disser "confirmo", grave em "confirmou_padrao_quesito". Se ele digitar sua resposta, grave em "resposta_quesito".
+5. Só marque "propoe_completo": true quando NADA houver pendente e todos os quesitos tiverem resposta.
 
 MENSAGEM AO PERITO
 1. Tom de colega ao lado. Direto, sem "por gentileza", sem "poderia me informar", sem saudação genérica, sem emoji.
@@ -507,10 +508,12 @@ def _descreve_etapas(exame: Exame, etapa_corrente) -> str:
         marcador = "→ ATUAL" if etapa_corrente is not None and etapa is etapa_corrente else ""
         linhas.append(f"  {i}. {etapa.titulo}: {etapa.objetivo} {marcador}".rstrip())
     linhas.append(
-        "REGRA DE ETAPAS: fale SÓ do que a etapa atual pede. Só passe pra próxima "
-        "quando esta estiver completa (o gate é determinístico — a ferramenta "
-        "confere). Se o perito trouxer algo de outra etapa, anote e traga a "
-        "conversa de volta ao objetivo da etapa atual."
+        "REGRA DE ETAPAS: fale do que a etapa ATUAL pede. A etapa avança POR DADOS "
+        "— a ferramenta calcula automaticamente qual é a atual a partir do estado, "
+        "e nunca te devolve uma etapa cujos campos obrigatórios já estão todos "
+        "preenchidos. Se o perito trouxer sem querer dados de outra etapa, ANOTE "
+        "tudo; no próximo turno a etapa atual já vai refletir isso. Não force o "
+        "perito a passar por perguntas cujas respostas ele já deu."
     )
     return "\n".join(linhas)
 
