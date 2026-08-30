@@ -138,14 +138,19 @@ CASOS = (
 def _roda(exame, mensagens: list[str]) -> tuple[dict, list[str]]:
     colecoes: dict[str, list[dict]] = {}
     fechadas: list[str] = []
-    fala = conversa.proxima_fala(exame, colecoes, fechadas)
+    respostas: dict[str, str] = {}
+    historico: list[dict] = []
     recusas: list[str] = []
     for mensagem in mensagens:
-        resultado = conversa.processar(exame, colecoes, fechadas, mensagem, fala)
+        resultado = conversa.processar(
+            exame, colecoes, fechadas, mensagem,
+            historico=historico, respostas=respostas,
+        )
         if resultado.erro:
             raise RuntimeError(resultado.erro)
         recusas = [r.chave for r in resultado.recusas]
-        fala = resultado.fala
+        historico.append({"role": "user", "content": mensagem})
+        historico.append({"role": "assistant", "content": resultado.mensagem})
     material = (colecoes.get("materiais") or [{}])[0]
     realizado = (colecoes.get("exames_realizados") or [{}])[0]
     return {**material, **realizado}, recusas

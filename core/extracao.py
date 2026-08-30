@@ -1,9 +1,19 @@
-"""Extração dos slots da CAMADA 1 a partir da fala do perito.
+"""Agente único da fase de conversa da CAMADA 1.
 
-O modelo aqui tem UM trabalho: transcrever para JSON o que o perito disse.
-Ele não redige, não interpreta e não completa. Tudo que ele devolver passa
-por ``aplicar``, que descarta chave desconhecida, valor vazio, valor de
-enfeite ("não informado") e valor fora do conjunto fechado de um slot.
+Uma chamada de LLM por turno, alinhando extração + intenção + recusas + mensagem
+ao perito. O modelo dirige a conversa; as paredes de fidelidade validam a saída.
+
+Paredes que não cedem:
+
+- ``aplicar`` — schema, opções fechadas, valor exato, valor de enfeite descartado.
+- ``ler_recusas`` — motivo em conjunto fechado, ``aproximado`` exige palavra de
+  estimativa na fala, trecho conferido contra a mensagem do perito.
+- ``valida_resumo`` — a mensagem ao perito só pode afirmar ter registrado o que
+  saiu ``aplicar``: cada afirmação vai também em ``resumo_do_registrado``, que é
+  comparado ao conjunto real de alterações. Se não bater, cai no fallback.
+- ``pendencias.completo`` (fora deste módulo) — o botão "Avançar" só libera com
+  as pendências determinísticas zeradas. O LLM pode dizer "pronto"; a regra
+  checa.
 """
 
 from __future__ import annotations
@@ -13,6 +23,7 @@ import unicodedata
 from dataclasses import dataclass
 
 from config.schema import Colecao, Exame, Slot
+from core import quesitos as camada1_quesitos
 from core.llm import chamar_json
 
 #: Respostas que o modelo às vezes inventa para "não sei" — nunca viram dado.
@@ -36,104 +47,6 @@ _NAO_VALORES = {
     "pendente",
     "?",
 }
-
-SISTEMA = """Você extrai dados estruturados da fala de um perito criminal para uma minuta de laudo pericial.
-
-REGRAS ABSOLUTAS
-1. Registre SOMENTE o que o perito disse explicitamente. A fala dele é a única fonte.
-2. Nunca infira, estime, arredonde, converta unidade nem complete campo faltante.
-3. Se o perito não informou um campo, OMITA a chave. Campo omitido vira pergunta ao perito; campo inventado corrompe um documento oficial.
-4. Não use conhecimento próprio sobre drogas, embalagens, cores ou exames para preencher nada. Saber que cocaína costuma ser branca não autoriza escrever "branca".
-5. Transcreva o valor com as palavras do perito, sem reescrever nem melhorar a redação.
-6. Não deduza um campo a partir de outro. Massa não implica quantidade de invólucros; nome do exame não implica resultado.
-7. O perito fala como se fala, não como se digita. Número dito por extenso ou em
-   fração é valor EXATO, não estimativa: escreva-o em algarismos. "N gramas e
-   meio" vira o valor "N,5"; "meio quilo" vira o valor "0,5" com a unidade
-   "quilo"; "N vírgula M" vira "N,M". Isso é notação, não conversão: a unidade
-   continua sendo exatamente a que ele disse.
-8. Em campo de valor exato entra SÓ o número, sem a unidade junto — a unidade
-   tem campo próprio.
-
-FORMATO DA SAÍDA
-Responda APENAS com um objeto JSON no formato:
-{"intencao": "<intenção>",
- "<colecao>": [{"indice": <n>, "campos": {"<slot>": "<valor>"}}],
- "nao_registrado": [{"colecao": "<colecao>", "slot": "<slot>", "motivo": "<motivo>"}]}
-
-- "intencao" diz o que o perito quis fazer com esta mensagem. Valores possíveis,
-  e só estes:
-  - "conteudo": está informando dados do exame (o caso comum).
-  - "encerrar": está dizendo que NÃO há mais itens ("não", "só isso", "é isso").
-  - "mais_um": está dizendo que HÁ mais um item, sem descrevê-lo ainda ("sim",
-    "tem mais um").
-  - "confirmar": está aceitando o que foi proposto a ele ("confirmo", "pode
-    usar esse mesmo", "ok").
-  - "responder_quesito": está respondendo à pergunta de um quesito.
-  - "pergunta": está perguntando algo ao assistente, não informando.
-  - "fora_do_escopo": falou de algo que não pertence a este laudo.
-  - "sem_dado": saudação, agradecimento, desabafo — nada aproveitável.
-- Uma mensagem pode ter intenção "mais_um" ou "encerrar" E trazer dados: nesse
-  caso use "conteudo", que os dados são o que importa.
-- Julgue a intenção pela PERGUNTA QUE ESTÁ NO AR. "Sim" depois de "há mais algum
-  material?" é "mais_um"; depois de um quesito, é "responder_quesito".
-
-- "indice" é o número do item na coleção, começando em 1. Use um índice existente para completar um item já iniciado; use o próximo índice livre para um item novo, e só quando o perito estiver claramente falando de outro item.
-- Inclua em "campos" apenas os slots informados nesta mensagem.
-- Se a mensagem não trouxer nenhum dado novo, responda {}.
-- Não invente coleções nem slots fora dos listados abaixo.
-- "nao_registrado" explica TUDO que o perito falou e não foi gravado. Se você não
-  gravar nenhum campo, "nao_registrado" é OBRIGATÓRIO: o perito precisa saber por
-  que a pergunta voltou. Isso vale para qualquer mensagem — saudação, agradecimento,
-  desabafo, pergunta, assunto alheio ao laudo. Responder {} sem explicação é erro:
-  o perito fica sem saber o que aconteceu e repete a mesma frase.
-- Cada entrada tem "motivo" e, quando houver, "trecho": a citação EXATA e curta
-  das palavras do perito que causaram a recusa, copiada da mensagem sem alterar
-  uma letra. Se não der para citar, omita "trecho".
-- "colecao" e "slot" identificam o campo afetado; omita ambos quando a recusa não
-  for sobre um campo específico.
-- "nao_registrado" NÃO é a lista dos campos que ainda faltam. Só entra campo sobre
-  o qual o perito falou NESTA mensagem e cujo valor não pôde ser gravado. Campo que
-  ele não mencionou simplesmente não aparece — a próxima pergunta já cobre isso.
-- Se você gravou algum campo, "sem_dado" está errado: a mensagem trouxe dado.
-- Uma entrada por problema, sem repetir o mesmo motivo para o mesmo campo.
-- ANTES de recusar, verifique se a fala contém o valor. Se contém, GRAVE. Recusar
-  é exceção, não o caminho fácil. Em particular:
-  - unidade diferente da que você esperava não é motivo de recusa: grave o valor e
-    a unidade exatamente como o perito disse, sem converter;
-  - forma de escrever o número (vírgula, ponto, por extenso) não é motivo de recusa.
-- Não invente motivo: use um dos listados. Motivo fora da lista é descartado e o
-  perito fica sem explicação nenhuma.
-- Motivos válidos, e só estes:
-  - "aproximado": o perito usou palavra de estimativa — "em torno de", "cerca de",
-    "aproximadamente", "uns", "mais ou menos", "por volta de" — num campo que exige
-    valor exato. Sem uma dessas palavras NÃO é aproximado: "1,2 kg" e "1,2 quilos"
-    são valores exatos.
-  - "ambiguo": o perito falou do campo mas não dá para saber qual é o valor.
-  - "fora_do_escopo": o perito falou de algo que não é campo deste laudo.
-  - "pergunta": a mensagem é uma pergunta ao assistente, não um dado.
-  - "sem_dado": a mensagem não traz informação sobre nenhum campo.
-- Omitir a chave e listar em "nao_registrado" são coisas diferentes: omita quando
-  o perito não falou do campo; liste quando falou e o valor não serve."""
-
-
-#: Intenções que o perito pode ter. Fora desta lista, o código decide sozinho.
-INTENCOES = (
-    "conteudo",
-    "encerrar",
-    "mais_um",
-    "confirmar",
-    "responder_quesito",
-    "pergunta",
-    "fora_do_escopo",
-    "sem_dado",
-)
-
-
-def ler_intencao(operacoes: dict) -> str:
-    """Intenção declarada, validada contra o conjunto fechado."""
-    valor = str(operacoes.get("intencao", "")).strip().lower()
-    return valor if valor in INTENCOES else ""
-
 
 @dataclass(frozen=True)
 class Recusa:
@@ -294,60 +207,6 @@ def descreve_estado(exame: Exame, colecoes: dict[str, list[dict]]) -> str:
             linhas.append(f"  índice {i}: {json.dumps(item, ensure_ascii=False)}")
         linhas.append(f"  próximo índice livre: {len(itens) + 1}")
     return "\n".join(linhas)
-
-
-def montar_prompt(
-    exame: Exame,
-    colecoes: dict[str, list[dict]],
-    mensagem: str,
-    pergunta_pendente: str = "",
-    alvo: str = "",
-) -> str:
-    blocos = [
-        f"TIPO DE LAUDO: {exame.label}",
-        "",
-        "COLEÇÕES E SLOTS DISPONÍVEIS:",
-        descreve_schema(exame),
-        "",
-        "ESTADO JÁ REGISTRADO:",
-        descreve_estado(exame, colecoes),
-    ]
-    if pergunta_pendente:
-        contexto = [
-            "",
-            "PERGUNTA QUE O ASSISTENTE ACABOU DE FAZER AO PERITO:",
-            pergunta_pendente,
-        ]
-        if alvo:
-            contexto.append(f"Essa pergunta se refere a: {alvo}.")
-            contexto.append(
-                "Se a resposta trouxer um valor solto (só um número, só uma "
-                "palavra), ele pertence ao slot perguntado. Mas a fala quase nunca "
-                "responde só isso: o perito descreve várias coisas de uma vez. "
-                "GRAVE TODOS os campos que ele mencionar, não apenas o perguntado. "
-                "O que ele não mencionar continua omitido."
-            )
-        else:
-            contexto.append(
-                "A mensagem pode responder a essa pergunta e trazer outros campos "
-                "junto. Grave todos os que ela mencionar; o que não mencionar, omita."
-            )
-        blocos += contexto
-    blocos += ["", "MENSAGEM DO PERITO:", mensagem.strip()]
-    return "\n".join(blocos)
-
-
-def extrair(
-    exame: Exame,
-    colecoes: dict[str, list[dict]],
-    mensagem: str,
-    pergunta_pendente: str = "",
-    alvo: str = "",
-) -> tuple[dict, str]:
-    """Chama o modelo e devolve (operações cruas, resposta bruta)."""
-    return chamar_json(
-        SISTEMA, montar_prompt(exame, colecoes, mensagem, pergunta_pendente, alvo)
-    )
 
 
 def aplicar(
@@ -512,3 +371,210 @@ def _indice_valido(valor: object, quantidade: int) -> int | None:
     if indice < 1:
         return None
     return min(indice, quantidade + 1)
+
+
+# ==========================================================================
+# Agente único da fase de conversa
+# ==========================================================================
+
+
+SISTEMA_AGENTE = """Você é o assistente conversacional de um perito criminal enquanto ele preenche a CAMADA 1 (dados coletados na fala do perito) de um laudo pericial.
+
+UMA chamada por turno. Você lê o SCHEMA (coleções, slots, regras), o ESTADO atual, as PENDÊNCIAS (campos obrigatórios ainda vazios — a ferramenta calcula isso, é o ground truth), o HISTÓRICO recente e a MENSAGEM nova do perito. Produz UM JSON com extração + intenção + recusas + encerramentos + resposta a quesito + mensagem ao perito.
+
+REGRAS ABSOLUTAS DE EXTRAÇÃO
+1. Registre SOMENTE o que o perito disse EXPLICITAMENTE. Não infira, estime, arredonde, converta, complete campo faltante. Se ele não informou, OMITA a chave.
+2. Não use conhecimento próprio (drogas costumam ser assim, veículos costumam ser assado, etc.). Saber que cocaína é branca NÃO autoriza escrever "branca".
+3. Transcreva com as palavras do perito. Não reescreva pra ficar bonito.
+4. Não deduza um campo a partir de outro. Massa não implica invólucros; ensaio não implica resultado.
+5. Fração e extenso são valores EXATOS. "N gramas e meio" vira "N,5"; "meio quilo" vira "0,5" com unidade "quilo"; "N vírgula M" vira "N,M". Notação, não conversão — a unidade continua a que ele disse.
+6. Em campo de valor exato vai SÓ o número, sem unidade — a unidade tem campo próprio.
+
+REGRAS DE VÍNCULO ENTRE COLEÇÕES
+Coleções vinculadas (exames pertencem a um material, sinais examinados pertencem a um veículo) precisam do índice da mãe no campo de referência (``item_material``, etc.). Se o histórico deixa claro qual mãe (o perito estava descrevendo o Material 1 e continua com os exames dele), preencha. Se AMBÍGUO, deixe vazio e PERGUNTE — não invente vínculo.
+
+RECUSAS — SOMENTE os motivos:
+- "aproximado": estimativa em campo de valor exato. Só vale quando a fala TEM palavra de estimativa ("em torno de", "cerca de", "aproximadamente", "uns", "mais ou menos", "por volta de"). Sem isso, não recuse.
+- "ambiguo": falou do campo mas o valor não dá pra ler.
+- "fora_do_escopo": falou de algo que não é campo deste laudo.
+- "pergunta": a mensagem é uma pergunta pra você, não dado.
+- "sem_dado": saudação, agradecimento, desabafo, nada aproveitável.
+
+Unidade diferente NÃO é recusa: grave como o perito disse. Forma de número (vírgula, ponto, extenso) NÃO é recusa. Cada recusa tem TRECHO — a citação literal e curta da fala que motivou; se não der pra citar, omita.
+
+INTENÇÃO — SOMENTE uma de:
+"conteudo", "encerrar", "mais_um", "confirmar", "responder_quesito", "pergunta", "fora_do_escopo", "sem_dado".
+
+FLUXO DA CONVERSA
+1. Ordem sugerida: preencha Material 1 e seus exames, DEPOIS Material 2. Mas se o perito falar fora de ordem, ACOMPANHE — não force voltar.
+2. Coleção só encerra quando o perito diz explicitamente ("não", "só isso", "acabou"). Registre em "encerramentos_de_colecao" o token (nome da coleção, ou "colecao:indice_da_mae" pra vinculada).
+3. Depois de todos os materiais e exames encerrados, vá aos quesitos. Ofereça o padrão do Instituto quando existir (vem no bloco PADRÕES DE QUESITO). Se o perito disser "confirmo", grave em "confirmou_padrao_quesito". Se ele digitar sua resposta, grave em "resposta_quesito".
+4. Só marque "propoe_completo": true quando NADA houver pendente e todos os quesitos tiverem resposta.
+
+MENSAGEM AO PERITO
+1. Tom de colega ao lado. Direto, sem "por gentileza", sem "poderia me informar", sem saudação genérica, sem emoji.
+2. Reconheça o que anotou — se não anotou nada, NÃO diga que anotou. Se houve recusa, explique com o motivo e cite o trecho.
+3. Se o perito perguntou algo (intencao="pergunta"), EXPLIQUE o campo pendente com base no schema (label, opções, hints). NÃO invente fato fora do schema. Depois de explicar, repita a pergunta.
+4. Pergunte o(s) próximo(s) campo(s) pendente(s). Pode juntar até 3. Se o slot tem OPÇÕES FECHADAS, liste TODAS na pergunta. Se tem HINTS (exemplos), cite-os deixando claro que são exemplos.
+5. NUNCA sugira uma resposta como se fosse a do perito. "Seria branca?" não. Você só pergunta.
+6. Uma a três frases. Sem paredão.
+
+CONSISTÊNCIA ENTRE MENSAGEM E DADOS (crítico)
+"resumo_do_registrado" tem que listar EXATAMENTE o que sua mensagem afirma ter anotado — cada entrada aqui está também em "extracao". Se sua mensagem disser "Anotei X" mas X não está em "resumo_do_registrado" (ou em "extracao"), a ferramenta detecta a alucinação e cai num fallback determinístico, e sua mensagem some.
+
+FORMATO DA SAÍDA
+Responda APENAS com um objeto JSON:
+{
+  "extracao": {"<colecao>": [{"indice": <n>, "campos": {"<slot>": "<valor>"}}]},
+  "encerramentos_de_colecao": ["<colecao>" ou "<colecao>:<indice_da_mae>"],
+  "resposta_quesito": {"numero": "<XX>", "texto": "<resposta livre>"} ou null,
+  "confirmou_padrao_quesito": "<XX>" ou null,
+  "recusas": [{"motivo": "<motivo>", "colecao": "<colecao>", "slot": "<slot>", "trecho": "<citação>"}],
+  "intencao": "<intenção>",
+  "propoe_completo": <bool>,
+  "resumo_do_registrado": [{"colecao": "<colecao>", "indice": <n>, "slot": "<slot>", "valor": "<valor>"}],
+  "mensagem_do_assistente": "<texto pro perito>"
+}"""
+
+
+def _descreve_fechadas(fechadas: list[str]) -> str:
+    if not fechadas:
+        return "Coleções encerradas: (nenhuma)"
+    return "Coleções encerradas: " + ", ".join(fechadas)
+
+
+def _descreve_pendencias(pendencias_lista: list) -> str:
+    if not pendencias_lista:
+        return "Pendências (ground truth do que falta): (nenhuma)"
+    linhas = ["Pendências (ground truth do que falta):"]
+    for p in pendencias_lista:
+        linhas.append(f'  - {p.colecao.chave}[{p.indice}].{p.slot.chave} — {p.slot.label}')
+    return "\n".join(linhas)
+
+
+def _descreve_quesitos(
+    quesitos: list[str],
+    respostas: dict[str, str],
+    colecoes: dict[str, list[dict]],
+    exame: Exame,
+) -> str:
+    if not quesitos:
+        return "Quesitos da requisição: (nenhum transcrito)"
+    linhas = ["Quesitos da requisição:"]
+    for q in camada1_quesitos.numerar(quesitos):
+        resposta = respostas.get(q.numero, "")
+        if resposta == camada1_quesitos.PADRAO_ACEITO:
+            status = "RESPONDIDO (padrão do Instituto aceito)"
+        elif resposta:
+            status = f"RESPONDIDO: «{resposta}»"
+        else:
+            padrao_resolvido, tem_padrao = camada1_quesitos.responder(
+                q.pergunta, colecoes, {}, exame
+            )
+            if tem_padrao and padrao_resolvido.strip():
+                status = f"pendente — padrão do Instituto: «{padrao_resolvido}»"
+            else:
+                status = "pendente — sem padrão transcrito (o perito escreve)"
+        linhas.append(f"  {q.numero}. {q.pergunta}  [{status}]")
+    return "\n".join(linhas)
+
+
+def _descreve_historico(historico: list[dict]) -> str:
+    if not historico:
+        return "Histórico da conversa: (esta é a primeira mensagem)"
+    linhas = ["Histórico da conversa (mais recente por último):"]
+    # Últimas 10 mensagens no máximo — suficiente pra contexto sem estufar prompt.
+    for m in historico[-10:]:
+        papel = m.get("role", "?")
+        conteudo = m.get("content", "").strip()
+        if conteudo:
+            linhas.append(f"[{papel}]: {conteudo}")
+    return "\n".join(linhas)
+
+
+def montar_prompt_agente(
+    exame: Exame,
+    colecoes: dict[str, list[dict]],
+    fechadas: list[str],
+    respostas_quesitos: dict[str, str],
+    quesitos_da_requisicao: list[str],
+    historico: list[dict],
+    pendencias_lista: list,
+    mensagem: str,
+) -> str:
+    """Prompt completo do turno: schema + estado + histórico + mensagem nova."""
+    blocos = [
+        f"TIPO DE LAUDO: {exame.label}",
+        "",
+        "SCHEMA — COLEÇÕES E SLOTS:",
+        descreve_schema(exame),
+        "",
+        "ESTADO ATUAL:",
+        descreve_estado(exame, colecoes),
+        "",
+        _descreve_fechadas(fechadas),
+        "",
+        _descreve_pendencias(pendencias_lista),
+        "",
+        _descreve_quesitos(quesitos_da_requisicao, respostas_quesitos, colecoes, exame),
+        "",
+        _descreve_historico(historico),
+        "",
+        "MENSAGEM NOVA DO PERITO:",
+        mensagem.strip(),
+    ]
+    return "\n".join(blocos)
+
+
+def orquestrar(
+    exame: Exame,
+    colecoes: dict[str, list[dict]],
+    fechadas: list[str],
+    respostas_quesitos: dict[str, str],
+    quesitos_da_requisicao: list[str],
+    historico: list[dict],
+    pendencias_lista: list,
+    mensagem: str,
+) -> tuple[dict, str]:
+    """Chama o agente único. Devolve (JSON parseado, bruto)."""
+    return chamar_json(
+        SISTEMA_AGENTE,
+        montar_prompt_agente(
+            exame, colecoes, fechadas, respostas_quesitos,
+            quesitos_da_requisicao, historico, pendencias_lista, mensagem,
+        ),
+    )
+
+
+def valida_resumo(
+    resumo: object, alteracoes: list[Alteracao]
+) -> bool:
+    """A mensagem do agente só afirma ter registrado o que ``aplicar`` gravou?
+
+    ``resumo`` é o que o LLM declarou ter afirmado na mensagem. Se ele afirma
+    ter gravado algo que ``aplicar`` rejeitou — ou omite uma alteração que
+    ``aplicar`` de fato gravou — a mensagem está incoerente com o estado e não
+    pode ir ao perito.
+
+    A comparação é por (coleção, índice, slot, valor). Empate exato passa;
+    qualquer divergência devolve False e o chamador cai no fallback.
+    """
+    if not isinstance(resumo, list):
+        return False
+    esperado = {
+        (a.colecao.chave, a.indice, a.slot.chave, a.valor) for a in alteracoes
+    }
+    afirmado: set = set()
+    for entrada in resumo:
+        if not isinstance(entrada, dict):
+            return False
+        try:
+            afirmado.add((
+                str(entrada.get("colecao", "")),
+                int(entrada.get("indice", 0)),
+                str(entrada.get("slot", "")),
+                str(entrada.get("valor", "")),
+            ))
+        except (TypeError, ValueError):
+            return False
+    return afirmado == esperado

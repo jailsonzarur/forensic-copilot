@@ -1,7 +1,14 @@
-"""Tela 3 — conversa de slot-filling (CAMADA 1).
+"""Tela 3 — conversa 100% guiada pelo agente único (CAMADA 1).
 
-O perito descreve; o extrator transcreve para o schema; o que faltar vira
-pergunta dirigida. O avanço só libera quando não há pendência.
+O agente vive em ``core/extracao.py`` e dirige a conversa: extrai, recusa,
+encerra coleção, responde quesito e escreve a mensagem ao perito. Aqui apenas:
+
+- iniciamos o chat com uma abertura curta,
+- enviamos cada mensagem ao ``controlador.processar``, que já vem com todas as
+  paredes de validação,
+- mostramos a mensagem que o agente escreveu (ou o fallback determinístico, se
+  a validação falhar),
+- gate do botão "Avançar" continua sendo a varredura de pendências.
 """
 
 from __future__ import annotations
@@ -11,7 +18,6 @@ import streamlit as st
 from config.schema import Colecao, Exame
 from core import conversa as controlador
 from core import pendencias
-from core import pergunta as formulador
 from core import quesitos as camada1_quesitos
 from core.llm import chave_configurada, modelo
 from core.state import (
@@ -23,60 +29,33 @@ from core.state import (
 )
 
 
-def _fala_para_o_perito(fala: controlador.Fala) -> str:
-    """Texto exibido. Só a FORMA da pergunta passa por leitura automática; o
-    que falta continua sendo decidido pela varredura de pendências, e o
-    formulador é proibido de sugerir resposta ou engolir opções fechadas. Se
-    a chamada falhar, o texto determinístico volta."""
-    if fala.tipo != controlador.PERGUNTA or not fala.campos_faltando:
-        return fala.texto
-    return formulador.formular(
-        fala.rotulo_item,
-        list(fala.campos_faltando),
-        fala.texto,
-        list(fala.opcoes_por_campo) or None,
-    )
-
-
 def _inicia_conversa(exame: Exame) -> None:
     if st.session_state["mensagens"]:
         return
-    colecoes = st.session_state["colecoes"]
-    fechadas = st.session_state["colecoes_fechadas"]
-    quesitos = st.session_state["quesitos"]
-    respostas = st.session_state["respostas_quesitos"]
-    st.session_state["fala_atual"] = controlador.proxima_fala(
-        exame, colecoes, fechadas, quesitos, respostas
-    )
-    fala = st.session_state["fala_atual"]
-    abertura = (
-        "Vamos anotar esse exame. Fala como preferir — vou registrando o que "
-        "você disser e pergunto o que faltar. Nada entra no laudo por mim."
-    )
     st.session_state["mensagens"].append(
-        {"role": "assistant", "content": f"{abertura}\n\n{_fala_para_o_perito(fala)}"}
+        {"role": "assistant", "content": controlador.ABERTURA}
     )
 
 
 def _envia(exame: Exame, texto: str) -> None:
     st.session_state["mensagens"].append({"role": "user", "content": texto})
+    # O histórico enviado ao agente NÃO inclui a mensagem nova — ela vai no
+    # campo "mensagem" do prompt. Passamos até 10 turnos anteriores.
+    historico = st.session_state["mensagens"][:-1]
     resultado = controlador.processar(
         exame,
         st.session_state["colecoes"],
         st.session_state["colecoes_fechadas"],
         texto,
-        st.session_state.get("fala_atual"),
+        historico=historico,
         quesitos=st.session_state["quesitos"],
         respostas=st.session_state["respostas_quesitos"],
     )
-    st.session_state["fala_atual"] = resultado.fala
     st.session_state["ultima_extracao"] = resultado.bruto
-    partes = controlador.resposta_do_assistente(resultado)
-    # A fala determinística já está no fim do texto; troca-se só a pergunta.
-    natural = _fala_para_o_perito(resultado.fala)
-    if natural != resultado.fala.texto:
-        partes = partes.replace(resultado.fala.texto, natural)
-    st.session_state["mensagens"].append({"role": "assistant", "content": partes})
+    st.session_state["ultimo_propoe_completo"] = resultado.propoe_completo
+    st.session_state["mensagens"].append(
+        {"role": "assistant", "content": resultado.mensagem}
+    )
 
 
 def _tabela_colecao(colecao: Colecao, itens: list[dict]) -> None:
@@ -116,7 +95,10 @@ def _painel_estado(exame: Exame) -> None:
         st.subheader(colecao.label_plural)
         _tabela_colecao(colecao, itens)
         if colecao.chave in fechadas:
-            st.caption(f"Encerrado — o perito informou que não há mais {colecao.label_plural.lower()}.")
+            st.caption(
+                f"Encerrado — o perito informou que não há mais "
+                f"{colecao.label_plural.lower()}."
+            )
             if st.button(
                 f"Adicionar {colecao.label_singular.lower()}",
                 key=f"reabrir_{colecao.chave}",
@@ -124,14 +106,6 @@ def _painel_estado(exame: Exame) -> None:
             ):
                 colecoes.setdefault(colecao.chave, []).append({})
                 fechadas.remove(colecao.chave)
-                fala = controlador.proxima_fala(
-                    exame, colecoes, fechadas, st.session_state["quesitos"],
-                    st.session_state["respostas_quesitos"],
-                )
-                st.session_state["fala_atual"] = fala
-                st.session_state["mensagens"].append(
-                    {"role": "assistant", "content": fala.texto}
-                )
                 st.rerun()
 
     perguntas = st.session_state["quesitos"]
@@ -175,7 +149,6 @@ def render() -> None:
             for chave, valor in admin.items()
             if valor and chave in rotulos and not isinstance(valor, list)
         }
-        # Grupos repetíveis (peritos signatários) viram uma linha por entrada.
         for grupo in exame.grupos_admin:
             campos = {c.chave: c.label for c in grupo.campos}
             for indice, entrada in enumerate(admin.get(grupo.chave) or [], start=1):
@@ -222,18 +195,19 @@ def render() -> None:
         st.markdown("### Estado coletado")
         _painel_estado(exame)
 
-    # so_conversa: a referência entre coleções é escolhida pelo perito na
-    # confirmação, então cobrá-la aqui travava o avanço para sempre.
-    completo = (
-        controlador.proxima_fala(
-            exame,
-            st.session_state["colecoes"],
-            st.session_state["colecoes_fechadas"],
-            st.session_state["quesitos"],
-            st.session_state["respostas_quesitos"],
-        ).tipo
-        == controlador.COMPLETO
+    # Gate do avanço: pendências determinísticas zeradas E todos os quesitos
+    # respondidos. O LLM pode ter dito "propoe_completo", mas quem libera o
+    # botão é a regra.
+    quesitos_pendentes = camada1_quesitos.pendentes(
+        st.session_state["quesitos"], st.session_state["respostas_quesitos"]
     )
+    completo = pendencias.completo(
+        exame,
+        st.session_state["colecoes"],
+        st.session_state["colecoes_fechadas"],
+        so_conversa=True,
+    ) and not quesitos_pendentes
+
     st.divider()
     esquerda, direita = st.columns([1, 1])
     if esquerda.button("Voltar"):
@@ -243,7 +217,7 @@ def render() -> None:
         "Avançar para confirmação",
         type="primary",
         disabled=not completo,
-        help=None if completo else "Ainda há campos obrigatórios sem resposta.",
+        help=None if completo else "Ainda há campos obrigatórios ou quesitos sem resposta.",
     ):
         ir_para(TELA_CONFIRMACAO)
         st.rerun()
