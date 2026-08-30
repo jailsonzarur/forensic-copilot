@@ -511,9 +511,17 @@ def _painel_conferencia() -> bool:
     """
     requisicao = st.session_state.get("requisicao") or {}
     declarados = requisicao.get("itens_declarados") or []
-    materiais = st.session_state["colecoes"].get("materiais", [])
 
-    observacoes = conferencia.comparar(declarados, materiais)
+    # A coleção conferida é a do objeto examinado, que o tipo de laudo declara.
+    # Num laudo de danos a autoridade não envia item nenhum — aponta um local —,
+    # então não há contagem a conferir e o painel fica silencioso.
+    exame = exame_atual()
+    objeto = exame.colecao_objeto() if exame is not None else None
+    examinados = st.session_state["colecoes"].get(
+        objeto.chave if objeto is not None else "materiais", []
+    )
+
+    observacoes = conferencia.comparar(declarados, examinados)
     for observacao in observacoes:
         if observacao.tipo == "divergencia":
             st.error(observacao.texto)

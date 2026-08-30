@@ -219,6 +219,13 @@ def _campos_do_preambulo(ctx: Contexto) -> dict:
         valores["peritos_designados"] = nomes[0] if nomes else ""
         valores["perito_ou_peritos"] = "o(a) PERITO(A) CRIMINAL"
     valores.setdefault("perito_designado", valores["peritos_designados"])
+
+    # O template do exame calcula os marcadores que só ele usa (concordância do
+    # preâmbulo, horários da ida ao local). São recomposições do que o perito
+    # informou — o montador não conhece nenhum deles.
+    extras = getattr(ctx.boiler, "campos_extras", None)
+    if extras is not None:
+        valores.update(extras(ctx.admin, ctx.colecoes, ctx.derivados))
     return valores
 
 
@@ -269,13 +276,35 @@ def _imagens_no_corpo(documento: Document, ctx: Contexto, colecao: str) -> None:
     if not ctx.imagens:
         return
     documento.add_paragraph()
-    for imagem in ctx.imagens:
+    for numero, imagem in enumerate(ctx.imagens, start=1):
         paragrafo = documento.add_paragraph()
         paragrafo.alignment = WD_ALIGN_PARAGRAPH.CENTER
         paragrafo.add_run().add_picture(io.BytesIO(imagem["dados"]), width=Cm(10))
-        legenda = imagem.get("legenda") or ctx.texto("LEGENDA_FOTO", "")
+        legenda = imagem.get("legenda") or ""
+        if not legenda:
+            modelo = ctx.texto("LEGENDA_FOTO", "")
+            if modelo:
+                legenda = _formata(
+                    modelo,
+                    {
+                        "numero": f"{numero:02d}",
+                        "descricao": MARCADOR + " legenda desta imagem]",
+                    },
+                )
         if legenda:
             _paragrafo(documento, legenda, alinhamento=WD_ALIGN_PARAGRAPH.CENTER)
+
+
+def _imagens_secao(documento: Document, ctx: Contexto, secao: Secao) -> None:
+    """Imagens no corpo, onde o tipo de exame declarar a seção.
+
+    O laudo de danos intercala as fotos logo depois das constatações; o de
+    substância as põe junto da descrição do material, e o veicular as manda
+    para o apêndice.
+    """
+    if secao.titulo:
+        _titulo_secao(documento, secao.titulo)
+    _imagens_no_corpo(documento, ctx, secao.chave)
 
 
 def _exames(documento: Document, ctx: Contexto, secao: Secao) -> None:
@@ -299,7 +328,9 @@ def _resultados(documento: Document, ctx: Contexto, secao: Secao) -> None:
             negrito=True,
             espaco_antes=6,
         )
-        _paragrafo(documento, item["texto"])
+        for linha in str(item["texto"]).split("\n"):
+            if linha.strip():
+                _paragrafo(documento, linha)
 
 
 def _subsecoes(ctx: Contexto, secao: Secao) -> list[dict]:
@@ -308,6 +339,12 @@ def _subsecoes(ctx: Contexto, secao: Secao) -> list[dict]:
     Se o template do exame traz ``paragrafo_do_exame``, ele redige cada item da
     coleção indicada; senão vale a montagem do laudo de substância.
     """
+    # Subseções fixas (o laudo de danos tem sempre "Do Local" e "Das
+    # Constatações", não uma por item examinado).
+    fixas = getattr(ctx.boiler, "subsecoes", None)
+    if fixas is not None:
+        return fixas(ctx.colecoes, ctx.admin)
+
     proprio = getattr(ctx.boiler, "paragrafo_do_exame", None)
     if proprio is None or not secao.chave:
         return camada3.resultados_obtidos(ctx.colecoes, ctx.derivados)
@@ -375,7 +412,14 @@ def _assinatura(documento: Document, ctx: Contexto, secao: Secao) -> None:
             _paragrafo(documento, cargo, alinhamento=WD_ALIGN_PARAGRAPH.CENTER)
         classe = str(perito.get("classe_perito", "")).strip()
         matricula = str(perito.get("matricula", "")).strip()
-        rodape = f"{classe} – Matrícula: {matricula}" if classe else f"Matrícula: {matricula}"
+        modelo_rodape = ctx.texto("RODAPE_MATRICULA", "")
+        if modelo_rodape:
+            rodape = _formata(modelo_rodape, {"classe": classe, "matricula": matricula})
+            rodape = rodape.lstrip(" –")
+        elif classe:
+            rodape = f"{classe} – Matrícula: {matricula}"
+        else:
+            rodape = f"Matrícula: {matricula}"
         _paragrafo(documento, rodape, alinhamento=WD_ALIGN_PARAGRAPH.CENTER)
         documento.add_paragraph()
 
@@ -424,6 +468,7 @@ MONTADORES = {
     "resultados": _resultados,
     "conclusao": _conclusao,
     "quesitos": _quesitos,
+    "imagens": _imagens_secao,
     "referencias": _referencias,
     "fecho": _fecho,
     "assinatura": _assinatura,
@@ -482,6 +527,17 @@ def em_bytes(documento: Document) -> bytes:
     return buffer.getvalue()
 
 
+def _chave_do_objeto(exame: Exame | None) -> str:
+    """Coleção do que foi submetido a exame, declarada pelo tipo de laudo."""
+    objeto = exame.colecao_objeto() if exame is not None else None
+    return objeto.chave if objeto is not None else "materiais"
+
+
+def _descricao_do_objeto(exame: Exame | None, item: dict) -> str:
+    proprio = getattr(texto_fixo.boilerplate(exame), "descricao_objeto", None)
+    return proprio(item, {}) if proprio is not None else camada3.descricao_material(item)
+
+
 def pendencias_do_texto(
     admin: dict,
     colecoes: dict[str, list[dict]],
@@ -518,9 +574,8 @@ def pendencias_do_texto(
         ),
         *(s["texto"] for s in camada3.resultados_obtidos(colecoes, derivados)),
         *(
-            derivados.get(f"{camada3.PREFIXO_MATERIAL}{i}")
-            or camada3.descricao_material(m)
-            for i, m in enumerate(colecoes.get("materiais", []), start=1)
+            derivados.get(f"{camada3.PREFIXO_MATERIAL}{i}") or _descricao_do_objeto(exame, m)
+            for i, m in enumerate(colecoes.get(_chave_do_objeto(exame), []), start=1)
         ),
     ]
     encontradas: list[str] = []

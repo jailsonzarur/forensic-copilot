@@ -184,6 +184,16 @@ class Exame:
     def colecao(self, chave: str) -> Colecao | None:
         return next((c for c in self.colecoes if c.chave == chave), None)
 
+    def colecao_objeto(self) -> Colecao | None:
+        """A coleção do que foi submetido a exame.
+
+        É a primeira coleção que não pende de outra: o material no laudo de
+        substância, o veículo no de identificação veicular, o local no de
+        danos. Serve para que o montador e os derivados parem de presumir
+        "materiais" — presumir era o que impedia um terceiro tipo de laudo.
+        """
+        return next((c for c in self.colecoes if not c.vinculada_a), None)
+
     def grupo(self, chave: str) -> GrupoAdmin | None:
         return next((g for g in self.grupos_admin if g.chave == chave), None)
 

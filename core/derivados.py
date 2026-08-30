@@ -336,14 +336,25 @@ def montar(exame: Exame, colecoes: dict[str, list[dict]]) -> list[Derivado]:
     """Campos derivados que o perito revisa na tela de confirmação."""
     campos: list[Derivado] = []
 
-    for indice, material in enumerate(colecoes.get("materiais", []), start=1):
+    # A coleção do objeto examinado é declarada pelo tipo de laudo: material,
+    # veículo ou local. Quem sabe descrevê-lo é o template do exame; sem isso
+    # vale a descrição do laudo de substância.
+    from core import templates as texto_fixo
+
+    objeto = exame.colecao_objeto() if exame is not None else None
+    chave_objeto = objeto.chave if objeto is not None else "materiais"
+    rotulo_objeto = objeto.label_singular if objeto is not None else "Material"
+    proprio = getattr(texto_fixo.boilerplate(exame), "descricao_objeto", None)
+
+    for indice, item in enumerate(colecoes.get(chave_objeto, []), start=1):
+        valor = proprio(item, {}) if proprio is not None else descricao_material(item)
         campos.append(
             Derivado(
                 chave=f"{PREFIXO_MATERIAL}{indice}",
-                label=f"Descrição do material {indice}",
-                valor=descricao_material(material),
-                origem=f"campos do Material {indice}, no formato do laudo",
-                ajuda="Entra no tópico IDENTIFICAÇÃO E DESCRIÇÃO DO MATERIAL.",
+                label=f"Descrição — {rotulo_objeto} {indice}",
+                valor=valor,
+                origem=f"campos do {rotulo_objeto} {indice}, no formato do laudo",
+                ajuda="Entra no tópico de descrição do objeto examinado.",
             )
         )
 

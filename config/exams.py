@@ -631,12 +631,275 @@ IDENTIFICACAO_VEICULAR = Exame(
 )
 
 # --------------------------------------------------------------------------
+# Verificação de Danos (Perícias Externas)
+# --------------------------------------------------------------------------
+
+_ADMIN_DANOS = (
+    CampoAdmin(
+        chave="numero_demanda",
+        da_requisicao=True,
+        label="Número da demanda",
+        ajuda="Ex.: 00016037-31.",
+    ),
+    CampoAdmin(
+        chave="data_exame",
+        da_requisicao=True,
+        label="Data de recebimento da solicitação",
+        tipo="data",
+        ajuda="Abre o preâmbulo do laudo.",
+    ),
+    CampoAdmin(
+        chave="hora_recebimento",
+        da_requisicao=True,
+        label="Hora de recebimento",
+        ajuda="Como está no carimbo, ex.: 17h50min.",
+    ),
+    CampoAdmin(
+        chave="orgao_solicitante",
+        da_requisicao=True,
+        label="Órgão solicitante",
+    ),
+    CampoAdmin(
+        chave="documento_solicitacao",
+        da_requisicao=True,
+        label="Documento de solicitação",
+        ajuda=(
+            "Com o artigo, como entra na frase: do ofício n.º 001/CORREG - APFD, "
+            "ou da requisição n.º 002571/18. O artigo comanda a concordância do "
+            "preâmbulo."
+        ),
+    ),
+    CampoAdmin(
+        chave="data_documento",
+        da_requisicao=True,
+        label="Data do documento de solicitação",
+        tipo="data",
+    ),
+    CampoAdmin(
+        chave="subscritor",
+        da_requisicao=True,
+        label="Quem subscreveu a solicitação",
+        ajuda="Como consta no documento, ex.: CAP PM Ferdinand Lira (Presidente do Inquérito).",
+    ),
+    CampoAdmin(
+        chave="finalidade",
+        label="Finalidade do exame",
+        tipo="select",
+        opcoes=(
+            "Exame Pericial para Verificação de Danos",
+            "Exame Pericial em Local para Verificação de Danos",
+        ),
+        ajuda="As duas formas transcritas dos laudos reais.",
+    ),
+    CampoAdmin(chave="perito_designado", label="Perito designado"),
+    CampoAdmin(chave="matricula", label="Matrícula"),
+    CampoAdmin(
+        chave="classe_perito",
+        label="Classe do perito",
+        obrigatorio=False,
+        ajuda="Como sai no rodapé da assinatura, ex.: Especial.",
+    ),
+)
+
+_LOCAIS = Colecao(
+    chave="locais",
+    label_singular="Local",
+    label_plural="Locais examinados",
+    minimo=1,
+    aceita_imagens=True,
+    pergunta_mais_um="Há mais algum local examinado?",
+    slots=(
+        Slot(
+            chave="endereco_local",
+            label="Endereço do local",
+            pergunta="Onde fica o local que você examinou?",
+            instrucao_extracao=(
+                "Endereço do local da ocorrência como o perito o descreveu, "
+                "transcrito sem completar com dados que ele não disse."
+            ),
+        ),
+        Slot(
+            chave="hora_comunicacao",
+            label="Hora da comunicação",
+            pergunta="A que horas você foi comunicado da ocorrência?",
+            instrucao_extracao=(
+                "Hora em que o perito foi comunicado, na grafia dos laudos: "
+                "17h50min. Transcrever o que ele disse, sem arredondar."
+            ),
+        ),
+        Slot(
+            chave="hora_chegada",
+            label="Hora de chegada ao local",
+            pergunta="A que horas você chegou ao local?",
+            instrucao_extracao=(
+                "Hora de chegada ao local, na grafia dos laudos: 18h10min. "
+                "Transcrever o que ele disse, sem arredondar."
+            ),
+        ),
+        Slot(
+            chave="recepcao",
+            label="Quem recebeu o perito",
+            obrigatorio=False,
+            pergunta="Alguém recebeu você no local? Se sim, quem?",
+            instrucao_extracao=(
+                "Quem recebeu o perito no local, como ele descreveu — ex.: um "
+                "Servidor da Prefeitura Municipal desta capital, que prestou ao "
+                "perito todas as informações necessárias. Vazio se ninguém o "
+                "recebeu."
+            ),
+        ),
+        Slot(
+            chave="natureza",
+            label="Natureza da área",
+            opcoes=("interna", "externa"),
+            opcoes_fechadas=True,
+            pergunta="A área examinada é interna ou externa?",
+            instrucao_extracao="Um destes: interna ou externa.",
+        ),
+        Slot(
+            chave="idoneidade",
+            label="Idoneidade para perícia",
+            opcoes=("idônea", "inidônea"),
+            opcoes_fechadas=True,
+            pergunta="O local estava idôneo ou inidôneo para efeito de perícia?",
+            instrucao_extracao="Um destes: idônea ou inidônea.",
+        ),
+        Slot(
+            chave="motivo_inidoneidade",
+            label="Motivo da inidoneidade",
+            obrigatorio=False,
+            obrigatorio_se=("idoneidade", "inidônea"),
+            pergunta="Por que o local estava inidôneo para perícia?",
+            instrucao_extracao=(
+                "Motivo da inidoneidade com as palavras do perito — o que foi "
+                "alterado, o que não foi preservado. Não acrescentar causa que "
+                "ele não citou."
+            ),
+        ),
+        Slot(
+            chave="descricao_local",
+            label="Descrição do local",
+            pergunta="Descreva o local: o que é, como é, o que interessa à perícia.",
+            instrucao_extracao=(
+                "Descrição do local com as palavras do perito, transcrita "
+                "inteira, sem acrescentar característica que ele não descreveu."
+            ),
+        ),
+        Slot(
+            chave="meio_instrumento",
+            label="Meio ou instrumento que produziu os danos",
+            obrigatorio=False,
+            pergunta=(
+                "Com que meio ou instrumento os danos são compatíveis? "
+                "(entra na abertura das constatações e responde o quesito do meio)"
+            ),
+            instrucao_extracao=(
+                "Meio ou instrumento a que o perito atribuiu os danos, com as "
+                "palavras dele — ex.: meio de força física direta, além do "
+                "auxílio de instrumento contundente. NUNCA deduzir da descrição "
+                "dos danos: só entra se ele disser."
+            ),
+        ),
+    ),
+)
+
+_DANOS = Colecao(
+    chave="danos",
+    label_singular="Dano constatado",
+    label_plural="Danos constatados",
+    minimo=1,
+    vinculada_a="locais",
+    pergunta_mais_um="Constatou mais algum dano neste local?",
+    slots=(
+        Slot(
+            chave="descricao",
+            label="Descrição do dano",
+            pergunta="Descreva o dano constatado.",
+            instrucao_extracao=(
+                "Um dano constatado, com as palavras do perito. Cada dano "
+                "distinto é um item próprio. Transcrever sem acrescentar "
+                "extensão, causa ou objeto que ele não citou."
+            ),
+        ),
+        Slot(
+            chave="item_material",
+            label="Local examinado",
+            referencia_colecao="locais",
+            instrucao_extracao=(
+                "Índice do local a que este dano se refere, começando em 1. Se "
+                "o histórico deixa claro qual local está sendo examinado, use "
+                "esse índice. Se AMBÍGUO, deixe vazio. NUNCA invente vínculo."
+            ),
+        ),
+    ),
+)
+
+_ETAPAS_DANOS = (
+    Etapa(
+        titulo="Local examinado",
+        objetivo=(
+            "capturar onde foi a ocorrência, a que horas o perito foi "
+            "comunicado e chegou, quem o recebeu, se a área é interna ou "
+            "externa, se estava idônea para perícia, e a descrição do local."
+        ),
+        colecao="locais",
+    ),
+    Etapa(
+        titulo="Danos constatados",
+        objetivo=(
+            "registrar, um a um, os danos que o perito constatou no local, com "
+            "as palavras dele."
+        ),
+        colecao="danos",
+    ),
+    Etapa(
+        titulo="Quesitos da requisição",
+        objetivo=(
+            "responder, um por um, os quesitos formulados pela autoridade. "
+            "Quando houver padrão do Instituto, oferecer para confirmação; "
+            "quando não houver, o perito escreve a resposta."
+        ),
+        quesitos=True,
+    ),
+)
+
+#: Ordem das seções dos laudos reais 00016037-31 e 00016160-22. Sem tópico de
+#: referências; as imagens saem no corpo, logo após as constatações.
+_SECOES_DANOS = (
+    Secao("cabecalho"),
+    Secao("preambulo"),
+    Secao("texto", "1. HISTÓRICO", "HISTORICO"),
+    Secao("texto", "2. DO OBJETIVO DA PERÍCIA", "OBJETIVO"),
+    Secao("resultados", "3. DOS EXAMES"),
+    Secao("imagens"),
+    Secao("conclusao", "4. CONCLUSÃO"),
+    Secao("quesitos"),
+    Secao("fecho"),
+    Secao("assinatura"),
+)
+
+VERIFICACAO_DANOS = Exame(
+    id="verificacao_danos",
+    template="identificacao_danos",
+    label="Verificação de Danos (Perícias Externas)",
+    descricao=(
+        "Exame pericial em local para verificação de danos materiais: "
+        "descrição do local, constatação dos danos e resposta aos quesitos."
+    ),
+    campos_admin=_ADMIN_DANOS,
+    colecoes=(_LOCAIS, _DANOS),
+    etapas=_ETAPAS_DANOS,
+    secoes=_SECOES_DANOS,
+)
+
+# --------------------------------------------------------------------------
 # Registro
 # --------------------------------------------------------------------------
 
 EXAMES: dict[str, Exame] = {
     IDENTIFICACAO_SUBSTANCIA.id: IDENTIFICACAO_SUBSTANCIA,
     IDENTIFICACAO_VEICULAR.id: IDENTIFICACAO_VEICULAR,
+    VERIFICACAO_DANOS.id: VERIFICACAO_DANOS,
 }
 
 
