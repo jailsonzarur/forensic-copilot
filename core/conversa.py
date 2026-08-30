@@ -390,11 +390,15 @@ def _texto_alteracoes(alteracoes: list[Alteracao]) -> str:
     for chave in ordem:
         do_item = grupos[chave]
         rotulo = f"{do_item[0].colecao.label_singular} {do_item[0].indice}"
-        pares = ", ".join(f"{a.slot.label.lower()}: {a.valor}" for a in do_item)
+        # "; " entre campos do mesmo item porque valor livre (marca "Corolla,
+        # Toyota", observação "sem lacre, tampa solta") vem com vírgula — usar
+        # vírgula aqui embaralha valor com separador.
+        pares = "; ".join(f"{a.slot.label.lower()}: {a.valor}" for a in do_item)
         partes.append(f"{rotulo} — {pares}")
 
-    texto = "Anotei: " + "; ".join(partes)
-    # Alguns valores já vêm com ponto ("Cannabis sativa L."); evita ".." no fim.
+    # ". " entre itens; ponto final só se ainda não terminar em ponto (valor
+    # "Cannabis sativa L." já traz o próprio).
+    texto = "Anotei: " + ". ".join(partes)
     return texto if texto.endswith(".") else texto + "."
 
 
