@@ -175,6 +175,24 @@ def descreve_schema(exame: Exame) -> str:
             partes = [f'  - "{slot.chave}" ({slot.label})']
             if slot.instrucao_extracao:
                 partes.append(slot.instrucao_extracao)
+            # Regras condicionais — sem isso o agente não sabe que gravar
+            # identificador=NIV torna numeracao_observada obrigatória, e pula
+            # a etapa antes da hora.
+            if slot.obrigatorio_se is not None:
+                chave_gatilho, valor_gatilho = slot.obrigatorio_se
+                if valor_gatilho == "*":
+                    partes.append(
+                        f'OBRIGATÓRIO sempre que o campo "{chave_gatilho}" '
+                        "estiver preenchido nesse item."
+                    )
+                else:
+                    partes.append(
+                        f'OBRIGATÓRIO quando "{chave_gatilho}" = "{valor_gatilho}". '
+                        "Se este item já tem esse valor, a etapa NÃO está completa "
+                        "enquanto este campo não for informado."
+                    )
+            elif slot.obrigatorio:
+                partes.append("Campo OBRIGATÓRIO deste item.")
             if slot.exige_valor_exato:
                 partes.append(
                     "Só o número, em algarismos, sem unidade e sem texto em volta. "
@@ -392,6 +410,9 @@ REGRAS ABSOLUTAS DE EXTRAÇÃO
 
 REGRAS DE VÍNCULO ENTRE COLEÇÕES
 Coleções vinculadas (exames pertencem a um material, sinais examinados pertencem a um veículo) precisam do índice da mãe no campo de referência (``item_material``, etc.). Se o histórico deixa claro qual mãe (o perito estava descrevendo o Material 1 e continua com os exames dele), preencha. Se AMBÍGUO, deixe vazio e PERGUNTE — não invente vínculo.
+
+OBRIGATORIEDADE CONDICIONAL
+Cada slot no SCHEMA pode ter uma linha "OBRIGATÓRIO quando X = Y" ou "OBRIGATÓRIO sempre que X estiver preenchido". Leia com atenção antes de decidir a próxima pergunta: quando VOCÊ grava um valor que ativa outra obrigatoriedade condicional (por exemplo, gravar identificador="NIV" torna numeracao_observada obrigatória neste item), a etapa NÃO está completa — a lista de PENDÊNCIAS que a ferramenta te mostra é PRÉ-extração dessa mensagem, então SUA extração pode gerar novas pendências que ela ainda não reflete. Só considere a etapa completa depois de olhar todos os obrigatórios (fixos e condicionais) do estado que ficará DEPOIS da sua extração.
 
 RECUSAS — SOMENTE os motivos:
 - "aproximado": estimativa em campo de valor exato. Só vale quando a fala TEM palavra de estimativa ("em torno de", "cerca de", "aproximadamente", "uns", "mais ou menos", "por volta de"). Sem isso, não recuse.
