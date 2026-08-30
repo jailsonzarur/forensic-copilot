@@ -174,31 +174,35 @@ def _itens_referenciaveis(
 
 
 def _fala_de_quesito(
-    perguntas: list[str], respostas: dict[str, str], exame: Exame | None = None
+    perguntas: list[str],
+    respostas: dict[str, str],
+    colecoes: dict[str, list[dict]],
+    exame: Exame | None = None,
 ) -> Fala | None:
     """Próximo quesito da requisição a ser perguntado ao perito.
 
     O laudo responde ao que a autoridade perguntou, e quem responde é o perito.
-    Quando existe padrão transcrito de laudo real, ele é oferecido para o perito
-    confirmar — oferecer não é preencher.
+    Quando existe padrão transcrito de laudo real, ele é oferecido JÁ RESOLVIDO
+    ("Cannabis sativa Lineu", não "{natureza}") — para o perito confirmar
+    vendo o texto que vai ao laudo. Oferecer não é preencher.
     """
     faltando = camada1_quesitos.pendentes(perguntas, respostas)
     if not faltando:
         return None
 
     quesito = faltando[0]
-    modelo = camada1_quesitos.padrao_de_resposta(quesito.pergunta, exame)
     texto = f"Quesito {quesito.numero}: {quesito.pergunta}"
 
-    if modelo and "{" not in modelo:
+    # ``responder`` resolve os placeholders do padrão a partir do que já foi
+    # registrado. Assim o perito confirma vendo o texto que sai no laudo,
+    # nunca no escuro.
+    resposta_montada, conhecido = camada1_quesitos.responder(
+        quesito.pergunta, colecoes, {}, exame
+    )
+    if conhecido and resposta_montada.strip():
         texto += (
-            f"\n\nO Instituto costuma responder assim: «{modelo}». "
+            f"\n\nO Instituto costuma responder assim: «{resposta_montada}». "
             "Se serve pro caso, escreva «confirmo». Se não, escreva a sua."
-        )
-    elif modelo:
-        texto += (
-            "\n\nJá tem uma resposta padrão montada a partir do que você "
-            "registrou. Escreva «confirmo» pra usar essa, ou digite a sua."
         )
     return Fala(QUESITO, texto, quesito_numero=quesito.numero, quesito_pergunta=quesito.pergunta)
 
@@ -330,7 +334,7 @@ def proxima_fala(
             )
 
     fala = _fala_de_quesito(
-        quesitos or [], respostas if respostas is not None else {}, exame
+        quesitos or [], respostas if respostas is not None else {}, colecoes, exame
     )
     if fala is not None:
         return fala
