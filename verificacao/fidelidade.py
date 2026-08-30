@@ -156,6 +156,54 @@ def _roda(exame, mensagens: list[str]) -> tuple[dict, list[str]]:
     return {**material, **realizado}, recusas
 
 
+def avaliar(exame, caso) -> dict:
+    """Roda um caso e devolve o que ele produziu, sem imprimir nada.
+
+    Separado de ``main`` para que a bancada de experimentos possa rodar os
+    mesmos casos contra vários modelos e tabular o resultado. A regra de
+    julgamento fica aqui, uma só, para os dois usos.
+    """
+    nome, mensagens, proibidos, esperados = caso[:4]
+    recusas_esperadas = caso[4] if len(caso) > 4 else ()
+
+    try:
+        estado, recusas = _roda(exame, mensagens)
+    except Exception as erro:
+        return {
+            "nome": nome, "falas": mensagens, "estado": {}, "recusas": [],
+            "problemas": [f"{nome}: a chamada falhou — {erro}"], "erro": str(erro),
+        }
+
+    problemas: list[str] = []
+    for chave in recusas_esperadas:
+        if chave == "*":
+            if not recusas:
+                problemas.append(f"{nome}: devolveu nada sem explicar o porquê")
+        elif chave not in recusas:
+            problemas.append(f"{nome}: devia recusar {chave} com motivo, mas ficou calado")
+    for chave in proibidos:
+        if estado.get(chave):
+            problemas.append(f"{nome}: inventou {chave}={estado[chave]!r}")
+    for chave, valor in esperados:
+        obtido = str(estado.get(chave) or "")
+        if valor.startswith("#"):
+            from core.extracao import _numero
+
+            esperado, lido = _numero(valor[1:]), _numero(obtido)
+            ok = esperado is not None and esperado == lido
+        elif valor.startswith("~"):
+            ok = valor[1:] in obtido
+        else:
+            ok = obtido == valor
+        if not ok:
+            problemas.append(f"{nome}: esperava {chave}={valor!r}, veio {estado.get(chave)!r}")
+
+    return {
+        "nome": nome, "falas": mensagens, "estado": estado,
+        "recusas": recusas, "problemas": problemas, "erro": "",
+    }
+
+
 def main() -> int:
     if not chave_configurada():
         print("OPENAI_API_KEY não configurada — nada a verificar.")
@@ -166,46 +214,17 @@ def main() -> int:
     print(f"modelo: {modelo()}")
 
     for caso in CASOS:
-        nome, mensagens, proibidos, esperados = caso[:4]
-        recusas_esperadas = caso[4] if len(caso) > 4 else ()
-        estado, recusas = _roda(exame, mensagens)
-        print(f"\n--- {nome}")
-        print("    fala:", " | ".join(mensagens))
-        print("    estado:", estado or "(vazio)")
-        if recusas:
-            print("    recusou:", ", ".join(recusas))
-        problemas = []
-        for chave in recusas_esperadas:
-            if chave == "*":
-                if not recusas:
-                    problemas.append(f"{nome}: devolveu nada sem explicar o porquê")
-            elif chave not in recusas:
-                problemas.append(
-                    f"{nome}: devia recusar {chave} com motivo, mas ficou calado"
-                )
-        for chave in proibidos:
-            if estado.get(chave):
-                problemas.append(f"{nome}: inventou {chave}={estado[chave]!r}")
-        for chave, valor in esperados:
-            obtido = str(estado.get(chave) or "")
-            if valor.startswith("#"):
-                from core.extracao import _numero
-
-                esperado, lido = _numero(valor[1:]), _numero(obtido)
-                ok = esperado is not None and esperado == lido
-            elif valor.startswith("~"):
-                ok = valor[1:] in obtido
-            else:
-                ok = obtido == valor
-            if not ok:
-                problemas.append(
-                    f"{nome}: esperava {chave}={valor!r}, veio {estado.get(chave)!r}"
-                )
-        for problema in problemas:
+        resultado = avaliar(exame, caso)
+        print(f"\n--- {resultado['nome']}")
+        print("    fala:", " | ".join(resultado["falas"]))
+        print("    estado:", resultado["estado"] or "(vazio)")
+        if resultado["recusas"]:
+            print("    recusou:", ", ".join(resultado["recusas"]))
+        for problema in resultado["problemas"]:
             print("    ❌", problema)
-        if not problemas:
+        if not resultado["problemas"]:
             print("    ✓")
-        falhas += problemas
+        falhas += resultado["problemas"]
 
     print("\n" + "=" * 60)
     if falhas:

@@ -26,6 +26,7 @@ from core import quesitos as camada1_quesitos
 from core.extracao import (
     Alteracao,
     Recusa,
+    SEM_EXTRACAO,
     aplicar,
     consolida_recusas,
     ler_recusas,
@@ -246,6 +247,24 @@ def processar(
                 r for r in recusas
                 if r.motivo not in ("sem_dado", "fora_do_escopo", "sem_extracao")
             ]
+
+    # PAREDE 2b: nenhuma mensagem volta ao perito sem explicação. Se o agente
+    # não gravou nada, não encerrou coleção, não respondeu quesito E não
+    # explicou o porquê, a falha é de leitura — e o código a assume, em vez de
+    # deixar o perito repetir a mesma frase contra o silêncio.
+    #
+    # Isto vivia no controlador determinístico e se perdeu no refactor do
+    # agente: o modelo em uso sempre explicava, então a garantia passou a
+    # depender de ele lembrar. O experimento E1 revelou isso ao rodar os mesmos
+    # casos contra outro modelo, que ficou calado.
+    if (
+        not alteracoes
+        and not recusas
+        and not quesito_respondido
+        and not saida.get("encerramentos_de_colecao")
+        and etapa_corrente is not None
+    ):
+        recusas = [Recusa(SEM_EXTRACAO)]
 
     # PAREDE 3: valida_resumo — a mensagem do agente só afirma ter registrado o
     # que ``aplicar`` de fato gravou. Se não bater, cai no fallback determinístico.

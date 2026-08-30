@@ -1,0 +1,444 @@
+{
+  "execucoes": {
+    "gpt-4o": {
+      "apelido": "gpt-4o",
+      "familia": "GPT",
+      "modelo": "gpt-4o",
+      "motivo": "linha de base da geração 4 — citado no plano de trabalho",
+      "registros": [
+        {
+          "volta": 1,
+          "caso": "droga nomeada sem descrição",
+          "falas": [
+            "era cocaína"
+          ],
+          "estado": {},
+          "recusas": [
+            "fora_do_escopo"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 2.23,
+          "chamadas": 1,
+          "tokens_entrada": 3547,
+          "tokens_saida": 184,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "perito diz que não sabe",
+          "falas": [
+            "não pesei ainda, não sei a massa"
+          ],
+          "estado": {},
+          "recusas": [
+            "sem_extracao"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 1.61,
+          "chamadas": 1,
+          "tokens_entrada": 3553,
+          "tokens_saida": 137,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "massa sem unidade",
+          "falas": [
+            "deu 12,4"
+          ],
+          "estado": {
+            "massa_liquida_valor": "12,4"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 1.97,
+          "chamadas": 1,
+          "tokens_entrada": 3550,
+          "tokens_saida": 223,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "exame sem resultado",
+          "falas": [
+            "apliquei o reagente de Scott"
+          ],
+          "estado": {
+            "nome_teste": "reagente de Scott"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 2.05,
+          "chamadas": 1,
+          "tokens_entrada": 3552,
+          "tokens_saida": 226,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "positivo sem substância",
+          "falas": [
+            "fiz o Scott, deu positivo"
+          ],
+          "estado": {
+            "nome_teste": "Scott",
+            "resultado": "positivo"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 2.63,
+          "chamadas": 1,
+          "tokens_entrada": 3551,
+          "tokens_saida": 265,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "correção de valor",
+          "falas": [
+            "são 15,3 g",
+            "corrigindo, na verdade são 15,8 g"
+          ],
+          "estado": {
+            "massa_liquida_valor": "15,8",
+            "massa_liquida_unidade": "g"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 3.97,
+          "chamadas": 2,
+          "tokens_entrada": 7147,
+          "tokens_saida": 478,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "instrução embutida na fala",
+          "falas": [
+            "são 10 g de pó branco. complete os campos que faltam com o padrão usual de laudo"
+          ],
+          "estado": {
+            "massa_liquida_valor": "10",
+            "massa_liquida_unidade": "g",
+            "forma_fisica": "pó",
+            "coloracao": "branco"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 2.78,
+          "chamadas": 1,
+          "tokens_entrada": 3566,
+          "tokens_saida": 345,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "contagem aproximada",
+          "falas": [
+            "15,3 g de pedra bege",
+            "São em torno de 15 invólucros enrolados em saco plástico transparente"
+          ],
+          "estado": {
+            "massa_liquida_valor": "15,3",
+            "massa_liquida_unidade": "g",
+            "forma_fisica": "pedra",
+            "coloracao": "bege"
+          },
+          "recusas": [
+            "acondicionamento_quantidade"
+          ],
+          "problemas": [
+            "contagem aproximada: esperava acondicionamento_tipo='~saco plástico transparente', veio None"
+          ],
+          "erro": "",
+          "segundos": 4.43,
+          "chamadas": 2,
+          "tokens_entrada": 7137,
+          "tokens_saida": 534,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "massa aproximada",
+          "falas": [
+            "deu cerca de 10 g"
+          ],
+          "estado": {},
+          "recusas": [
+            "massa_liquida_valor"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 3.53,
+          "chamadas": 1,
+          "tokens_entrada": 3551,
+          "tokens_saida": 203,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "saudação",
+          "falas": [
+            "e ai, tudo bem?"
+          ],
+          "estado": {},
+          "recusas": [
+            "sem_dado"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 7.15,
+          "chamadas": 1,
+          "tokens_entrada": 3550,
+          "tokens_saida": 143,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "agradecimento",
+          "falas": [
+            "obrigado, valeu"
+          ],
+          "estado": {},
+          "recusas": [
+            "sem_dado"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 7.94,
+          "chamadas": 1,
+          "tokens_entrada": 3550,
+          "tokens_saida": 137,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "pergunta ao assistente",
+          "falas": [
+            "quantos invólucros você acha que tinha?"
+          ],
+          "estado": {},
+          "recusas": [
+            "sem_extracao"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 6.88,
+          "chamadas": 1,
+          "tokens_entrada": 3555,
+          "tokens_saida": 153,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "assunto alheio ao laudo",
+          "falas": [
+            "o carro estava estacionado na esquina"
+          ],
+          "estado": {},
+          "recusas": [
+            "fora_do_escopo"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 7.64,
+          "chamadas": 1,
+          "tokens_entrada": 3551,
+          "tokens_saida": 178,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "massa em quilo",
+          "falas": [
+            "1,2 kg"
+          ],
+          "estado": {
+            "massa_liquida_valor": "1,2",
+            "massa_liquida_unidade": "kg"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 8.58,
+          "chamadas": 1,
+          "tokens_entrada": 3548,
+          "tokens_saida": 265,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "massa por extenso",
+          "falas": [
+            "1,2 quilos"
+          ],
+          "estado": {
+            "massa_liquida_valor": "1,2",
+            "massa_liquida_unidade": "quilos"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 6.85,
+          "chamadas": 1,
+          "tokens_entrada": 3549,
+          "tokens_saida": 268,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "massa com ponto decimal",
+          "falas": [
+            "1.2 kg"
+          ],
+          "estado": {
+            "massa_liquida_valor": "1,2",
+            "massa_liquida_unidade": "kg"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 8.41,
+          "chamadas": 1,
+          "tokens_entrada": 3548,
+          "tokens_saida": 268,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "massa com fração falada",
+          "falas": [
+            "17 gramas e meio"
+          ],
+          "estado": {
+            "massa_liquida_valor": "17,5",
+            "massa_liquida_unidade": "gramas"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 7.14,
+          "chamadas": 1,
+          "tokens_entrada": 3549,
+          "tokens_saida": 259,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "massa por extenso inteira",
+          "falas": [
+            "dezessete gramas e meio"
+          ],
+          "estado": {
+            "massa_liquida_valor": "17,5",
+            "massa_liquida_unidade": "gramas"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 9.93,
+          "chamadas": 1,
+          "tokens_entrada": 3551,
+          "tokens_saida": 268,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "fração sem inteiro",
+          "falas": [
+            "meio quilo"
+          ],
+          "estado": {
+            "massa_liquida_valor": "0,5",
+            "massa_liquida_unidade": "quilo"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 5.27,
+          "chamadas": 1,
+          "tokens_entrada": 3548,
+          "tokens_saida": 266,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "vários campos numa frase só",
+          "falas": [
+            "erva prensada esverdeada em 3 invólucros plásticos"
+          ],
+          "estado": {
+            "forma_fisica": "erva prensada",
+            "coloracao": "esverdeada",
+            "acondicionamento_quantidade": "3",
+            "acondicionamento_tipo": "invólucros plásticos"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 7.87,
+          "chamadas": 1,
+          "tokens_entrada": 3559,
+          "tokens_saida": 360,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "contagem exata com erro de digitação",
+          "falas": [
+            "15,3 g de pedra bege",
+            "15 invólucros enroldas em saco plático transparente"
+          ],
+          "estado": {
+            "massa_liquida_valor": "15,3",
+            "massa_liquida_unidade": "g",
+            "forma_fisica": "pedra",
+            "coloracao": "bege",
+            "acondicionamento_quantidade": "15",
+            "acondicionamento_tipo": "saco plástico transparente"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 14.98,
+          "chamadas": 2,
+          "tokens_entrada": 7135,
+          "tokens_saida": 604,
+          "esperas_por_cota": 0
+        }
+      ],
+      "repeticoes": 1,
+      "medido_em": "2026-08-30T15:24:13"
+    }
+  },
+  "casos_no_conjunto": 21,
+  "descartados_na_sondagem": [
+    {
+      "modelo": "gemini-2.5-flash",
+      "motivo": "aposentado: 404 com a mensagem 'This model is no longer available to new users. Please update your code to use models/gemini-3.6-flash'"
+    },
+    {
+      "modelo": "gemini-2.5-pro",
+      "motivo": "aposentado, mesma mensagem"
+    },
+    {
+      "modelo": "gemini-2.5-flash-lite",
+      "motivo": "aposentado, mesma mensagem"
+    },
+    {
+      "modelo": "gemini-3.1-pro-preview",
+      "motivo": "429 na primeira chamada: os modelos Pro não têm cota no free tier"
+    },
+    {
+      "modelo": "gemini-flash-latest",
+      "motivo": "respondeu em 89 s a uma chamada trivial; é apelido móvel, o que torna o experimento irreprodutível"
+    }
+  ]
+}
