@@ -101,6 +101,24 @@ throttling por uso, é ausência de acesso.
 Isso restringiu o experimento à linha *Flash* da família Gemini, o que é uma
 limitação real do resultado e não uma escolha metodológica.
 
+E mesmo na linha Flash a cota é apertada. A documentação oficial não publica
+mais os números — remete ao painel do AI Studio —, mas o próprio erro os
+informa quando estoura:
+
+> `Quota exceeded for metric:
+> generativelanguage.googleapis.com/generate_content_free_tier_requests,
+> limit: 20, model: gemini-3.5-flash`
+
+**Vinte requisições por dia, por modelo.** Um conjunto de 21 casos não cabe
+numa conta sem faturamento: o experimento com `gemini-3.5-flash` foi
+interrompido por cota no 18º caso. Isso não é falha do modelo, e o relatório
+distingue as duas coisas na tabela — confundi-las faria a tabela afirmar que
+um modelo inventou dado quando ele sequer foi alcançado.
+
+Consequência metodológica: **medir modelos Gemini com rigor exige conta com
+faturamento**, mesmo que o custo real seja de centavos. O free tier serve para
+sondar, não para experimentar.
+
 ### 4.3. Apelidos móveis inviabilizam reprodutibilidade
 
 `gemini-flash-latest` respondeu, mas em **89 segundos** para uma chamada
@@ -129,7 +147,18 @@ ferramenta que o perito usa em campo, conversando, isso é inviável
 independentemente da qualidade da extração — e é o tipo de restrição que só
 aparece medindo.
 
-### 4.5. Todos aceitaram modo JSON com temperatura fixa
+### 4.5. O recuo por cota precisou existir no código do produto
+
+Estourar cota não é erro de quem está usando a ferramenta. O cliente ganhou
+recuo exponencial em 429 — quatro tentativas, dobrando a espera a partir de
+8 segundos — porque sem isso o perito leria *"a ferramenta falhou"* no meio do
+laudo por um limite administrativo do provedor.
+
+Durante o E1 esse recuo foi acionado **13 vezes** só com `gemini-3.5-flash`, e
+salvou 13 casos que teriam sido perdidos. Os quatro que ainda assim falharam
+esgotaram as tentativas.
+
+### 4.6. Todos aceitaram modo JSON com temperatura fixa
 
 Os oito modelos do elenco aceitaram `response_format={"type":"json_object"}`
 junto de `temperature=0.0` na primeira tentativa. O código já tinha um caminho

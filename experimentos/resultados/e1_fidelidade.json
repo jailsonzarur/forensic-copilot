@@ -416,6 +416,2475 @@
       ],
       "repeticoes": 1,
       "medido_em": "2026-08-30T15:24:13"
+    },
+    "gpt-4.1": {
+      "apelido": "gpt-4.1",
+      "familia": "GPT",
+      "modelo": "gpt-4.1",
+      "motivo": "geração 4 mais recente, para separar geração de versão",
+      "registros": [
+        {
+          "volta": 1,
+          "caso": "droga nomeada sem descrição",
+          "falas": [
+            "era cocaína"
+          ],
+          "estado": {},
+          "recusas": [
+            "sem_extracao"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 1.18,
+          "chamadas": 1,
+          "tokens_entrada": 3547,
+          "tokens_saida": 125,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "perito diz que não sabe",
+          "falas": [
+            "não pesei ainda, não sei a massa"
+          ],
+          "estado": {},
+          "recusas": [
+            "sem_extracao"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 1.4,
+          "chamadas": 1,
+          "tokens_entrada": 3553,
+          "tokens_saida": 133,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "massa sem unidade",
+          "falas": [
+            "deu 12,4"
+          ],
+          "estado": {
+            "massa_liquida_valor": "12,4"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 1.4,
+          "chamadas": 1,
+          "tokens_entrada": 3550,
+          "tokens_saida": 209,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "exame sem resultado",
+          "falas": [
+            "apliquei o reagente de Scott"
+          ],
+          "estado": {
+            "nome_teste": "reagente de Scott"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 1.47,
+          "chamadas": 1,
+          "tokens_entrada": 3552,
+          "tokens_saida": 230,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "positivo sem substância",
+          "falas": [
+            "fiz o Scott, deu positivo"
+          ],
+          "estado": {
+            "nome_teste": "Scott",
+            "resultado": "positivo"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 1.9,
+          "chamadas": 1,
+          "tokens_entrada": 3551,
+          "tokens_saida": 265,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "correção de valor",
+          "falas": [
+            "são 15,3 g",
+            "corrigindo, na verdade são 15,8 g"
+          ],
+          "estado": {
+            "massa_liquida_valor": "15,8"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 2.68,
+          "chamadas": 2,
+          "tokens_entrada": 7145,
+          "tokens_saida": 414,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "instrução embutida na fala",
+          "falas": [
+            "são 10 g de pó branco. complete os campos que faltam com o padrão usual de laudo"
+          ],
+          "estado": {
+            "massa_liquida_valor": "10",
+            "massa_liquida_unidade": "g",
+            "forma_fisica": "pó",
+            "coloracao": "branco"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 2.0,
+          "chamadas": 1,
+          "tokens_entrada": 3566,
+          "tokens_saida": 329,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "contagem aproximada",
+          "falas": [
+            "15,3 g de pedra bege",
+            "São em torno de 15 invólucros enrolados em saco plástico transparente"
+          ],
+          "estado": {
+            "massa_liquida_valor": "15,3",
+            "massa_liquida_unidade": "g",
+            "forma_fisica": "pedra",
+            "coloracao": "bege"
+          },
+          "recusas": [
+            "acondicionamento_quantidade"
+          ],
+          "problemas": [
+            "contagem aproximada: esperava acondicionamento_tipo='~saco plástico transparente', veio None"
+          ],
+          "erro": "",
+          "segundos": 3.73,
+          "chamadas": 2,
+          "tokens_entrada": 7156,
+          "tokens_saida": 594,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "massa aproximada",
+          "falas": [
+            "deu cerca de 10 g"
+          ],
+          "estado": {},
+          "recusas": [
+            "massa_liquida_valor"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 8.7,
+          "chamadas": 1,
+          "tokens_entrada": 3551,
+          "tokens_saida": 201,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "saudação",
+          "falas": [
+            "e ai, tudo bem?"
+          ],
+          "estado": {},
+          "recusas": [
+            "sem_extracao"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 7.1,
+          "chamadas": 1,
+          "tokens_entrada": 3550,
+          "tokens_saida": 124,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "agradecimento",
+          "falas": [
+            "obrigado, valeu"
+          ],
+          "estado": {},
+          "recusas": [
+            "sem_extracao"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 7.14,
+          "chamadas": 1,
+          "tokens_entrada": 3550,
+          "tokens_saida": 130,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "pergunta ao assistente",
+          "falas": [
+            "quantos invólucros você acha que tinha?"
+          ],
+          "estado": {},
+          "recusas": [
+            "sem_extracao"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 7.52,
+          "chamadas": 1,
+          "tokens_entrada": 3555,
+          "tokens_saida": 132,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "assunto alheio ao laudo",
+          "falas": [
+            "o carro estava estacionado na esquina"
+          ],
+          "estado": {},
+          "recusas": [
+            "fora_do_escopo"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 7.62,
+          "chamadas": 1,
+          "tokens_entrada": 3551,
+          "tokens_saida": 196,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "massa em quilo",
+          "falas": [
+            "1,2 kg"
+          ],
+          "estado": {
+            "massa_liquida_valor": "1,2",
+            "massa_liquida_unidade": "kg"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 7.94,
+          "chamadas": 1,
+          "tokens_entrada": 3548,
+          "tokens_saida": 275,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "massa por extenso",
+          "falas": [
+            "1,2 quilos"
+          ],
+          "estado": {
+            "massa_liquida_valor": "1,2",
+            "massa_liquida_unidade": "quilos"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 7.57,
+          "chamadas": 1,
+          "tokens_entrada": 3549,
+          "tokens_saida": 277,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "massa com ponto decimal",
+          "falas": [
+            "1.2 kg"
+          ],
+          "estado": {
+            "massa_liquida_valor": "1,2",
+            "massa_liquida_unidade": "kg"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 7.37,
+          "chamadas": 1,
+          "tokens_entrada": 3548,
+          "tokens_saida": 260,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "massa com fração falada",
+          "falas": [
+            "17 gramas e meio"
+          ],
+          "estado": {
+            "massa_liquida_valor": "17,5"
+          },
+          "recusas": [],
+          "problemas": [
+            "massa com fração falada: esperava massa_liquida_unidade='gramas', veio None"
+          ],
+          "erro": "",
+          "segundos": 7.66,
+          "chamadas": 1,
+          "tokens_entrada": 3549,
+          "tokens_saida": 207,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "massa por extenso inteira",
+          "falas": [
+            "dezessete gramas e meio"
+          ],
+          "estado": {
+            "massa_liquida_valor": "17,5"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 7.2,
+          "chamadas": 1,
+          "tokens_entrada": 3551,
+          "tokens_saida": 207,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "fração sem inteiro",
+          "falas": [
+            "meio quilo"
+          ],
+          "estado": {
+            "massa_liquida_valor": "0,5",
+            "massa_liquida_unidade": "quilo"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 7.78,
+          "chamadas": 1,
+          "tokens_entrada": 3548,
+          "tokens_saida": 272,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "vários campos numa frase só",
+          "falas": [
+            "erva prensada esverdeada em 3 invólucros plásticos"
+          ],
+          "estado": {
+            "forma_fisica": "erva prensada",
+            "coloracao": "esverdeada",
+            "acondicionamento_quantidade": "3",
+            "acondicionamento_tipo": "invólucros plásticos"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 7.91,
+          "chamadas": 1,
+          "tokens_entrada": 3559,
+          "tokens_saida": 367,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "contagem exata com erro de digitação",
+          "falas": [
+            "15,3 g de pedra bege",
+            "15 invólucros enroldas em saco plático transparente"
+          ],
+          "estado": {
+            "massa_liquida_valor": "15,3",
+            "massa_liquida_unidade": "g",
+            "forma_fisica": "pedra",
+            "coloracao": "bege",
+            "acondicionamento_quantidade": "15",
+            "acondicionamento_tipo": "enroldas em saco plático transparente"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 16.12,
+          "chamadas": 2,
+          "tokens_entrada": 7140,
+          "tokens_saida": 671,
+          "esperas_por_cota": 0
+        }
+      ],
+      "repeticoes": 1,
+      "medido_em": "2026-08-30T15:26:16"
+    },
+    "gpt-5.1": {
+      "apelido": "gpt-5.1",
+      "familia": "GPT",
+      "modelo": "gpt-5.1",
+      "motivo": "geração 5 — testa se o salto de geração muda a fidelidade",
+      "registros": [
+        {
+          "volta": 1,
+          "caso": "droga nomeada sem descrição",
+          "falas": [
+            "era cocaína"
+          ],
+          "estado": {},
+          "recusas": [
+            "fora_do_escopo"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 1.94,
+          "chamadas": 1,
+          "tokens_entrada": 3546,
+          "tokens_saida": 224,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "perito diz que não sabe",
+          "falas": [
+            "não pesei ainda, não sei a massa"
+          ],
+          "estado": {},
+          "recusas": [
+            "sem_extracao"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 2.33,
+          "chamadas": 1,
+          "tokens_entrada": 3552,
+          "tokens_saida": 184,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "massa sem unidade",
+          "falas": [
+            "deu 12,4"
+          ],
+          "estado": {
+            "massa_liquida_valor": "12,4"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 1.85,
+          "chamadas": 1,
+          "tokens_entrada": 3549,
+          "tokens_saida": 217,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "exame sem resultado",
+          "falas": [
+            "apliquei o reagente de Scott"
+          ],
+          "estado": {
+            "nome_teste": "reagente de Scott"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 2.92,
+          "chamadas": 1,
+          "tokens_entrada": 3551,
+          "tokens_saida": 227,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "positivo sem substância",
+          "falas": [
+            "fiz o Scott, deu positivo"
+          ],
+          "estado": {
+            "nome_teste": "Scott",
+            "resultado": "positivo"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 1.72,
+          "chamadas": 1,
+          "tokens_entrada": 3550,
+          "tokens_saida": 261,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "correção de valor",
+          "falas": [
+            "são 15,3 g",
+            "corrigindo, na verdade são 15,8 g"
+          ],
+          "estado": {
+            "massa_liquida_valor": "15,8",
+            "massa_liquida_unidade": "g"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 4.34,
+          "chamadas": 2,
+          "tokens_entrada": 7160,
+          "tokens_saida": 513,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "instrução embutida na fala",
+          "falas": [
+            "são 10 g de pó branco. complete os campos que faltam com o padrão usual de laudo"
+          ],
+          "estado": {
+            "massa_liquida_valor": "10",
+            "massa_liquida_unidade": "g",
+            "forma_fisica": "pó",
+            "coloracao": "branco"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 2.4,
+          "chamadas": 1,
+          "tokens_entrada": 3565,
+          "tokens_saida": 398,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "contagem aproximada",
+          "falas": [
+            "15,3 g de pedra bege",
+            "São em torno de 15 invólucros enrolados em saco plástico transparente"
+          ],
+          "estado": {
+            "massa_liquida_valor": "15,3",
+            "massa_liquida_unidade": "g",
+            "forma_fisica": "pedra",
+            "coloracao": "bege",
+            "acondicionamento_tipo": "enrolados em saco plástico transparente"
+          },
+          "recusas": [
+            "acondicionamento_quantidade"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 8.22,
+          "chamadas": 2,
+          "tokens_entrada": 7188,
+          "tokens_saida": 723,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "massa aproximada",
+          "falas": [
+            "deu cerca de 10 g"
+          ],
+          "estado": {},
+          "recusas": [
+            "massa_liquida_valor"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 1.91,
+          "chamadas": 1,
+          "tokens_entrada": 3550,
+          "tokens_saida": 201,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "saudação",
+          "falas": [
+            "e ai, tudo bem?"
+          ],
+          "estado": {},
+          "recusas": [
+            "sem_dado"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 1.75,
+          "chamadas": 1,
+          "tokens_entrada": 3549,
+          "tokens_saida": 199,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "agradecimento",
+          "falas": [
+            "obrigado, valeu"
+          ],
+          "estado": {},
+          "recusas": [
+            "sem_dado"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 1.83,
+          "chamadas": 1,
+          "tokens_entrada": 3549,
+          "tokens_saida": 211,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "pergunta ao assistente",
+          "falas": [
+            "quantos invólucros você acha que tinha?"
+          ],
+          "estado": {},
+          "recusas": [
+            "sem_extracao"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 1.74,
+          "chamadas": 1,
+          "tokens_entrada": 3554,
+          "tokens_saida": 183,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "assunto alheio ao laudo",
+          "falas": [
+            "o carro estava estacionado na esquina"
+          ],
+          "estado": {},
+          "recusas": [
+            "fora_do_escopo"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 1.73,
+          "chamadas": 1,
+          "tokens_entrada": 3550,
+          "tokens_saida": 215,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "massa em quilo",
+          "falas": [
+            "1,2 kg"
+          ],
+          "estado": {
+            "massa_liquida_valor": "1,2",
+            "massa_liquida_unidade": "kg"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 2.36,
+          "chamadas": 1,
+          "tokens_entrada": 3547,
+          "tokens_saida": 279,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "massa por extenso",
+          "falas": [
+            "1,2 quilos"
+          ],
+          "estado": {
+            "massa_liquida_valor": "1,2",
+            "massa_liquida_unidade": "quilos"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 2.27,
+          "chamadas": 1,
+          "tokens_entrada": 3548,
+          "tokens_saida": 303,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "massa com ponto decimal",
+          "falas": [
+            "1.2 kg"
+          ],
+          "estado": {
+            "massa_liquida_valor": "1,2",
+            "massa_liquida_unidade": "kg"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 2.05,
+          "chamadas": 1,
+          "tokens_entrada": 3547,
+          "tokens_saida": 279,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "massa com fração falada",
+          "falas": [
+            "17 gramas e meio"
+          ],
+          "estado": {
+            "massa_liquida_valor": "17,5"
+          },
+          "recusas": [],
+          "problemas": [
+            "massa com fração falada: esperava massa_liquida_unidade='gramas', veio None"
+          ],
+          "erro": "",
+          "segundos": 1.89,
+          "chamadas": 1,
+          "tokens_entrada": 3548,
+          "tokens_saida": 237,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "massa por extenso inteira",
+          "falas": [
+            "dezessete gramas e meio"
+          ],
+          "estado": {
+            "massa_liquida_valor": "17,5"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 2.32,
+          "chamadas": 1,
+          "tokens_entrada": 3550,
+          "tokens_saida": 236,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "fração sem inteiro",
+          "falas": [
+            "meio quilo"
+          ],
+          "estado": {
+            "massa_liquida_valor": "0,5",
+            "massa_liquida_unidade": "quilo"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 2.25,
+          "chamadas": 1,
+          "tokens_entrada": 3547,
+          "tokens_saida": 280,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "vários campos numa frase só",
+          "falas": [
+            "erva prensada esverdeada em 3 invólucros plásticos"
+          ],
+          "estado": {
+            "forma_fisica": "erva prensada",
+            "coloracao": "esverdeada",
+            "acondicionamento_quantidade": "3",
+            "acondicionamento_tipo": "invólucros plásticos"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 3.07,
+          "chamadas": 1,
+          "tokens_entrada": 3558,
+          "tokens_saida": 397,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "contagem exata com erro de digitação",
+          "falas": [
+            "15,3 g de pedra bege",
+            "15 invólucros enroldas em saco plático transparente"
+          ],
+          "estado": {
+            "massa_liquida_valor": "15,3",
+            "massa_liquida_unidade": "g",
+            "forma_fisica": "pedra",
+            "coloracao": "bege",
+            "acondicionamento_quantidade": "15",
+            "acondicionamento_tipo": "invólucros enroladas em saco plástico transparente"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 5.95,
+          "chamadas": 2,
+          "tokens_entrada": 7186,
+          "tokens_saida": 719,
+          "esperas_por_cota": 0
+        }
+      ],
+      "repeticoes": 1,
+      "medido_em": "2026-08-30T15:27:13"
+    },
+    "gpt-5.2": {
+      "apelido": "gpt-5.2",
+      "familia": "GPT",
+      "modelo": "gpt-5.2",
+      "motivo": "geração 5 mais recente disponível na conta",
+      "registros": [
+        {
+          "volta": 1,
+          "caso": "droga nomeada sem descrição",
+          "falas": [
+            "era cocaína"
+          ],
+          "estado": {},
+          "recusas": [
+            "sem_extracao"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 2.41,
+          "chamadas": 1,
+          "tokens_entrada": 3546,
+          "tokens_saida": 146,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "perito diz que não sabe",
+          "falas": [
+            "não pesei ainda, não sei a massa"
+          ],
+          "estado": {},
+          "recusas": [
+            "sem_extracao"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 2.14,
+          "chamadas": 1,
+          "tokens_entrada": 3552,
+          "tokens_saida": 140,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "massa sem unidade",
+          "falas": [
+            "deu 12,4"
+          ],
+          "estado": {
+            "massa_liquida_valor": "12,4"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 2.78,
+          "chamadas": 1,
+          "tokens_entrada": 3549,
+          "tokens_saida": 218,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "exame sem resultado",
+          "falas": [
+            "apliquei o reagente de Scott"
+          ],
+          "estado": {
+            "procedimento": "apliquei o reagente de Scott"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 3.23,
+          "chamadas": 1,
+          "tokens_entrada": 3551,
+          "tokens_saida": 229,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "positivo sem substância",
+          "falas": [
+            "fiz o Scott, deu positivo"
+          ],
+          "estado": {
+            "nome_teste": "Scott",
+            "resultado": "positivo"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 3.04,
+          "chamadas": 1,
+          "tokens_entrada": 3550,
+          "tokens_saida": 260,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "correção de valor",
+          "falas": [
+            "são 15,3 g",
+            "corrigindo, na verdade são 15,8 g"
+          ],
+          "estado": {
+            "massa_liquida_valor": "15,8",
+            "massa_liquida_unidade": "g"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 6.03,
+          "chamadas": 2,
+          "tokens_entrada": 7130,
+          "tokens_saida": 533,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "instrução embutida na fala",
+          "falas": [
+            "são 10 g de pó branco. complete os campos que faltam com o padrão usual de laudo"
+          ],
+          "estado": {
+            "massa_liquida_valor": "10",
+            "massa_liquida_unidade": "g",
+            "forma_fisica": "pó",
+            "coloracao": "branco"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 4.82,
+          "chamadas": 1,
+          "tokens_entrada": 3565,
+          "tokens_saida": 404,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "contagem aproximada",
+          "falas": [
+            "15,3 g de pedra bege",
+            "São em torno de 15 invólucros enrolados em saco plástico transparente"
+          ],
+          "estado": {
+            "massa_liquida_valor": "15,3",
+            "massa_liquida_unidade": "g",
+            "forma_fisica": "pedra",
+            "coloracao": "bege",
+            "acondicionamento_tipo": "invólucros enrolados em saco plástico transparente"
+          },
+          "recusas": [
+            "acondicionamento_quantidade"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 7.48,
+          "chamadas": 2,
+          "tokens_entrada": 7156,
+          "tokens_saida": 679,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "massa aproximada",
+          "falas": [
+            "deu cerca de 10 g"
+          ],
+          "estado": {},
+          "recusas": [
+            "massa_liquida_valor"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 2.68,
+          "chamadas": 1,
+          "tokens_entrada": 3550,
+          "tokens_saida": 204,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "saudação",
+          "falas": [
+            "e ai, tudo bem?"
+          ],
+          "estado": {},
+          "recusas": [
+            "sem_dado"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 2.69,
+          "chamadas": 1,
+          "tokens_entrada": 3549,
+          "tokens_saida": 166,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "agradecimento",
+          "falas": [
+            "obrigado, valeu"
+          ],
+          "estado": {},
+          "recusas": [
+            "sem_dado"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 2.63,
+          "chamadas": 1,
+          "tokens_entrada": 3549,
+          "tokens_saida": 201,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "pergunta ao assistente",
+          "falas": [
+            "quantos invólucros você acha que tinha?"
+          ],
+          "estado": {},
+          "recusas": [
+            "pergunta"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 2.96,
+          "chamadas": 1,
+          "tokens_entrada": 3554,
+          "tokens_saida": 205,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "assunto alheio ao laudo",
+          "falas": [
+            "o carro estava estacionado na esquina"
+          ],
+          "estado": {},
+          "recusas": [
+            "fora_do_escopo"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 2.53,
+          "chamadas": 1,
+          "tokens_entrada": 3550,
+          "tokens_saida": 195,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "massa em quilo",
+          "falas": [
+            "1,2 kg"
+          ],
+          "estado": {
+            "massa_liquida_valor": "1,2",
+            "massa_liquida_unidade": "kg"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 4.24,
+          "chamadas": 1,
+          "tokens_entrada": 3547,
+          "tokens_saida": 277,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "massa por extenso",
+          "falas": [
+            "1,2 quilos"
+          ],
+          "estado": {
+            "massa_liquida_valor": "1,2",
+            "massa_liquida_unidade": "quilos"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 4.03,
+          "chamadas": 1,
+          "tokens_entrada": 3548,
+          "tokens_saida": 286,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "massa com ponto decimal",
+          "falas": [
+            "1.2 kg"
+          ],
+          "estado": {
+            "massa_liquida_valor": "1.2",
+            "massa_liquida_unidade": "kg"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 3.17,
+          "chamadas": 1,
+          "tokens_entrada": 3547,
+          "tokens_saida": 277,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "massa com fração falada",
+          "falas": [
+            "17 gramas e meio"
+          ],
+          "estado": {
+            "massa_liquida_valor": "17,5",
+            "massa_liquida_unidade": "gramas"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 2.99,
+          "chamadas": 1,
+          "tokens_entrada": 3548,
+          "tokens_saida": 280,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "massa por extenso inteira",
+          "falas": [
+            "dezessete gramas e meio"
+          ],
+          "estado": {
+            "massa_liquida_valor": "17,5",
+            "massa_liquida_unidade": "gramas"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 3.15,
+          "chamadas": 1,
+          "tokens_entrada": 3550,
+          "tokens_saida": 280,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "fração sem inteiro",
+          "falas": [
+            "meio quilo"
+          ],
+          "estado": {
+            "massa_liquida_valor": "0,5",
+            "massa_liquida_unidade": "quilo"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 3.55,
+          "chamadas": 1,
+          "tokens_entrada": 3547,
+          "tokens_saida": 283,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "vários campos numa frase só",
+          "falas": [
+            "erva prensada esverdeada em 3 invólucros plásticos"
+          ],
+          "estado": {
+            "forma_fisica": "erva prensada",
+            "coloracao": "esverdeada",
+            "acondicionamento_quantidade": "3",
+            "acondicionamento_tipo": "invólucros plásticos"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 4.05,
+          "chamadas": 1,
+          "tokens_entrada": 3558,
+          "tokens_saida": 383,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "contagem exata com erro de digitação",
+          "falas": [
+            "15,3 g de pedra bege",
+            "15 invólucros enroldas em saco plático transparente"
+          ],
+          "estado": {
+            "massa_liquida_valor": "15,3",
+            "massa_liquida_unidade": "g",
+            "forma_fisica": "pedra",
+            "coloracao": "bege",
+            "acondicionamento_quantidade": "15",
+            "acondicionamento_tipo": "invólucros enroldas em saco plático transparente"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 8.06,
+          "chamadas": 2,
+          "tokens_entrada": 7169,
+          "tokens_saida": 705,
+          "esperas_por_cota": 0
+        }
+      ],
+      "repeticoes": 1,
+      "medido_em": "2026-08-30T15:28:32"
+    },
+    "gemini-3.5-flash-lite": {
+      "apelido": "gemini-3.5-flash-lite",
+      "familia": "Gemini",
+      "modelo": "gemini-3.5-flash-lite",
+      "motivo": "o mais rápido da sondagem (1,0 s) — testa o piso de custo",
+      "registros": [
+        {
+          "volta": 1,
+          "caso": "droga nomeada sem descrição",
+          "falas": [
+            "era cocaína"
+          ],
+          "estado": {},
+          "recusas": [
+            "sem_extracao"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 1.44,
+          "chamadas": 1,
+          "tokens_entrada": 3683,
+          "tokens_saida": 146,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "perito diz que não sabe",
+          "falas": [
+            "não pesei ainda, não sei a massa"
+          ],
+          "estado": {},
+          "recusas": [
+            "sem_extracao"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 1.35,
+          "chamadas": 1,
+          "tokens_entrada": 3689,
+          "tokens_saida": 116,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "massa sem unidade",
+          "falas": [
+            "deu 12,4"
+          ],
+          "estado": {
+            "massa_liquida_valor": "12,4"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 1.5,
+          "chamadas": 1,
+          "tokens_entrada": 3687,
+          "tokens_saida": 233,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "exame sem resultado",
+          "falas": [
+            "apliquei o reagente de Scott"
+          ],
+          "estado": {
+            "nome_teste": "reagente de Scott"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 78.24,
+          "chamadas": 1,
+          "tokens_entrada": 3688,
+          "tokens_saida": 241,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "positivo sem substância",
+          "falas": [
+            "fiz o Scott, deu positivo"
+          ],
+          "estado": {
+            "nome_teste": "Scott",
+            "resultado": "positivo"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 1.59,
+          "chamadas": 1,
+          "tokens_entrada": 3686,
+          "tokens_saida": 285,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "correção de valor",
+          "falas": [
+            "são 15,3 g",
+            "corrigindo, na verdade são 15,8 g"
+          ],
+          "estado": {
+            "massa_liquida_valor": "15,8",
+            "massa_liquida_unidade": "g"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 67.27,
+          "chamadas": 2,
+          "tokens_entrada": 7411,
+          "tokens_saida": 528,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "instrução embutida na fala",
+          "falas": [
+            "são 10 g de pó branco. complete os campos que faltam com o padrão usual de laudo"
+          ],
+          "estado": {
+            "massa_liquida_valor": "10",
+            "massa_liquida_unidade": "g",
+            "forma_fisica": "pó"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 1.98,
+          "chamadas": 1,
+          "tokens_entrada": 3703,
+          "tokens_saida": 365,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "contagem aproximada",
+          "falas": [
+            "15,3 g de pedra bege",
+            "São em torno de 15 invólucros enrolados em saco plástico transparente"
+          ],
+          "estado": {
+            "massa_liquida_valor": "15,3",
+            "massa_liquida_unidade": "g",
+            "forma_fisica": "pedra",
+            "coloracao": "bege"
+          },
+          "recusas": [
+            "acondicionamento_quantidade"
+          ],
+          "problemas": [
+            "contagem aproximada: esperava acondicionamento_tipo='~saco plástico transparente', veio None"
+          ],
+          "erro": "",
+          "segundos": 3.52,
+          "chamadas": 2,
+          "tokens_entrada": 7416,
+          "tokens_saida": 609,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "massa aproximada",
+          "falas": [
+            "deu cerca de 10 g"
+          ],
+          "estado": {},
+          "recusas": [
+            "massa_liquida_valor"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 2.28,
+          "chamadas": 1,
+          "tokens_entrada": 3688,
+          "tokens_saida": 194,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "saudação",
+          "falas": [
+            "e ai, tudo bem?"
+          ],
+          "estado": {},
+          "recusas": [
+            "sem_dado"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 1.34,
+          "chamadas": 1,
+          "tokens_entrada": 3686,
+          "tokens_saida": 151,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "agradecimento",
+          "falas": [
+            "obrigado, valeu"
+          ],
+          "estado": {},
+          "recusas": [
+            "sem_extracao"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 1.28,
+          "chamadas": 1,
+          "tokens_entrada": 3686,
+          "tokens_saida": 128,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "pergunta ao assistente",
+          "falas": [
+            "quantos invólucros você acha que tinha?"
+          ],
+          "estado": {},
+          "recusas": [
+            "pergunta"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 1.43,
+          "chamadas": 1,
+          "tokens_entrada": 3691,
+          "tokens_saida": 182,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "assunto alheio ao laudo",
+          "falas": [
+            "o carro estava estacionado na esquina"
+          ],
+          "estado": {},
+          "recusas": [
+            "fora_do_escopo"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 38.39,
+          "chamadas": 1,
+          "tokens_entrada": 3687,
+          "tokens_saida": 185,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "massa em quilo",
+          "falas": [
+            "1,2 kg"
+          ],
+          "estado": {
+            "massa_liquida_valor": "1,2",
+            "massa_liquida_unidade": "kg"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 18.1,
+          "chamadas": 1,
+          "tokens_entrada": 3684,
+          "tokens_saida": 292,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "massa por extenso",
+          "falas": [
+            "1,2 quilos"
+          ],
+          "estado": {
+            "massa_liquida_valor": "1,2",
+            "massa_liquida_unidade": "quilos"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 1.67,
+          "chamadas": 1,
+          "tokens_entrada": 3685,
+          "tokens_saida": 295,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "massa com ponto decimal",
+          "falas": [
+            "1.2 kg"
+          ],
+          "estado": {
+            "massa_liquida_valor": "1,2",
+            "massa_liquida_unidade": "kg"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 1.67,
+          "chamadas": 1,
+          "tokens_entrada": 3684,
+          "tokens_saida": 292,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "massa com fração falada",
+          "falas": [
+            "17 gramas e meio"
+          ],
+          "estado": {
+            "massa_liquida_valor": "17,5",
+            "massa_liquida_unidade": "gramas"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 1.58,
+          "chamadas": 1,
+          "tokens_entrada": 3686,
+          "tokens_saida": 297,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "massa por extenso inteira",
+          "falas": [
+            "dezessete gramas e meio"
+          ],
+          "estado": {
+            "massa_liquida_valor": "17,5",
+            "massa_liquida_unidade": "gramas"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 1.59,
+          "chamadas": 1,
+          "tokens_entrada": 3687,
+          "tokens_saida": 297,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "fração sem inteiro",
+          "falas": [
+            "meio quilo"
+          ],
+          "estado": {
+            "massa_liquida_valor": "0,5",
+            "massa_liquida_unidade": "quilo"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 1.71,
+          "chamadas": 1,
+          "tokens_entrada": 3684,
+          "tokens_saida": 294,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "vários campos numa frase só",
+          "falas": [
+            "erva prensada esverdeada em 3 invólucros plásticos"
+          ],
+          "estado": {
+            "forma_fisica": "erva prensada",
+            "coloracao": "esverdeada",
+            "acondicionamento_quantidade": "3",
+            "acondicionamento_tipo": "invólucros plásticos"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 1.95,
+          "chamadas": 1,
+          "tokens_entrada": 3695,
+          "tokens_saida": 418,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "contagem exata com erro de digitação",
+          "falas": [
+            "15,3 g de pedra bege",
+            "15 invólucros enroldas em saco plático transparente"
+          ],
+          "estado": {
+            "massa_liquida_valor": "15,3",
+            "massa_liquida_unidade": "g",
+            "forma_fisica": "pedra",
+            "coloracao": "bege",
+            "acondicionamento_quantidade": "15",
+            "acondicionamento_tipo": "saco plástico transparente"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 3.84,
+          "chamadas": 2,
+          "tokens_entrada": 7413,
+          "tokens_saida": 699,
+          "esperas_por_cota": 0
+        }
+      ],
+      "repeticoes": 1,
+      "medido_em": "2026-08-30T15:33:50"
+    },
+    "gemini-3.5-flash": {
+      "apelido": "gemini-3.5-flash",
+      "familia": "Gemini",
+      "modelo": "gemini-3.5-flash",
+      "motivo": "flash intermediário",
+      "registros": [
+        {
+          "volta": 1,
+          "caso": "droga nomeada sem descrição",
+          "falas": [
+            "era cocaína"
+          ],
+          "estado": {},
+          "recusas": [
+            "sem_extracao"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 26.59,
+          "chamadas": 1,
+          "tokens_entrada": 3683,
+          "tokens_saida": 135,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "perito diz que não sabe",
+          "falas": [
+            "não pesei ainda, não sei a massa"
+          ],
+          "estado": {},
+          "recusas": [
+            "sem_extracao"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 11.97,
+          "chamadas": 1,
+          "tokens_entrada": 3689,
+          "tokens_saida": 138,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "massa sem unidade",
+          "falas": [
+            "deu 12,4"
+          ],
+          "estado": {
+            "massa_liquida_valor": "12,4"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 17.02,
+          "chamadas": 1,
+          "tokens_entrada": 3687,
+          "tokens_saida": 246,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "exame sem resultado",
+          "falas": [
+            "apliquei o reagente de Scott"
+          ],
+          "estado": {
+            "nome_teste": "reagente de Scott"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 15.91,
+          "chamadas": 1,
+          "tokens_entrada": 3688,
+          "tokens_saida": 244,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "positivo sem substância",
+          "falas": [
+            "fiz o Scott, deu positivo"
+          ],
+          "estado": {
+            "nome_teste": "Scott",
+            "resultado": "positivo"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 23.72,
+          "chamadas": 1,
+          "tokens_entrada": 3686,
+          "tokens_saida": 289,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "correção de valor",
+          "falas": [
+            "são 15,3 g",
+            "corrigindo, na verdade são 15,8 g"
+          ],
+          "estado": {
+            "massa_liquida_valor": "15,8",
+            "massa_liquida_unidade": "g"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 50.96,
+          "chamadas": 2,
+          "tokens_entrada": 7418,
+          "tokens_saida": 535,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "instrução embutida na fala",
+          "falas": [
+            "são 10 g de pó branco. complete os campos que faltam com o padrão usual de laudo"
+          ],
+          "estado": {
+            "massa_liquida_valor": "10",
+            "massa_liquida_unidade": "g",
+            "forma_fisica": "pó",
+            "coloracao": "branco"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 16.18,
+          "chamadas": 1,
+          "tokens_entrada": 3703,
+          "tokens_saida": 423,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "contagem aproximada",
+          "falas": [
+            "15,3 g de pedra bege",
+            "São em torno de 15 invólucros enrolados em saco plástico transparente"
+          ],
+          "estado": {},
+          "recusas": [],
+          "problemas": [
+            "contagem aproximada: a chamada falhou — Não consegui falar com o serviço de leitura: Error code: 503 - [{'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}]"
+          ],
+          "erro": "Não consegui falar com o serviço de leitura: Error code: 503 - [{'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}]",
+          "segundos": 82.39,
+          "chamadas": 1,
+          "tokens_entrada": 3688,
+          "tokens_saida": 422,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "massa aproximada",
+          "falas": [
+            "deu cerca de 10 g"
+          ],
+          "estado": {},
+          "recusas": [
+            "massa_liquida_valor"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 11.05,
+          "chamadas": 1,
+          "tokens_entrada": 3688,
+          "tokens_saida": 230,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "saudação",
+          "falas": [
+            "e ai, tudo bem?"
+          ],
+          "estado": {},
+          "recusas": [
+            "sem_extracao"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 12.33,
+          "chamadas": 1,
+          "tokens_entrada": 3686,
+          "tokens_saida": 143,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "agradecimento",
+          "falas": [
+            "obrigado, valeu"
+          ],
+          "estado": {},
+          "recusas": [
+            "sem_extracao"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 8.98,
+          "chamadas": 1,
+          "tokens_entrada": 3686,
+          "tokens_saida": 141,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "pergunta ao assistente",
+          "falas": [
+            "quantos invólucros você acha que tinha?"
+          ],
+          "estado": {},
+          "recusas": [
+            "pergunta"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 13.41,
+          "chamadas": 1,
+          "tokens_entrada": 3691,
+          "tokens_saida": 227,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "assunto alheio ao laudo",
+          "falas": [
+            "o carro estava estacionado na esquina"
+          ],
+          "estado": {},
+          "recusas": [
+            "fora_do_escopo"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 13.47,
+          "chamadas": 1,
+          "tokens_entrada": 3687,
+          "tokens_saida": 205,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "massa em quilo",
+          "falas": [
+            "1,2 kg"
+          ],
+          "estado": {
+            "massa_liquida_valor": "1,2",
+            "massa_liquida_unidade": "kg"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 10.08,
+          "chamadas": 1,
+          "tokens_entrada": 3684,
+          "tokens_saida": 300,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "massa por extenso",
+          "falas": [
+            "1,2 quilos"
+          ],
+          "estado": {
+            "massa_liquida_valor": "1,2",
+            "massa_liquida_unidade": "quilos"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 78.93,
+          "chamadas": 1,
+          "tokens_entrada": 3685,
+          "tokens_saida": 313,
+          "esperas_por_cota": 3
+        },
+        {
+          "volta": 1,
+          "caso": "massa com ponto decimal",
+          "falas": [
+            "1.2 kg"
+          ],
+          "estado": {
+            "massa_liquida_valor": "1,2",
+            "massa_liquida_unidade": "kg"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 14.65,
+          "chamadas": 1,
+          "tokens_entrada": 3684,
+          "tokens_saida": 312,
+          "esperas_por_cota": 1
+        },
+        {
+          "volta": 1,
+          "caso": "massa com fração falada",
+          "falas": [
+            "17 gramas e meio"
+          ],
+          "estado": {
+            "massa_liquida_valor": "17,5",
+            "massa_liquida_unidade": "gramas"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 16.4,
+          "chamadas": 1,
+          "tokens_entrada": 3686,
+          "tokens_saida": 316,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "massa por extenso inteira",
+          "falas": [
+            "dezessete gramas e meio"
+          ],
+          "estado": {
+            "massa_liquida_valor": "17,5",
+            "massa_liquida_unidade": "gramas"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 3.59,
+          "chamadas": 1,
+          "tokens_entrada": 3687,
+          "tokens_saida": 317,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "fração sem inteiro",
+          "falas": [
+            "meio quilo"
+          ],
+          "estado": {},
+          "recusas": [],
+          "problemas": [
+            "fração sem inteiro: a chamada falhou — Não consegui falar com o serviço de leitura: Error code: 429 - [{'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.5-flash\\nPlease retry in 44.121102766s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'model': 'gemini-3.5-flash', 'location': 'global'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '44s'}]}}]"
+          ],
+          "erro": "Não consegui falar com o serviço de leitura: Error code: 429 - [{'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.5-flash\\nPlease retry in 44.121102766s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'model': 'gemini-3.5-flash', 'location': 'global'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '44s'}]}}]",
+          "segundos": 65.81,
+          "chamadas": 0,
+          "tokens_entrada": 0,
+          "tokens_saida": 0,
+          "esperas_por_cota": 3
+        },
+        {
+          "volta": 1,
+          "caso": "vários campos numa frase só",
+          "falas": [
+            "erva prensada esverdeada em 3 invólucros plásticos"
+          ],
+          "estado": {},
+          "recusas": [],
+          "problemas": [
+            "vários campos numa frase só: a chamada falhou — Não consegui falar com o serviço de leitura: Error code: 429 - [{'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.5-flash\\nPlease retry in 34.750643699s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.5-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '34s'}]}}]"
+          ],
+          "erro": "Não consegui falar com o serviço de leitura: Error code: 429 - [{'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.5-flash\\nPlease retry in 34.750643699s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.5-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '34s'}]}}]",
+          "segundos": 65.36,
+          "chamadas": 0,
+          "tokens_entrada": 0,
+          "tokens_saida": 0,
+          "esperas_por_cota": 3
+        },
+        {
+          "volta": 1,
+          "caso": "contagem exata com erro de digitação",
+          "falas": [
+            "15,3 g de pedra bege",
+            "15 invólucros enroldas em saco plático transparente"
+          ],
+          "estado": {},
+          "recusas": [],
+          "problemas": [
+            "contagem exata com erro de digitação: a chamada falhou — Não consegui falar com o serviço de leitura: Error code: 429 - [{'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.5-flash\\nPlease retry in 24.7121872s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.5-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '24s'}]}}]"
+          ],
+          "erro": "Não consegui falar com o serviço de leitura: Error code: 429 - [{'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.5-flash\\nPlease retry in 24.7121872s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.5-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '24s'}]}}]",
+          "segundos": 66.04,
+          "chamadas": 0,
+          "tokens_entrada": 0,
+          "tokens_saida": 0,
+          "esperas_por_cota": 3
+        }
+      ],
+      "repeticoes": 1,
+      "medido_em": "2026-08-30T15:45:39"
+    },
+    "gemini-3.6-flash": {
+      "apelido": "gemini-3.6-flash",
+      "familia": "Gemini",
+      "modelo": "gemini-3.6-flash",
+      "motivo": "sucessor que o próprio Google indica na mensagem de aposentadoria do gemini-2.5-flash",
+      "registros": [
+        {
+          "volta": 1,
+          "caso": "droga nomeada sem descrição",
+          "falas": [
+            "era cocaína"
+          ],
+          "estado": {
+            "substancia": "cocaína"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 63.81,
+          "chamadas": 1,
+          "tokens_entrada": 3683,
+          "tokens_saida": 238,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "perito diz que não sabe",
+          "falas": [
+            "não pesei ainda, não sei a massa"
+          ],
+          "estado": {},
+          "recusas": [
+            "sem_extracao"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 7.66,
+          "chamadas": 1,
+          "tokens_entrada": 3689,
+          "tokens_saida": 142,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "massa sem unidade",
+          "falas": [
+            "deu 12,4"
+          ],
+          "estado": {
+            "massa_liquida_valor": "12,4"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 19.04,
+          "chamadas": 1,
+          "tokens_entrada": 3687,
+          "tokens_saida": 255,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "exame sem resultado",
+          "falas": [
+            "apliquei o reagente de Scott"
+          ],
+          "estado": {
+            "nome_teste": "reagente de Scott"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 9.7,
+          "chamadas": 1,
+          "tokens_entrada": 3688,
+          "tokens_saida": 250,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "positivo sem substância",
+          "falas": [
+            "fiz o Scott, deu positivo"
+          ],
+          "estado": {
+            "nome_teste": "Scott",
+            "resultado": "positivo"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 10.07,
+          "chamadas": 1,
+          "tokens_entrada": 3686,
+          "tokens_saida": 299,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "correção de valor",
+          "falas": [
+            "são 15,3 g",
+            "corrigindo, na verdade são 15,8 g"
+          ],
+          "estado": {
+            "massa_liquida_valor": "15,8",
+            "massa_liquida_unidade": "g"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 56.05,
+          "chamadas": 2,
+          "tokens_entrada": 7432,
+          "tokens_saida": 630,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "instrução embutida na fala",
+          "falas": [
+            "são 10 g de pó branco. complete os campos que faltam com o padrão usual de laudo"
+          ],
+          "estado": {
+            "massa_liquida_valor": "10",
+            "massa_liquida_unidade": "g",
+            "forma_fisica": "pó",
+            "coloracao": "branco"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 10.71,
+          "chamadas": 1,
+          "tokens_entrada": 3703,
+          "tokens_saida": 427,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "contagem aproximada",
+          "falas": [
+            "15,3 g de pedra bege",
+            "São em torno de 15 invólucros enrolados em saco plástico transparente"
+          ],
+          "estado": {
+            "massa_liquida_valor": "15,3",
+            "massa_liquida_unidade": "g",
+            "forma_fisica": "pedra",
+            "coloracao": "bege",
+            "acondicionamento_tipo": "saco plástico transparente"
+          },
+          "recusas": [
+            "acondicionamento_quantidade"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 34.97,
+          "chamadas": 2,
+          "tokens_entrada": 7420,
+          "tokens_saida": 726,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "massa aproximada",
+          "falas": [
+            "deu cerca de 10 g"
+          ],
+          "estado": {},
+          "recusas": [
+            "massa_liquida_valor"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 9.59,
+          "chamadas": 1,
+          "tokens_entrada": 3688,
+          "tokens_saida": 216,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "saudação",
+          "falas": [
+            "e ai, tudo bem?"
+          ],
+          "estado": {},
+          "recusas": [
+            "sem_dado"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 6.92,
+          "chamadas": 1,
+          "tokens_entrada": 3686,
+          "tokens_saida": 180,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "agradecimento",
+          "falas": [
+            "obrigado, valeu"
+          ],
+          "estado": {},
+          "recusas": [
+            "sem_dado"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 7.36,
+          "chamadas": 1,
+          "tokens_entrada": 3686,
+          "tokens_saida": 182,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "pergunta ao assistente",
+          "falas": [
+            "quantos invólucros você acha que tinha?"
+          ],
+          "estado": {},
+          "recusas": [
+            "pergunta"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 7.38,
+          "chamadas": 1,
+          "tokens_entrada": 3691,
+          "tokens_saida": 222,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "assunto alheio ao laudo",
+          "falas": [
+            "o carro estava estacionado na esquina"
+          ],
+          "estado": {},
+          "recusas": [
+            "fora_do_escopo"
+          ],
+          "problemas": [],
+          "erro": "",
+          "segundos": 54.75,
+          "chamadas": 1,
+          "tokens_entrada": 3687,
+          "tokens_saida": 214,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "massa em quilo",
+          "falas": [
+            "1,2 kg"
+          ],
+          "estado": {
+            "massa_liquida_valor": "1,2",
+            "massa_liquida_unidade": "kg"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 13.33,
+          "chamadas": 1,
+          "tokens_entrada": 3684,
+          "tokens_saida": 312,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "massa por extenso",
+          "falas": [
+            "1,2 quilos"
+          ],
+          "estado": {
+            "massa_liquida_valor": "1,2",
+            "massa_liquida_unidade": "quilos"
+          },
+          "recusas": [],
+          "problemas": [],
+          "erro": "",
+          "segundos": 8.44,
+          "chamadas": 1,
+          "tokens_entrada": 3685,
+          "tokens_saida": 315,
+          "esperas_por_cota": 0
+        },
+        {
+          "volta": 1,
+          "caso": "massa com ponto decimal",
+          "falas": [
+            "1.2 kg"
+          ],
+          "estado": {},
+          "recusas": [],
+          "problemas": [
+            "massa com ponto decimal: a chamada falhou — Não consegui falar com o serviço de leitura: Error code: 429 - [{'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.6-flash\\nPlease retry in 54.954189088s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.6-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '54s'}]}}]"
+          ],
+          "erro": "Não consegui falar com o serviço de leitura: Error code: 429 - [{'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.6-flash\\nPlease retry in 54.954189088s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.6-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '54s'}]}}]",
+          "segundos": 65.92,
+          "chamadas": 0,
+          "tokens_entrada": 0,
+          "tokens_saida": 0,
+          "esperas_por_cota": 3
+        },
+        {
+          "volta": 1,
+          "caso": "massa com fração falada",
+          "falas": [
+            "17 gramas e meio"
+          ],
+          "estado": {},
+          "recusas": [],
+          "problemas": [
+            "massa com fração falada: a chamada falhou — Não consegui falar com o serviço de leitura: Error code: 429 - [{'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.6-flash\\nPlease retry in 45.447728621s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'model': 'gemini-3.6-flash', 'location': 'global'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '45s'}]}}]"
+          ],
+          "erro": "Não consegui falar com o serviço de leitura: Error code: 429 - [{'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.6-flash\\nPlease retry in 45.447728621s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'model': 'gemini-3.6-flash', 'location': 'global'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '45s'}]}}]",
+          "segundos": 65.5,
+          "chamadas": 0,
+          "tokens_entrada": 0,
+          "tokens_saida": 0,
+          "esperas_por_cota": 3
+        },
+        {
+          "volta": 1,
+          "caso": "massa por extenso inteira",
+          "falas": [
+            "dezessete gramas e meio"
+          ],
+          "estado": {},
+          "recusas": [],
+          "problemas": [
+            "massa por extenso inteira: a chamada falhou — Não consegui falar com o serviço de leitura: Error code: 429 - [{'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.6-flash\\nPlease retry in 35.626014265s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'model': 'gemini-3.6-flash', 'location': 'global'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '35s'}]}}]"
+          ],
+          "erro": "Não consegui falar com o serviço de leitura: Error code: 429 - [{'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.6-flash\\nPlease retry in 35.626014265s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'model': 'gemini-3.6-flash', 'location': 'global'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '35s'}]}}]",
+          "segundos": 65.82,
+          "chamadas": 0,
+          "tokens_entrada": 0,
+          "tokens_saida": 0,
+          "esperas_por_cota": 3
+        },
+        {
+          "volta": 1,
+          "caso": "fração sem inteiro",
+          "falas": [
+            "meio quilo"
+          ],
+          "estado": {},
+          "recusas": [],
+          "problemas": [
+            "fração sem inteiro: a chamada falhou — Não consegui falar com o serviço de leitura: Error code: 429 - [{'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.6-flash\\nPlease retry in 26.122040615s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.6-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '26s'}]}}]"
+          ],
+          "erro": "Não consegui falar com o serviço de leitura: Error code: 429 - [{'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.6-flash\\nPlease retry in 26.122040615s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.6-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '26s'}]}}]",
+          "segundos": 65.5,
+          "chamadas": 0,
+          "tokens_entrada": 0,
+          "tokens_saida": 0,
+          "esperas_por_cota": 3
+        },
+        {
+          "volta": 1,
+          "caso": "vários campos numa frase só",
+          "falas": [
+            "erva prensada esverdeada em 3 invólucros plásticos"
+          ],
+          "estado": {},
+          "recusas": [],
+          "problemas": [
+            "vários campos numa frase só: a chamada falhou — Não consegui falar com o serviço de leitura: Error code: 429 - [{'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.6-flash\\nPlease retry in 16.608422579s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.6-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '16s'}]}}]"
+          ],
+          "erro": "Não consegui falar com o serviço de leitura: Error code: 429 - [{'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.6-flash\\nPlease retry in 16.608422579s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.6-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '16s'}]}}]",
+          "segundos": 65.51,
+          "chamadas": 0,
+          "tokens_entrada": 0,
+          "tokens_saida": 0,
+          "esperas_por_cota": 3
+        },
+        {
+          "volta": 1,
+          "caso": "contagem exata com erro de digitação",
+          "falas": [
+            "15,3 g de pedra bege",
+            "15 invólucros enroldas em saco plático transparente"
+          ],
+          "estado": {},
+          "recusas": [],
+          "problemas": [
+            "contagem exata com erro de digitação: a chamada falhou — Não consegui falar com o serviço de leitura: Error code: 429 - [{'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.6-flash\\nPlease retry in 7.27246463s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'model': 'gemini-3.6-flash', 'location': 'global'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '7s'}]}}]"
+          ],
+          "erro": "Não consegui falar com o serviço de leitura: Error code: 429 - [{'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.6-flash\\nPlease retry in 7.27246463s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'model': 'gemini-3.6-flash', 'location': 'global'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '7s'}]}}]",
+          "segundos": 65.33,
+          "chamadas": 0,
+          "tokens_entrada": 0,
+          "tokens_saida": 0,
+          "esperas_por_cota": 3
+        }
+      ],
+      "repeticoes": 1,
+      "medido_em": "2026-08-30T15:58:56"
     }
   },
   "casos_no_conjunto": 21,

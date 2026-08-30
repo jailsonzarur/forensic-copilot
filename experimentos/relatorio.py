@@ -22,15 +22,38 @@ BRUTO = RAIZ / "resultados" / "e1_fidelidade.json"
 DESTINO = RAIZ / "RELATORIO-TECNICO.md"
 
 
+def _motivos(nao_medidos: list[dict]) -> str:
+    """Resume por que casos não puderam ser medidos, sem despejar o erro cru."""
+    contagem: dict[str, int] = defaultdict(int)
+    for r in nao_medidos:
+        erro = r["erro"]
+        if "429" in erro or "RESOURCE_EXHAUSTED" in erro:
+            contagem["cota diária esgotada (429)"] += 1
+        elif "503" in erro or "UNAVAILABLE" in erro:
+            contagem["serviço sobrecarregado (503)"] += 1
+        else:
+            contagem["outro erro de serviço"] += 1
+    return "; ".join(f"{n}× {motivo}" for motivo, n in sorted(contagem.items()))
+
+
 def _agrega(execucao: dict) -> dict:
     registros = execucao["registros"]
     por_caso: dict[str, list[dict]] = defaultdict(list)
     for r in registros:
         por_caso[r["caso"]].append(r)
 
-    aprovados = sum(1 for r in registros if not r["problemas"])
-    tempos = [r["segundos"] for r in registros if not r["erro"]]
+    # Distinção que o relatório não pode perder: um caso que não foi medido
+    # (cota estourada, serviço indisponível) NÃO é um caso reprovado. Misturar
+    # os dois faria a tabela dizer que um modelo inventou dado quando na verdade
+    # ele nem foi alcançado.
+    medidos = [r for r in registros if not r["erro"]]
+    nao_medidos = [r for r in registros if r["erro"]]
+    aprovados = sum(1 for r in medidos if not r["problemas"])
+    tempos = [r["segundos"] for r in medidos]
     return {
+        "medidos": len(medidos),
+        "nao_medidos": len(nao_medidos),
+        "motivos_nao_medidos": _motivos(nao_medidos),
         "apelido": execucao["apelido"],
         "familia": execucao["familia"],
         "modelo": execucao["modelo"],
@@ -38,7 +61,7 @@ def _agrega(execucao: dict) -> dict:
         "medido_em": execucao.get("medido_em", ""),
         "total": len(registros),
         "aprovados": aprovados,
-        "reprovados": len(registros) - aprovados,
+        "reprovados": len(medidos) - aprovados,
         "tempo_total": round(sum(r["segundos"] for r in registros), 1),
         "tempo_mediano": round(statistics.median(tempos), 1) if tempos else 0.0,
         "tempo_maximo": round(max(tempos), 1) if tempos else 0.0,
@@ -53,15 +76,20 @@ def _agrega(execucao: dict) -> dict:
 
 def _tabela_geral(agregados: list[dict]) -> str:
     linhas = [
-        "| Modelo | Família | Casos sem invenção | Tempo mediano | Tempo total | Tokens (ent./saí.) | Esperas por cota |",
-        "|---|---|---|---|---|---|---|",
+        "| Modelo | Família | Aprovados / medidos | Não medidos | Tempo mediano | Tokens (ent./saí.) |",
+        "|---|---|---|---|---|---|",
     ]
     for a in agregados:
-        taxa = f"{a['aprovados']}/{a['total']}"
+        taxa = f"{a['aprovados']}/{a['medidos']}"
+        faltando = (
+            f"{a['nao_medidos']} — {a['motivos_nao_medidos']}"
+            if a["nao_medidos"]
+            else "—"
+        )
         linhas.append(
-            f"| `{a['apelido']}` | {a['familia']} | **{taxa}** | {a['tempo_mediano']} s | "
-            f"{a['tempo_total']} s | {a['tokens_entrada']:,} / {a['tokens_saida']:,} | "
-            f"{a['esperas_por_cota']} |".replace(",", ".")
+            f"| `{a['apelido']}` | {a['familia']} | **{taxa}** | {faltando} | "
+            f"{a['tempo_mediano']} s | "
+            f"{a['tokens_entrada']:,} / {a['tokens_saida']:,} |".replace(",", ".")
         )
     return "\n".join(linhas)
 
@@ -75,7 +103,9 @@ def _matriz_casos(agregados: list[dict], casos: list[str]) -> str:
         for a in agregados:
             registros = a["por_caso"].get(caso, [])
             if not registros:
-                celulas.append("—")
+                celulas.append("·")
+            elif all(r["erro"] for r in registros):
+                celulas.append("🚫")
             elif all(not r["problemas"] for r in registros):
                 celulas.append("✅")
             elif all(r["problemas"] for r in registros):
@@ -90,7 +120,10 @@ def _detalhe_falhas(agregados: list[dict]) -> str:
     blocos: list[str] = []
     for a in agregados:
         falhas = [
-            r for registros in a["por_caso"].values() for r in registros if r["problemas"]
+            r
+            for registros in a["por_caso"].values()
+            for r in registros
+            if r["problemas"] and not r["erro"]
         ]
         if not falhas:
             blocos.append(f"### `{a['apelido']}`\n\nNenhuma falha.\n")
@@ -152,7 +185,7 @@ explicação põe o perito em laço, repetindo a mesma frase contra o silêncio.
 
 ### 5.3. Por caso
 
-Legenda: ✅ aprovado · ❌ reprovado · ⚠️ instável entre repetições · — não medido
+Legenda: ✅ aprovado · ❌ reprovado por fidelidade · ⚠️ instável entre repetições · 🚫 **não medido** (cota ou indisponibilidade do serviço, não é falha do modelo)
 
 {_matriz_casos(agregados, casos)}
 

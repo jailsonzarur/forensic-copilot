@@ -99,6 +99,24 @@ throttling por uso, é ausência de acesso.
 Isso restringiu o experimento à linha *Flash* da família Gemini, o que é uma
 limitação real do resultado e não uma escolha metodológica.
 
+E mesmo na linha Flash a cota é apertada. A documentação oficial não publica
+mais os números — remete ao painel do AI Studio —, mas o próprio erro os
+informa quando estoura:
+
+> `Quota exceeded for metric:
+> generativelanguage.googleapis.com/generate_content_free_tier_requests,
+> limit: 20, model: gemini-3.5-flash`
+
+**Vinte requisições por dia, por modelo.** Um conjunto de 21 casos não cabe
+numa conta sem faturamento: o experimento com `gemini-3.5-flash` foi
+interrompido por cota no 18º caso. Isso não é falha do modelo, e o relatório
+distingue as duas coisas na tabela — confundi-las faria a tabela afirmar que
+um modelo inventou dado quando ele sequer foi alcançado.
+
+Consequência metodológica: **medir modelos Gemini com rigor exige conta com
+faturamento**, mesmo que o custo real seja de centavos. O free tier serve para
+sondar, não para experimentar.
+
 ### 4.3. Apelidos móveis inviabilizam reprodutibilidade
 
 `gemini-flash-latest` respondeu, mas em **89 segundos** para uma chamada
@@ -127,7 +145,18 @@ ferramenta que o perito usa em campo, conversando, isso é inviável
 independentemente da qualidade da extração — e é o tipo de restrição que só
 aparece medindo.
 
-### 4.5. Todos aceitaram modo JSON com temperatura fixa
+### 4.5. O recuo por cota precisou existir no código do produto
+
+Estourar cota não é erro de quem está usando a ferramenta. O cliente ganhou
+recuo exponencial em 429 — quatro tentativas, dobrando a espera a partir de
+8 segundos — porque sem isso o perito leria *"a ferramenta falhou"* no meio do
+laudo por um limite administrativo do provedor.
+
+Durante o E1 esse recuo foi acionado **13 vezes** só com `gemini-3.5-flash`, e
+salvou 13 casos que teriam sido perdidos. Os quatro que ainda assim falharam
+esgotaram as tentativas.
+
+### 4.6. Todos aceitaram modo JSON com temperatura fixa
 
 Os oito modelos do elenco aceitaram `response_format={"type":"json_object"}`
 junto de `temperature=0.0` na primeira tentativa. O código já tinha um caminho
@@ -161,39 +190,61 @@ explicação põe o perito em laço, repetindo a mesma frase contra o silêncio.
 
 ### 5.2. Resultado
 
-| Modelo | Família | Casos sem invenção | Tempo mediano | Tempo total | Tokens (ent./saí.) | Esperas por cota |
-|---|---|---|---|---|---|---|
-| `gpt-4o` | GPT | **20/21** | 6.8 s | 123.8 s | 85.347 / 5.764 | 0 |
+| Modelo | Família | Aprovados / medidos | Não medidos | Tempo mediano | Tokens (ent./saí.) |
+|---|---|---|---|---|---|
+| `gpt-4.1` | GPT | **19/21** | — | 7.2 s | 85.369 / 5.618 |
+| `gpt-4o` | GPT | **20/21** | — | 6.8 s | 85.347 / 5.764 |
+| `gpt-5.1` | GPT | **20/21** | — | 2.2 s | 85.444 / 6.486 |
+| `gpt-5.2` | GPT | **21/21** | — | 3.1 s | 85.365 / 6.351 |
+| `gemini-3.5-flash` | Gemini | **17/17** | 4 — 3× cota diária esgotada (429); 1× serviço sobrecarregado (503) | 14.7 s | 70.106 / 4.936 |
+| `gemini-3.5-flash-lite` | Gemini | **20/21** | — | 1.7 s | 88.619 / 6.247 |
+| `gemini-3.6-flash` | Gemini | **15/15** | 6 — 6× cota diária esgotada (429) | 10.1 s | 62.795 / 4.608 |
 
 ### 5.3. Por caso
 
-Legenda: ✅ aprovado · ❌ reprovado · ⚠️ instável entre repetições · — não medido
+Legenda: ✅ aprovado · ❌ reprovado por fidelidade · ⚠️ instável entre repetições · 🚫 **não medido** (cota ou indisponibilidade do serviço, não é falha do modelo)
 
-| Caso | `gpt-4o` |
-|---|---|
-| agradecimento | ✅ |
-| assunto alheio ao laudo | ✅ |
-| contagem aproximada | ❌ |
-| contagem exata com erro de digitação | ✅ |
-| correção de valor | ✅ |
-| droga nomeada sem descrição | ✅ |
-| exame sem resultado | ✅ |
-| fração sem inteiro | ✅ |
-| instrução embutida na fala | ✅ |
-| massa aproximada | ✅ |
-| massa com fração falada | ✅ |
-| massa com ponto decimal | ✅ |
-| massa em quilo | ✅ |
-| massa por extenso | ✅ |
-| massa por extenso inteira | ✅ |
-| massa sem unidade | ✅ |
-| pergunta ao assistente | ✅ |
-| perito diz que não sabe | ✅ |
-| positivo sem substância | ✅ |
-| saudação | ✅ |
-| vários campos numa frase só | ✅ |
+| Caso | `gpt-4.1` | `gpt-4o` | `gpt-5.1` | `gpt-5.2` | `gemini-3.5-flash` | `gemini-3.5-flash-lite` | `gemini-3.6-flash` |
+|---|---|---|---|---|---|---|---|
+| agradecimento | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| assunto alheio ao laudo | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| contagem aproximada | ❌ | ❌ | ✅ | ✅ | 🚫 | ❌ | ✅ |
+| contagem exata com erro de digitação | ✅ | ✅ | ✅ | ✅ | 🚫 | ✅ | 🚫 |
+| correção de valor | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| droga nomeada sem descrição | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| exame sem resultado | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| fração sem inteiro | ✅ | ✅ | ✅ | ✅ | 🚫 | ✅ | 🚫 |
+| instrução embutida na fala | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| massa aproximada | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| massa com fração falada | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ | 🚫 |
+| massa com ponto decimal | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | 🚫 |
+| massa em quilo | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| massa por extenso | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| massa por extenso inteira | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | 🚫 |
+| massa sem unidade | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| pergunta ao assistente | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| perito diz que não sabe | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| positivo sem substância | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| saudação | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| vários campos numa frase só | ✅ | ✅ | ✅ | ✅ | 🚫 | ✅ | 🚫 |
 
 ## 6. Falhas em detalhe
+
+### `gpt-4.1` — 2 falha(s)
+
+**contagem aproximada**
+
+- Fala do perito: «15,3 g de pedra bege» | «São em torno de 15 invólucros enrolados em saco plástico transparente»
+- Gravado: `{'massa_liquida_valor': '15,3', 'massa_liquida_unidade': 'g', 'forma_fisica': 'pedra', 'coloracao': 'bege'}`
+- Recusas: `['acondicionamento_quantidade']`
+- ❌ contagem aproximada: esperava acondicionamento_tipo='~saco plástico transparente', veio None
+
+**massa com fração falada**
+
+- Fala do perito: «17 gramas e meio»
+- Gravado: `{'massa_liquida_valor': '17,5'}`
+- Recusas: `(nenhuma)`
+- ❌ massa com fração falada: esperava massa_liquida_unidade='gramas', veio None
 
 ### `gpt-4o` — 1 falha(s)
 
@@ -203,6 +254,36 @@ Legenda: ✅ aprovado · ❌ reprovado · ⚠️ instável entre repetições ·
 - Gravado: `{'massa_liquida_valor': '15,3', 'massa_liquida_unidade': 'g', 'forma_fisica': 'pedra', 'coloracao': 'bege'}`
 - Recusas: `['acondicionamento_quantidade']`
 - ❌ contagem aproximada: esperava acondicionamento_tipo='~saco plástico transparente', veio None
+
+### `gpt-5.1` — 1 falha(s)
+
+**massa com fração falada**
+
+- Fala do perito: «17 gramas e meio»
+- Gravado: `{'massa_liquida_valor': '17,5'}`
+- Recusas: `(nenhuma)`
+- ❌ massa com fração falada: esperava massa_liquida_unidade='gramas', veio None
+
+### `gpt-5.2`
+
+Nenhuma falha.
+
+### `gemini-3.5-flash`
+
+Nenhuma falha.
+
+### `gemini-3.5-flash-lite` — 1 falha(s)
+
+**contagem aproximada**
+
+- Fala do perito: «15,3 g de pedra bege» | «São em torno de 15 invólucros enrolados em saco plástico transparente»
+- Gravado: `{'massa_liquida_valor': '15,3', 'massa_liquida_unidade': 'g', 'forma_fisica': 'pedra', 'coloracao': 'bege'}`
+- Recusas: `['acondicionamento_quantidade']`
+- ❌ contagem aproximada: esperava acondicionamento_tipo='~saco plástico transparente', veio None
+
+### `gemini-3.6-flash`
+
+Nenhuma falha.
 
 ### Modelos descartados na sondagem
 
