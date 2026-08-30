@@ -92,6 +92,41 @@ def _mensagem_fallback(
     return "\n\n".join(partes)
 
 
+def _mensagem_pos_forca(
+    exame: Exame,
+    colecoes: dict[str, list[dict]],
+    quesitos: list[str],
+    respostas: dict[str, str],
+    quesito_respondido: str,
+) -> str:
+    """Mensagem depois de forçar uma resposta de quesito que o LLM não gravou.
+
+    O texto do LLM provavelmente afirmava "não registrei" — mentira, agora. Aqui
+    a gente compõe deterministicamente: confirmação + próximo quesito com padrão
+    resolvido, se houver.
+    """
+    partes = [f"Quesito {quesito_respondido} respondido."]
+    pendentes = camada1_quesitos.pendentes(quesitos, respostas)
+    if not pendentes:
+        partes.append(
+            "Todos os quesitos respondidos. Revise o painel ao lado e siga pra "
+            "confirmação."
+        )
+        return "\n\n".join(partes)
+    prox = pendentes[0]
+    texto = f"Quesito {prox.numero}: {prox.pergunta}"
+    modelo_resolvido, tem_padrao = camada1_quesitos.responder(
+        prox.pergunta, colecoes, {}, exame
+    )
+    if tem_padrao and modelo_resolvido.strip():
+        texto += (
+            f"\n\nO Instituto costuma responder assim: «{modelo_resolvido}». "
+            "Se serve pro caso, escreva «confirmo». Se não, escreva a sua."
+        )
+    partes.append(texto)
+    return "\n\n".join(partes)
+
+
 def processar(
     exame: Exame,
     colecoes: dict[str, list[dict]],
@@ -186,11 +221,44 @@ def processar(
                 respostas[numero] = texto
                 quesito_respondido = numero
 
+    # REDE DE SEGURANÇA: se estamos na etapa de quesitos, existe quesito
+    # pendente, o LLM não gravou resposta E não interpretou como pergunta ao
+    # assistente, a fala do perito é resposta ao primeiro quesito pendente. Sem
+    # isso, "Nada a acrescentar." vira "sem_dado" e o perito repete a pergunta
+    # infinito.
+    forcado_forcada = False
+    if (
+        not quesito_respondido
+        and etapa_corrente is not None
+        and getattr(etapa_corrente, "quesitos", False)
+        and str(saida.get("intencao", "")).strip().lower() != "pergunta"
+        and mensagem.strip()
+    ):
+        pendentes_agora = camada1_quesitos.pendentes(quesitos, respostas)
+        if pendentes_agora:
+            numero = pendentes_agora[0].numero
+            respostas[numero] = mensagem.strip()
+            quesito_respondido = numero
+            forcado_forcada = True
+            # Suprime recusas que ficaram órfãs — o LLM disse "sem_dado" mas na
+            # verdade era resposta.
+            recusas = [
+                r for r in recusas
+                if r.motivo not in ("sem_dado", "fora_do_escopo", "sem_extracao")
+            ]
+
     # PAREDE 3: valida_resumo — a mensagem do agente só afirma ter registrado o
     # que ``aplicar`` de fato gravou. Se não bater, cai no fallback determinístico.
+    # Também caímos no fallback se a rede de segurança forçou uma resposta de
+    # quesito — a mensagem do LLM provavelmente disse "não registrei" e virou
+    # mentira.
     resumo = saida.get("resumo_do_registrado", [])
     mensagem_llm = str(saida.get("mensagem_do_assistente", "")).strip()
-    if mensagem_llm and valida_resumo(resumo, alteracoes):
+    if forcado_forcada:
+        mensagem_final = _mensagem_pos_forca(
+            exame, colecoes, quesitos, respostas, quesito_respondido
+        )
+    elif mensagem_llm and valida_resumo(resumo, alteracoes):
         mensagem_final = mensagem_llm
     else:
         mensagem_final = _mensagem_fallback(alteracoes, recusas)

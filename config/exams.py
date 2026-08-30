@@ -238,12 +238,14 @@ _EXAMES_REALIZADOS = Colecao(
         Slot(
             chave="item_material",
             label="Material examinado",
-            na_conversa=False,
             referencia_colecao="materiais",
             pergunta="Esse exame se aplica a qual material?",
             instrucao_extracao=(
-                "Não extrair: a ferramenta preenche pelo material de que a "
-                "conversa está tratando."
+                "Índice do material a que este exame se refere, começando em 1. "
+                "Se o histórico deixa claro qual material está sendo descrito, "
+                "use esse índice. Se AMBÍGUO ou não houver material registrado "
+                "ainda, deixe vazio — a ferramenta pedirá pra clarificar. NUNCA "
+                "invente vínculo."
             ),
         ),
         Slot(
@@ -492,9 +494,13 @@ _EXAMES_VEICULO = Colecao(
         Slot(
             chave="item_material",
             label="Veículo examinado",
-            na_conversa=False,
             referencia_colecao="veiculos",
-            instrucao_extracao="Não extrair: a ferramenta preenche pelo veículo em foco.",
+            instrucao_extracao=(
+                "Índice do veículo a que este sinal se refere, começando em 1. "
+                "Se o histórico deixa claro qual veículo está sendo examinado, "
+                "use esse índice. Se AMBÍGUO, deixe vazio — a ferramenta pedirá "
+                "pra clarificar. NUNCA invente vínculo."
+            ),
         ),
         Slot(
             chave="numeracao_observada",

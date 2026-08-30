@@ -197,6 +197,32 @@ def main() -> int:
     from core.quesitos import PADRAO_ACEITO
     checa(respostas.get("01") == PADRAO_ACEITO, "confirmação do padrão devia ser gravada como marca")
 
+    # --- Rede de segurança: perito responde ao quesito, LLM interpreta como
+    # "sem_dado". Aqui o único quesito tá respondido (confirmado acima), então
+    # forjo um novo quesito pendente E preencho o restante do estado pra a
+    # etapa atual ser a de quesitos.
+    exame_item = colecoes["exames_realizados"][0]
+    exame_item.setdefault("procedimento", "usei reagente e observei")
+    quesitos.append("Outros dados julgados úteis?")
+    resultado = passo(
+        "Nada a acrescentar.",
+        {
+            "extracao": {},
+            "intencao": "sem_dado",
+            "recusas": [{"motivo": "sem_dado", "trecho": "Nada a acrescentar."}],
+            "resumo_do_registrado": [],
+            "mensagem_do_assistente": "Não registrei dado em «Nada a acrescentar.». Quesito 02: outros dados?",
+        },
+    )
+    checa(
+        respostas.get("02") == "Nada a acrescentar.",
+        "rede de segurança devia forçar a resposta do quesito quando o LLM ignora",
+    )
+    checa(
+        "Quesito 02 respondido" in resultado.mensagem,
+        "mensagem devia refletir a resposta forçada, não repetir a mentira do LLM",
+    )
+
     # --- propoe_completo é sinal, não gate: a regra é quem libera.
     resultado = passo(
         "acho que tá tudo",
