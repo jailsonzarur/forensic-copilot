@@ -141,6 +141,26 @@ def _detalhe_falhas(agregados: list[dict]) -> str:
     return "\n".join(blocos)
 
 
+def _tabela_cobertura() -> str:
+    """Cobertura do E3, lida do arquivo que ``e3_cobertura`` produziu."""
+    caminho = RAIZ / "e3" / "resultados" / "e3_cobertura.json"
+    if not caminho.exists():
+        return "*(cobertura ainda não medida — rode `experimentos.e3_cobertura`)*"
+    dados = json.loads(caminho.read_text(encoding="utf-8"))
+    linhas = [
+        "| Laudo | Tipo | Inédito | Frases na conta | Coberta | Parcial | Ausente |",
+        "|---|---|---|---|---|---|---|",
+    ]
+    for apelido, m in sorted(dados.items()):
+        tipo = m.get("exame", "").replace("identificacao_", "").replace("verificacao_", "")
+        linhas.append(
+            f"| `{apelido}` | {tipo} | {'**sim**' if m['inedito'] else 'não'} | "
+            f"{m['consideradas']} | **{m['pct_coberta']:.1%}** | "
+            f"{m['pct_parcial']:.1%} | {m['pct_ausente']:.1%} |"
+        )
+    return "\n".join(linhas)
+
+
 def main() -> int:
     if not BRUTO.exists():
         print(f"Sem dado bruto em {BRUTO}. Rode experimentos.e1_fidelidade antes.")
@@ -204,9 +224,24 @@ descartados ficam registrados.
         corpo += f"| `{item['modelo']}` | {item['motivo']} |\n"
 
     corpo += secoes.RODAPE_ANALISE
+    corpo += secoes.COBERTURA
+    corpo += "\n### 8.6. Resultado da cobertura\n\n" + _tabela_cobertura() + """
+
+O laudo de danos inédito (`danos-00074314-60`) **não é comparável aos demais**:
+seus quesitos foram deixados sem resposta na simulação, então saíram como
+pendências, e sua estrutura traz seções (DISCUSSÃO, REFERÊNCIAS) que o template
+não prevê. Os dois casos comparáveis são os de veicular e substância.
+
+**O número defensável: 44% a 50% de cobertura em laudos inéditos**, com mais 8%
+a 22% saindo parcialmente correto. A ferramenta entrega cerca de metade do
+laudo quando o tipo está implementado e os quesitos são respondidos — não uma
+minuta pronta para assinar, e sim uma base sobre a qual o perito escreve o
+resto.
+"""
+    corpo += secoes.FUTUROS
 
     corpo += """
-## 8. Ameaças à validade
+## 10. Ameaças à validade
 
 - **Uma repetição por caso.** Sem repetir, não se separa falha sistemática de
   variação de amostragem. Casos marcados ⚠️ são os únicos em que a
@@ -224,7 +259,7 @@ descartados ficam registrados.
 - **Preço não foi medido**, só tokens: tabelas de preço mudam e não seriam
   reprodutíveis. A conversão fica para quem lê, com a tabela vigente.
 
-## 9. Conclusões
+## 11. Conclusões
 
 1. **As paredes determinísticas sustentam a fidelidade entre famílias e
    gerações.** Nenhum modelo do elenco conseguiu inserir no laudo um dado que

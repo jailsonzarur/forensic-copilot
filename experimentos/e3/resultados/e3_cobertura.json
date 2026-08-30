@@ -1,0 +1,86 @@
+{
+  "danos-00074314-60": {
+    "frases_no_oficial": 29,
+    "excluidas_paginacao": 0,
+    "excluidas_imagem": 2,
+    "consideradas": 27,
+    "cobertas": 2,
+    "parciais": 2,
+    "ausentes": 23,
+    "pct_coberta": 0.0741,
+    "pct_parcial": 0.0741,
+    "pct_ausente": 0.8519,
+    "exemplos_ausentes": [
+      "GOVERNO DO ESTADO DO PIAUÍ SECRETARIA DE SEGURANÇA PÚBLICA POLÍCIA CIVIL DO ESTADO DO PIAUÍ DEPARTAMENTO DE POLÍCIA CIENTÍFICA INSTITUTO DE CRIMINALÍSTICA LAUDO",
+      "A referida demanda foi encaminhada para o Setor de PERÍCIAS EXTERNAS, sendo designado o Perito Criminal DANIEL MENDES LOPES , que passa a relatar e descrever co",
+      "HISTÓRICO Ao ser comunicado pela Central de Flagrantes no dia 02 de fevereiro de 2024, o Perito Criminal Daniel Mendes Lopes deslocou -se à Rua Alcides Freitas ",
+      "Do Local do exame O exame foi realizado no imóvel residencial localizado na zona norte de Teresina- PI, Bairro Marquês, Rua Alcides Freitas nº 2358.",
+      "DISCUSSÃO Examinando detida e minu ciosamente as características físicas do objeto e todos os vestígios relacionados ao mesmo, buscando o Perito, com base nas e",
+      "b) Os demais objetos relacionados na requisição (cadeira, ventilador e panela) não foram apresentados, sendo informado que não estariam mais dis poníveis para e"
+    ],
+    "inedito": true,
+    "exame": "verificacao_danos"
+  },
+  "substancia-00086731-52": {
+    "frases_no_oficial": 27,
+    "excluidas_paginacao": 1,
+    "excluidas_imagem": 1,
+    "consideradas": 25,
+    "cobertas": 11,
+    "parciais": 2,
+    "ausentes": 12,
+    "pct_coberta": 0.44,
+    "pct_parcial": 0.08,
+    "pct_ausente": 0.48,
+    "exemplos_ausentes": [
+      "GOVERNO DO ESTADO DO PIAUÍ SECRETARIA DE SEGURANÇA PÚBLICA POLÍCIA CIVIL DO ESTADO DO PIAUÍ DEPARTAMENTO DE POLÍCIA CIENTÍFICA INSTITUTO DE CRIMINALÍSTICA LAUDO",
+      "A referida demanda foi encaminhada para o Setor de QUÍMICA FORENSE , sendo designado o Perito Criminal RIAN FELIPE DE MELO ARAÚJO para atendimento , que passa a",
+      "HISTÓRICO A demanda pericial fora recebida no setor de Química Forense com requisição de exame pericial e o material descrito a seguir no Item 2, no caso em que",
+      "O documento pericial será encaminhado para a DELEGACIA DE POLÍCIA CIVIL DE CURIMATÁ, conforme solicitado na requisição.",
+      "EXAMES REALIZADOS Realizaram-se os seguintes exames nas amostras analisadas: a) Ensaio de Scott Modificado (identificação de alcaloides) – Teste colorimétrico b",
+      "b) Cromatografia em Fase Gasosa acoplada à Espectrometria de Massas (CG/EM) 4."
+    ],
+    "inedito": true,
+    "exame": "identificacao_substancia"
+  },
+  "veicular-00100350-44": {
+    "frases_no_oficial": 22,
+    "excluidas_paginacao": 2,
+    "excluidas_imagem": 2,
+    "consideradas": 18,
+    "cobertas": 9,
+    "parciais": 4,
+    "ausentes": 5,
+    "pct_coberta": 0.5,
+    "pct_parcial": 0.2222,
+    "pct_ausente": 0.2778,
+    "exemplos_ausentes": [
+      "GOVERNO DO ESTADO DO PIAUÍ SECRETARIA DE SEGURANÇA PÚBLICA POLÍCIA CIVIL DO ESTADO DO PIAUÍ DEPARTAMENTO DE POLÍCIA CIENTÍFICA - DEPOC DEPARTAMENTO DE PERÍCIAS ",
+      "EXAMES Observando-se o local de gravação dos sinais identificadores da Numeração de Identificação Veicular – NIV: 9C2JC4110AR094988 e da gravação do ano de fabr",
+      "Dessa forma, a placa NIH1905 constitui clone de placa.",
+      "CONCLUSÃO Face ao exposto, o perito que subscreve o presente laudo o conclui afirmando que o veículo submetido a exame, motocicleta HONDA/CG 125 ES, cor PRETA, ",
+      "Em consulta ao Sistema Nacional de Informações de Segurança Pública - SINESP, o número do motor: JC41E1A032959 (revelado no veículo examinado) está cadastrado p"
+    ],
+    "inedito": true,
+    "exame": "identificacao_veicular"
+  },
+  "veicular-of14744": {
+    "frases_no_oficial": 28,
+    "excluidas_paginacao": 1,
+    "excluidas_imagem": 5,
+    "consideradas": 22,
+    "cobertas": 13,
+    "parciais": 6,
+    "ausentes": 3,
+    "pct_coberta": 0.5909,
+    "pct_parcial": 0.2727,
+    "pct_ausente": 0.1364,
+    "exemplos_ausentes": [
+      "(IDENTIFICAÇÃO VEICULAR) DEMANDA 00082450-35 LAUDO DE EXAME PERICIAL 1.",
+      "Dessa forma, a placa OEB9641 constitui placa falsa.",
+      "Quesito 3: Qual o processo empregado para adulteração? Resposta: Uso de instrumento abrasivo para suprimir os caracteres originais do Número de Identificação Ve"
+    ],
+    "inedito": false,
+    "exame": "identificacao_veicular"
+  }
+}

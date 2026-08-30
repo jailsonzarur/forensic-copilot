@@ -336,7 +336,130 @@ O achado generaliza para além deste protótipo:
 > garantia realmente mora.
 
 
-## 8. Ameaças à validade
+## 8. Como a cobertura do E3 é calculada
+
+A porcentagem de cobertura é a medida central do E3, e ela só significa alguma
+coisa se estiver claro o que entra e o que fica de fora da conta. O cálculo
+vive em `experimentos/e3_cobertura.py`; o que segue descreve as decisões, e
+cada uma delas está no código, não numa planilha.
+
+### 8.1. O que é comparado
+
+Compara-se **frase a frase**, do laudo OFICIAL para o GERADO — nunca o
+contrário. A pergunta é *"o que o perito escreveu apareceu na minuta?"*, não
+*"a minuta escreveu algo a mais?"*. Texto extra na minuta não conta como acerto
+nem como erro nesta medida.
+
+### 8.2. Normalização
+
+Antes de comparar, o texto perde acento e pontuação e tem os espaços
+colapsados. A extração de PDF quebra linha no meio de palavra e espalha
+espaços; sem normalizar, a medida seria a do extrator de PDF, e não a da
+ferramenta.
+
+### 8.3. O que é excluído da conta, e por quê
+
+| Excluído | Motivo |
+|---|---|
+| Frases com menos de 40 caracteres | não são conteúdo: são fragmento de quebra de linha do PDF |
+| Rodapé de paginação (`"Página 2 de 3"`) | artefato de quem imprimiu o PDF, não conteúdo do laudo |
+| **Legenda e remissão de imagem** (`"Imagem 02: ..."`, `"vide foto 03"`) | **a geração de legenda e de referência a imagem é frente própria, ainda não implementada. Mantê-la na conta mediria duas coisas ao mesmo tempo e escondia o desempenho do texto** |
+
+A exclusão das imagens **muda o resultado de forma relevante** e por isso está
+declarada aqui: no laudo veicular inédito, a cobertura sobe de 32,3% para
+50,0% quando as frases de imagem saem da conta. Quem citar o número precisa
+citar junto o que ele exclui.
+
+### 8.4. Como cada frase é classificada
+
+Para cada frase do oficial, procura-se primeiro a frase inteira no texto
+gerado — a ferramenta pode quebrar parágrafos diferente do PDF, e isso não é
+ausência. Não achando, mede-se a maior similaridade contra as frases do
+gerado:
+
+| Faixa | Classificação | Leitura |
+|---|---|---|
+| ≥ 85% | **coberta** | a frase saiu, com a redação do laudo |
+| 50% a 85% | **parcial** | o conteúdo aparece, a redação não bate |
+| < 50% | **ausente** | não saiu |
+
+### 8.5. Erros de medição cometidos antes de chegar a estes números
+
+Registrados porque a medição também erra, e esconder isso seria a mesma falha
+que a ferramenta existe para impedir:
+
+1. **Similaridade do documento inteiro** foi reportada primeiro (8% a 41%) e
+   descartada como "artefato de extração de PDF" **sem verificação**. Ao medir,
+   boa parte era ausência real. A métrica de documento inteiro não é
+   informativa e não consta mais do relatório.
+2. **O separador de frases quebrava em dois-pontos**, partindo
+   `"Imagem 2: Mostra o material..."` em duas. A segunda metade escapava do
+   filtro de imagens e era contada como conteúdo ausente. Corrigido para
+   quebrar só em ponto e ponto-e-vírgula.
+
+
+### 8.6. Resultado da cobertura
+
+| Laudo | Tipo | Inédito | Frases na conta | Coberta | Parcial | Ausente |
+|---|---|---|---|---|---|---|
+| `danos-00074314-60` | danos | **sim** | 27 | **7.4%** | 7.4% | 85.2% |
+| `substancia-00086731-52` | substancia | **sim** | 25 | **44.0%** | 8.0% | 48.0% |
+| `veicular-00100350-44` | veicular | **sim** | 18 | **50.0%** | 22.2% | 27.8% |
+| `veicular-of14744` | veicular | não | 22 | **59.1%** | 27.3% | 13.6% |
+
+O laudo de danos inédito (`danos-00074314-60`) **não é comparável aos demais**:
+seus quesitos foram deixados sem resposta na simulação, então saíram como
+pendências, e sua estrutura traz seções (DISCUSSÃO, REFERÊNCIAS) que o template
+não prevê. Os dois casos comparáveis são os de veicular e substância.
+
+**O número defensável: 44% a 50% de cobertura em laudos inéditos**, com mais 8%
+a 22% saindo parcialmente correto. A ferramenta entrega cerca de metade do
+laudo quando o tipo está implementado e os quesitos são respondidos — não uma
+minuta pronta para assinar, e sim uma base sobre a qual o perito escreve o
+resto.
+
+## 9. Trabalhos futuros
+
+O que segue não é lista de ideias: cada item apareceu como ausência medida no
+E3, com o caso e o número correspondentes.
+
+Três frentes foram avaliadas como **relevantes** — são as que respondem pela
+maior parte do conteúdo ausente e mudam o que a ferramenta entrega:
+
+### 9.1. Consulta ao SINESP
+
+Aparece na seção 2 e na conclusão de **todos** os laudos veiculares do corpus,
+e é o que sustenta a afirmação de que uma placa é clonada ou falsa. Hoje o
+perito escreve à mão. Já constava como pendência do projeto antes do E3; o
+experimento quantificou o peso.
+
+### 9.2. Narrativa do HISTÓRICO
+
+Hoje é moldura fixa com campos do caso. Nos laudos reais é narrativa: conta o
+trajeto da demanda — *"a demanda pericial fora recebida no setor de Química
+Forense com requisição de exame pericial…"*, *"o documento pericial será
+encaminhado para a DELEGACIA DE POLÍCIA CIVIL DE CURIMATÁ, conforme solicitado
+na requisição"*. Apareceu ausente nos laudos de substância e de danos.
+
+### 9.3. Mais de uma substância por ensaio
+
+A Cromatografia Gasosa acoplada à Espectrometria de Massas identificou
+**cocaína, cafeína e lidocaína** no laudo 00086731-52. O schema tem UM slot de
+substância por exame, e a frase inteira entrou nele — o que derrubou em cascata
+a referência bibliográfica, o texto de proscrição e a resposta do quesito 01.
+É a lacuna com maior efeito colateral de todas as medidas.
+
+### 9.4. Frentes avaliadas e consideradas menores
+
+Registradas para que a decisão fique explícita, e não pareça esquecimento:
+frases conclusivas derivadas (*"Dessa forma, a placa constitui placa falsa"*),
+cabeçalho variável por unidade emissora, casamento flexível de enunciado de
+quesito, e geração de legenda e referência de imagem. São ajustes pontuais de
+template ou de vocabulário, sem efeito sobre a arquitetura nem sobre a
+fidelidade.
+
+
+## 10. Ameaças à validade
 
 - **Uma repetição por caso.** Sem repetir, não se separa falha sistemática de
   variação de amostragem. Casos marcados ⚠️ são os únicos em que a
@@ -354,7 +477,7 @@ O achado generaliza para além deste protótipo:
 - **Preço não foi medido**, só tokens: tabelas de preço mudam e não seriam
   reprodutíveis. A conversão fica para quem lê, com a tabela vigente.
 
-## 9. Conclusões
+## 11. Conclusões
 
 1. **As paredes determinísticas sustentam a fidelidade entre famílias e
    gerações.** Nenhum modelo do elenco conseguiu inserir no laudo um dado que
