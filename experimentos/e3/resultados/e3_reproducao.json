@@ -1,0 +1,120 @@
+{
+  "casos": {
+    "veicular-of14744": {
+      "apelido": "veicular-of14744",
+      "exame": "identificacao_veicular",
+      "descricao": "motocicleta com NIV, motor e placa adulterados",
+      "requisicao": {
+        "arquivo": "0000172621.pdf",
+        "origem_leitura": "camada de texto do PDF",
+        "nivel": "exata",
+        "campos_extraidos": 5,
+        "quesitos_extraidos": 6,
+        "origem_quesitos": "requisição",
+        "descartados": []
+      },
+      "conversa": {
+        "turnos": [
+          {
+            "perito": "É uma motocicleta Honda CG 150 Fan, cor vermelha, placa OEB9641. Veio com o lacre DPTC 1829159.",
+            "assistente": "Registrei: motocicleta Honda CG 150 Fan, cor vermelha, placa OEB9641, com o lacre DPTC 1829159. Agora, no exame dos sinais identificadores: qual sinal você examinou primeiro (NIV, Motor ou Placa) e ele se refere a qual veículo (índice 1)?",
+            "gravou": [
+              "Veículo 1 — Tipo do veículo: motocicleta",
+              "Veículo 1 — Marca e modelo: Honda CG 150 Fan",
+              "Veículo 1 — Cor: vermelha",
+              "Veículo 1 — Placa: OEB9641",
+              "Veículo 1 — Lacres: lacre DPTC 1829159"
+            ],
+            "recusou": [],
+            "erro": ""
+          },
+          {
+            "perito": "Examinei o NIV primeiro. A numeração que tá lá é 9C2KC1670DR452854, gravada na base do guidão, lado direito. Todos os caracteres divergiam do padrão de fábrica. Apliquei os reagentes de ferro e aço e deu negativo, não revelou nada.",
+            "assistente": "Registrei o exame do NIV no veículo 1: numeração observada 9C2KC1670DR452854, gravada na base do guidão, lado direito; caracteres divergentes: Todos os caracteres; tratamento reagentes de ferro e aço; resultado negativo (não revelou nada). Qual o próximo sinal identificador examinado (Motor ou Placa) e, se for Placa, descreve o exame da placa (lacre/estado/consulta e conclusão sobre autenticidade)?",
+            "gravou": [
+              "Sinal identificador 1 — Sinal identificador: NIV",
+              "Sinal identificador 1 — Veículo examinado: 1",
+              "Sinal identificador 1 — Numeração observada: 9C2KC1670DR452854",
+              "Sinal identificador 1 — Local da gravação: gravada na base do guidão, lado direito",
+              "Sinal identificador 1 — Caracteres divergentes: Todos os caracteres",
+              "Sinal identificador 1 — Tratamento aplicado: reagentes de ferro e aço",
+              "Sinal identificador 1 — Resultado da revelação: negativo"
+            ],
+            "recusou": [],
+            "erro": ""
+          },
+          {
+            "perito": "Depois o motor. Numeração KC16E7D452854, gravada no bloco. Todos os caracteres também divergentes. Usei reagente de liga metálica e dessa vez deu positivo: revelou KC16E8E012818.",
+            "assistente": "Registrei o exame do Motor no veículo 1: numeração observada KC16E7D452854, gravada no bloco; caracteres divergentes: Todos os caracteres; tratamento reagente de liga metálica; resultado positivo, com numeração revelada KC16E8E012818. Você examinou também a Placa? Se sim, descreve o exame da placa (lacre/estado/consulta e conclusão sobre autenticidade).",
+            "gravou": [
+              "Sinal identificador 2 — Sinal identificador: Motor",
+              "Sinal identificador 2 — Veículo examinado: 1",
+              "Sinal identificador 2 — Numeração observada: KC16E7D452854",
+              "Sinal identificador 2 — Local da gravação: gravada no bloco",
+              "Sinal identificador 2 — Caracteres divergentes: Todos os caracteres",
+              "Sinal identificador 2 — Tratamento aplicado: reagente de liga metálica",
+              "Sinal identificador 2 — Resultado da revelação: positivo",
+              "Sinal identificador 2 — Numeração revelada: KC16E8E012818"
+            ],
+            "recusou": [],
+            "erro": ""
+          },
+          {
+            "perito": "Por último a placa. Ela exibe a OEB9641, com lacre do DETRAN-PI número 000064319-0, e o arame do lacre estava seccionado, o que mostra que a placa foi violada. Consultei o SINESP e não houve resultado para essa placa. Então é placa falsa.",
+            "assistente": "Registrei o exame da Placa no veículo 1: exibe OEB9641; lacre do DETRAN-PI nº 000064319-0; arame do lacre seccionado; consulta ao SINESP sem resultado; conclusão: placa falsa. Quesito 02 tem padrão do Instituto («Vide item 2. EXAMES.»): você confirma esse padrão?",
+            "gravou": [
+              "Sinal identificador 3 — Sinal identificador: Placa",
+              "Sinal identificador 3 — Veículo examinado: 1",
+              "Sinal identificador 3 — Numeração observada: OEB9641",
+              "Sinal identificador 3 — Descrição do exame da placa: Ela exibe a OEB9641, com lacre do DETRAN-PI número 000064319-0, e o arame do lacre estava seccionado, o que mostra que a placa foi violada. Consultei o SINESP e não houve resultado para essa placa. Então é placa falsa."
+            ],
+            "recusou": [],
+            "erro": ""
+          },
+          {
+            "perito": "Não examinei mais nada nesse veículo.",
+            "assistente": "Anotei sua resposta no quesito 02: «Não examinei mais nada nesse veículo.» Você confirma o padrão do Instituto para o quesito 02 («Vide item 2. EXAMES.») ou quer manter essa resposta? Em seguida, responda o quesito 03: qual o processo empregado para adulteração?",
+            "gravou": [],
+            "recusou": [],
+            "erro": ""
+          }
+        ],
+        "campos_gravados": 24,
+        "chamadas": 5,
+        "segundos": 25.3,
+        "tokens_entrada": 19329,
+        "tokens_saida": 2563
+      },
+      "intervencao_do_perito": {
+        "campos_admin_preenchidos_a_mao": 5,
+        "quesitos_escritos": 5,
+        "quesitos_por_padrao": 1,
+        "derivados_confirmados": 2
+      },
+      "comparacao": {
+        "similaridade": 0.4072,
+        "caracteres_gerado": 4565,
+        "caracteres_oficial": 5763,
+        "fatos_presentes": [
+          "9C2KC1670DR452854",
+          "KC16E7D452854",
+          "KC16E8E012818",
+          "OEB9641",
+          "base do guidão",
+          "ferro e aço",
+          "liga metálica",
+          "NEGATIVO",
+          "POSITIVO",
+          "HONDA/CG 150 FAN",
+          "FLÁVIO FELINTO MOURA",
+          "HAMILTON CARVALHO FORTES JÚNIOR"
+        ],
+        "fatos_ausentes": [],
+        "pendencias_no_documento": [],
+        "imagens_embutidas": 4
+      }
+    }
+  },
+  "modelo": "gpt-5.2",
+  "medido_em": "2026-08-30T16:32:00"
+}

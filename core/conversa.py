@@ -230,6 +230,11 @@ def processar(
     forcado_forcada = False
     if (
         not quesito_respondido
+        # Se a fala produziu extração, ela era conteúdo do exame, não resposta
+        # a quesito. Sem esta condição, o perito descrevendo o segundo sinal
+        # identificador tinha a frase inteira gravada como resposta de quesito
+        # — porque a etapa já constava completa com um sinal só.
+        and not alteracoes
         and etapa_corrente is not None
         and getattr(etapa_corrente, "quesitos", False)
         and str(saida.get("intencao", "")).strip().lower() != "pergunta"

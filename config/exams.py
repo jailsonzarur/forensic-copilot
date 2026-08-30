@@ -515,7 +515,13 @@ _EXAMES_VEICULO = Colecao(
             label="Local da gravação",
             obrigatorio=False,
             pergunta="Onde fica essa gravação no veículo?",
-            instrucao_extracao="Local da gravação conforme descrito pelo perito.",
+            instrucao_extracao=(
+                "Local da gravação como o perito descreveu, COM o particípio "
+                "que o laudo imprime entre parênteses: 'gravados no setor "
+                "posterior do chassi', 'gravada no bloco', 'gravados na base do "
+                "guidão, lado direito'. Sem o particípio o parêntese do laudo "
+                "sai truncado."
+            ),
         ),
         Slot(
             chave="caracteres_divergentes",
@@ -523,8 +529,12 @@ _EXAMES_VEICULO = Colecao(
             obrigatorio=False,
             pergunta="Quais caracteres divergiam do padrão de fábrica?",
             instrucao_extracao=(
-                "Quais caracteres divergiam, como o perito disse — ex.: 'todos os "
-                "caracteres' ou 'o 17º caractere'."
+                "APENAS o sujeito da frase, sem verbo: 'todos os caracteres', "
+                "'o 17º caractere'. O laudo completa com 'apresentavam formato, "
+                "profundidade e tamanho divergente...', então guardar a oração "
+                "inteira ('todos os caracteres divergiam do padrão') duplica o "
+                "verbo e quebra a frase do documento. Se o perito disser a "
+                "oração completa, registre só o sujeito dela."
             ),
         ),
         Slot(

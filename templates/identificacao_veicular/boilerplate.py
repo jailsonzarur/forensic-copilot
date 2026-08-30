@@ -153,6 +153,33 @@ def chave_substancia(substancia: str) -> str:
     return ""
 
 
+#: Palavras que identificam cada tratamento transcrito. O perito diz "reagente
+#: DE liga metálica" onde o laudo escreve "reagentes EM liga metálica", e uma
+#: preposição não pode custar a frase que declara COMO o exame foi conduzido.
+#: Reconhecer qual dos três ele nomeou é casamento de vocabulário fechado, não
+#: interpretação: os três são os únicos tratamentos transcritos, e o que não
+#: casar com nenhum vira pendência à vista.
+_MARCAS_DE_TRATAMENTO = (
+    (("liga", "metalic"), "reagentes em liga metálica"),
+    (("ferro",), "reagentes em ferro e aço"),
+    (("optic",), "somente observação óptica"),
+)
+
+
+def _frase_do_tratamento(dito: str) -> str:
+    """Frase transcrita do tratamento que o perito nomeou, ou string vazia."""
+    if not dito.strip():
+        return ""
+    alvo = normaliza(dito)
+    exatos = {normaliza(k): v for k, v in TRATAMENTOS.items()}
+    if alvo in exatos:
+        return exatos[alvo]
+    for marcas, chave in _MARCAS_DE_TRATAMENTO:
+        if all(m in alvo for m in marcas):
+            return TRATAMENTOS[chave]
+    return ""
+
+
 def paragrafo_do_exame(item: dict) -> tuple[str, str]:
     """(título da subseção, parágrafo) de um sinal identificador examinado.
 
@@ -175,8 +202,17 @@ def paragrafo_do_exame(item: dict) -> tuple[str, str]:
             f"com resultado {item.get('resultado_revelacao', '?')}"
         )
 
-    tratamentos = {normaliza(k): v for k, v in TRATAMENTOS.items()}
-    tratamento = tratamentos.get(normaliza(item.get("tratamento", "")), "")
+    dito = str(item.get("tratamento", "")).strip()
+    tratamento = _frase_do_tratamento(dito)
+    if dito and not tratamento:
+        # O perito descreveu um tratamento para o qual não há frase transcrita
+        # de laudo real — "reagentes DE ferro e aço" contra "reagentes EM ferro
+        # e aço" basta para não casar. Deixar sumir apagaria do laudo COMO o
+        # exame foi conduzido, e o documento afirmaria um resultado sem dizer
+        # como chegou nele. Vira pendência à vista.
+        tratamento = PENDENTE.format(
+            o_que=f"frase do tratamento «{dito}», sem redação transcrita"
+        ) + " "
     divergentes = str(item.get("caracteres_divergentes", "")).strip()
     unico = "caractere" in normaliza(divergentes) and "todos" not in normaliza(divergentes)
     # Concordância: "o 17º caractere apresentava ... do caractere latente

@@ -1,0 +1,37 @@
+{
+  "substancia-00024529-28": {
+    "requisicao": "Demanda00024529-28_REQUISIÇÃO.pdf",
+    "laudo": "Demanda00024529-28_LAUDO PERICIAL.pdf",
+    "exame": "identificacao_substancia",
+    "caracteres": 5828,
+    "imagens_extraidas": 1
+  },
+  "danos-00016037-31": {
+    "requisicao": "0000021084.pdf",
+    "laudo": "0000021424.pdf",
+    "exame": "verificacao_danos",
+    "caracteres": 7383,
+    "imagens_extraidas": 17
+  },
+  "danos-00016160-22": {
+    "requisicao": "0000021449.pdf",
+    "laudo": "0000021679.pdf",
+    "exame": "verificacao_danos",
+    "caracteres": 5994,
+    "imagens_extraidas": 34
+  },
+  "veicular-of14744": {
+    "requisicao": "0000172621.pdf",
+    "laudo": "0000174415.pdf",
+    "exame": "identificacao_veicular",
+    "caracteres": 6077,
+    "imagens_extraidas": 7
+  },
+  "veicular-bo83111": {
+    "requisicao": "0000163121.pdf",
+    "laudo": "0000177136.pdf",
+    "exame": "identificacao_veicular",
+    "caracteres": 5408,
+    "imagens_extraidas": 7
+  }
+}
