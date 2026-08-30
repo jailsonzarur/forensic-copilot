@@ -199,34 +199,35 @@ explicação põe o perito em laço, repetindo a mesma frase contra o silêncio.
 | `gemini-3.5-flash` | Gemini | **17/17** | 4 — 3× cota diária esgotada (429); 1× serviço sobrecarregado (503) | 14.7 s | 70.106 / 4.936 |
 | `gemini-3.5-flash-lite` | Gemini | **20/21** | — | 1.7 s | 88.619 / 6.247 |
 | `gemini-3.6-flash` | Gemini | **15/15** | 6 — 6× cota diária esgotada (429) | 10.1 s | 62.795 / 4.608 |
+| `gemini-3.7-flash` | Gemini | **4/4** | 17 — 14× cota diária esgotada (429); 3× serviço sobrecarregado (503) | 117.6 s | 18.486 / 1.354 |
 
 ### 5.3. Por caso
 
 Legenda: ✅ aprovado · ❌ reprovado por fidelidade · ⚠️ instável entre repetições · 🚫 **não medido** (cota ou indisponibilidade do serviço, não é falha do modelo)
 
-| Caso | `gpt-4.1` | `gpt-4o` | `gpt-5.1` | `gpt-5.2` | `gemini-3.5-flash` | `gemini-3.5-flash-lite` | `gemini-3.6-flash` |
-|---|---|---|---|---|---|---|---|
-| agradecimento | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| assunto alheio ao laudo | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| contagem aproximada | ❌ | ❌ | ✅ | ✅ | 🚫 | ❌ | ✅ |
-| contagem exata com erro de digitação | ✅ | ✅ | ✅ | ✅ | 🚫 | ✅ | 🚫 |
-| correção de valor | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| droga nomeada sem descrição | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| exame sem resultado | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| fração sem inteiro | ✅ | ✅ | ✅ | ✅ | 🚫 | ✅ | 🚫 |
-| instrução embutida na fala | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| massa aproximada | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| massa com fração falada | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ | 🚫 |
-| massa com ponto decimal | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | 🚫 |
-| massa em quilo | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| massa por extenso | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| massa por extenso inteira | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | 🚫 |
-| massa sem unidade | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| pergunta ao assistente | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| perito diz que não sabe | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| positivo sem substância | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| saudação | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| vários campos numa frase só | ✅ | ✅ | ✅ | ✅ | 🚫 | ✅ | 🚫 |
+| Caso | `gpt-4.1` | `gpt-4o` | `gpt-5.1` | `gpt-5.2` | `gemini-3.5-flash` | `gemini-3.5-flash-lite` | `gemini-3.6-flash` | `gemini-3.7-flash` |
+|---|---|---|---|---|---|---|---|---|
+| agradecimento | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | 🚫 |
+| assunto alheio ao laudo | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | 🚫 |
+| contagem aproximada | ❌ | ❌ | ✅ | ✅ | 🚫 | ❌ | ✅ | 🚫 |
+| contagem exata com erro de digitação | ✅ | ✅ | ✅ | ✅ | 🚫 | ✅ | 🚫 | 🚫 |
+| correção de valor | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| droga nomeada sem descrição | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| exame sem resultado | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| fração sem inteiro | ✅ | ✅ | ✅ | ✅ | 🚫 | ✅ | 🚫 | 🚫 |
+| instrução embutida na fala | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | 🚫 |
+| massa aproximada | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | 🚫 |
+| massa com fração falada | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ | 🚫 | 🚫 |
+| massa com ponto decimal | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | 🚫 | 🚫 |
+| massa em quilo | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | 🚫 |
+| massa por extenso | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | 🚫 |
+| massa por extenso inteira | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | 🚫 | 🚫 |
+| massa sem unidade | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| pergunta ao assistente | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | 🚫 |
+| perito diz que não sabe | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | 🚫 |
+| positivo sem substância | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | 🚫 |
+| saudação | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | 🚫 |
+| vários campos numa frase só | ✅ | ✅ | ✅ | ✅ | 🚫 | ✅ | 🚫 | 🚫 |
 
 ## 6. Falhas em detalhe
 
@@ -282,6 +283,10 @@ Nenhuma falha.
 - ❌ contagem aproximada: esperava acondicionamento_tipo='~saco plástico transparente', veio None
 
 ### `gemini-3.6-flash`
+
+Nenhuma falha.
+
+### `gemini-3.7-flash`
 
 Nenhuma falha.
 
