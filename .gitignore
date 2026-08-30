@@ -9,3 +9,6 @@ saidas/
 referencia/*.pdf
 rascunhos/
 laudos_requisicoes_exemplo/
+
+# rascunhos do relatório de IC — fora do versionamento
+relatorio/
