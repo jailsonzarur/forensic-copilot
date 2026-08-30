@@ -113,8 +113,122 @@
         "pendencias_no_documento": [],
         "imagens_embutidas": 4
       }
+    },
+    "veicular-00100350-44": {
+      "apelido": "veicular-00100350-44",
+      "exame": "identificacao_veicular",
+      "descricao": "motocicleta com NIV, motor e placa adulterados (laudo inédito)",
+      "requisicao": {
+        "arquivo": "0000213935.pdf",
+        "origem_leitura": "camada de texto do PDF",
+        "nivel": "exata",
+        "campos_extraidos": 5,
+        "quesitos_extraidos": 4,
+        "origem_quesitos": "requisição",
+        "descartados": []
+      },
+      "conversa": {
+        "turnos": [
+          {
+            "perito": "É uma motocicleta Honda CG 125 ES, cor preta, placa NIH1905. Veio com o lacre DPTC 1839545.",
+            "assistente": "Anotei: motocicleta Honda CG 125 ES, cor preta, placa NIH1905, com lacre DPTC 1839545. Agora, no exame dos sinais identificadores: qual sinal você examinou primeiro (NIV, Motor ou Placa)? E esse exame se refere ao veículo 1?",
+            "gravou": [
+              "Veículo 1 — Tipo do veículo: motocicleta",
+              "Veículo 1 — Marca e modelo: Honda CG 125 ES",
+              "Veículo 1 — Cor: preta",
+              "Veículo 1 — Placa: NIH1905",
+              "Veículo 1 — Lacres: DPTC 1839545"
+            ],
+            "recusou": [],
+            "erro": ""
+          },
+          {
+            "perito": "Comecei pelo NIV. A numeração é 9C2JC4110AR094988, e o ano de fabricação gravado é 2010, tudo na base do guidão, lado direito. Todos os caracteres divergiam do padrão de fábrica. Apliquei reagente de ferro e aço e deu positivo, mas só revelou um caractere: ?????????????2???",
+            "assistente": "Registrei o exame do NIV no veículo 1: numeração observada 9C2JC4110AR094988, gravados na base do guidão, lado direito; caracteres divergentes: Todos os caracteres; tratamento reagente de ferro e aço; revelação positiva com numeração revelada ?????????????2???. Agora, qual o próximo sinal identificador examinado (NIV, Motor ou Placa)?",
+            "gravou": [
+              "Sinal identificador 1 — Sinal identificador: NIV",
+              "Sinal identificador 1 — Veículo examinado: 1",
+              "Sinal identificador 1 — Numeração observada: 9C2JC4110AR094988",
+              "Sinal identificador 1 — Local da gravação: gravados na base do guidão, lado direito",
+              "Sinal identificador 1 — Caracteres divergentes: Todos os caracteres",
+              "Sinal identificador 1 — Tratamento aplicado: reagente de ferro e aço",
+              "Sinal identificador 1 — Resultado da revelação: positivo",
+              "Sinal identificador 1 — Numeração revelada: ?????????????2???"
+            ],
+            "recusou": [],
+            "erro": ""
+          },
+          {
+            "perito": "Depois o motor. Numeração JC41E1A094988, gravada no bloco. Todos os caracteres divergentes também. Usei reagente de liga metálica, deu positivo e revelou JC41E1A032959.",
+            "assistente": "Registrei o exame do Motor no veículo 1: numeração observada JC41E1A094988, gravada no bloco; caracteres divergentes: Todos os caracteres; tratamento reagente de liga metálica; revelação positiva com numeração revelada JC41E1A032959. Você examinou também a Placa (identificador: Placa)? Se sim, descreve o exame da placa (lacre/estado/consulta a sistema/conclusão).",
+            "gravou": [
+              "Sinal identificador 2 — Sinal identificador: Motor",
+              "Sinal identificador 2 — Veículo examinado: 1",
+              "Sinal identificador 2 — Numeração observada: JC41E1A094988",
+              "Sinal identificador 2 — Local da gravação: gravada no bloco",
+              "Sinal identificador 2 — Caracteres divergentes: Todos os caracteres",
+              "Sinal identificador 2 — Tratamento aplicado: reagente de liga metálica",
+              "Sinal identificador 2 — Resultado da revelação: positivo",
+              "Sinal identificador 2 — Numeração revelada: JC41E1A032959"
+            ],
+            "recusou": [],
+            "erro": ""
+          },
+          {
+            "perito": "Por fim a placa. Ela exibe NIH1905, com QR Code de número de série 200727017890173 indicando estampagem não encontrada. Consultei o SINESP e a placa está cadastrada para o NIV 9C2JC4110AR094988, que é justamente o NIV adulterado que eu observei. Então é clone de placa.",
+            "assistente": "Registrei o exame da Placa no veículo 1: exibe NIH1905; QR Code nº de série 200727017890173 com “estampagem não encontrada”; consulta ao SINESP indicando cadastro para o NIV 9C2JC4110AR094988; conclusão: “clone de placa”. Agora, no quesito 02 (Caso positivo, quais os caracteres adulterados?), qual sua resposta?",
+            "gravou": [
+              "Sinal identificador 3 — Sinal identificador: Placa",
+              "Sinal identificador 3 — Veículo examinado: 1",
+              "Sinal identificador 3 — Numeração observada: NIH1905",
+              "Sinal identificador 3 — Descrição do exame da placa: Ela exibe NIH1905, com QR Code de número de série 200727017890173 indicando estampagem não encontrada. Consultei o SINESP e a placa está cadastrada para o NIV 9C2JC4110AR094988, que é justamente o NIV adulterado que eu observei. Então é clone de placa."
+            ],
+            "recusou": [],
+            "erro": ""
+          },
+          {
+            "perito": "Não examinei mais nada.",
+            "assistente": "Beleza — registrei sua fala como resposta do quesito 02. Agora, no quesito 03 (Qual o processo empregado para adulteração?), qual sua resposta?",
+            "gravou": [],
+            "recusou": [],
+            "erro": ""
+          }
+        ],
+        "campos_gravados": 25,
+        "chamadas": 5,
+        "segundos": 26.4,
+        "tokens_entrada": 19054,
+        "tokens_saida": 2581
+      },
+      "intervencao_do_perito": {
+        "campos_admin_preenchidos_a_mao": 5,
+        "quesitos_escritos": 4,
+        "quesitos_por_padrao": 0,
+        "derivados_confirmados": 2
+      },
+      "comparacao": {
+        "similaridade": 0.3402,
+        "caracteres_gerado": 3981,
+        "caracteres_oficial": 4803,
+        "fatos_presentes": [
+          "9C2JC4110AR094988",
+          "JC41E1A094988",
+          "JC41E1A032959",
+          "NIH1905",
+          "base do guidão",
+          "ferro e aço",
+          "liga metálica",
+          "POSITIVO",
+          "HONDA/CG 125 ES",
+          "HUNOS PAIXÃO MADUREIRA",
+          "1839545"
+        ],
+        "fatos_ausentes": [],
+        "pendencias_no_documento": [],
+        "imagens_embutidas": 4
+      }
     }
   },
   "modelo": "gpt-5.2",
-  "medido_em": "2026-08-30T16:32:00"
+  "medido_em": "2026-08-30T16:45:21"
 }

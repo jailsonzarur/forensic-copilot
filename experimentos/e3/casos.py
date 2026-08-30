@@ -96,4 +96,65 @@ CASOS = {
             "HAMILTON CARVALHO FORTES JÚNIOR",
         ],
     },
+
+    # ------------------------------------------------------------------
+    # INÉDITO — não foi fonte de nenhum template. É o teste de generalização.
+    "veicular-00100350-44": {
+        "exame": "identificacao_veicular",
+        "descricao": "motocicleta com NIV, motor e placa adulterados (laudo inédito)",
+        "inedito": True,
+        "falas": [
+            "É uma motocicleta Honda CG 125 ES, cor preta, placa NIH1905. "
+            "Veio com o lacre DPTC 1839545.",
+            "Comecei pelo NIV. A numeração é 9C2JC4110AR094988, e o ano de "
+            "fabricação gravado é 2010, tudo na base do guidão, lado direito. "
+            "Todos os caracteres divergiam do padrão de fábrica. Apliquei "
+            "reagente de ferro e aço e deu positivo, mas só revelou um "
+            "caractere: ?????????????2???",
+            "Depois o motor. Numeração JC41E1A094988, gravada no bloco. Todos "
+            "os caracteres divergentes também. Usei reagente de liga metálica, "
+            "deu positivo e revelou JC41E1A032959.",
+            "Por fim a placa. Ela exibe NIH1905, com QR Code de número de série "
+            "200727017890173 indicando estampagem não encontrada. Consultei o "
+            "SINESP e a placa está cadastrada para o NIV 9C2JC4110AR094988, que "
+            "é justamente o NIV adulterado que eu observei. Então é clone de placa.",
+            "Não examinei mais nada.",
+        ],
+        "respostas_quesitos": {
+            "01": "Sim, na numeração de identificação veicular, na numeração do "
+                  "motor e na placa (vide item 2. EXAMES).",
+            "02": "Vide item 2. EXAMES.",
+            "03": "Uso de instrumento abrasivo para suprimir os caracteres "
+                  "originais do Número de Identificação Veicular e os do Número "
+                  "do Motor, seguido de regravação de caracteres divergentes e "
+                  "substituição da placa original por placa clonada (vide item "
+                  "3. CONCLUSÃO).",
+            "04": "Supressão e regravação de caracteres identificadores do NIV e "
+                  "do Número do Motor e clone de placa (vide item 3. CONCLUSÃO).",
+        },
+        "admin_extra": {
+            "numero_demanda": "00100350-44",
+            "data_realizacao": "2025-02-01",
+            "local_exame": "pátio da POLÍCIA CIVIL DO PIAUÍ - DELEGACIA SECCIONAL DE CAMPO MAIOR-DSPC",
+            "data_encerramento": "2025-02-03",
+            "peritos": [
+                {"perito_designado": "HUNOS PAIXÃO MADUREIRA", "matricula": "354028-6"},
+            ],
+        },
+        "colecoes_extra": {"veiculos": [{"abertura": "Trata-se da"}]},
+        "derivados": {
+            "conclusao": (
+                "apresenta adulteração intencional na sua numeração de "
+                "identificação veicular – NIV – e no número de motor pela "
+                "modalidade de SUPRESSÃO E REGRAVAÇÃO DE CARACTERES "
+                "IDENTIFICADORES."
+            ),
+            "paginas": "3",
+        },
+        "fatos_esperados": [
+            "9C2JC4110AR094988", "JC41E1A094988", "JC41E1A032959", "NIH1905",
+            "base do guidão", "ferro e aço", "liga metálica", "POSITIVO",
+            "HONDA/CG 125 ES", "HUNOS PAIXÃO MADUREIRA", "1839545",
+        ],
+    },
 }

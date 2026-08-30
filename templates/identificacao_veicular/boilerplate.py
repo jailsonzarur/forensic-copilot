@@ -214,6 +214,12 @@ def paragrafo_do_exame(item: dict) -> tuple[str, str]:
             o_que=f"frase do tratamento «{dito}», sem redação transcrita"
         ) + " "
     divergentes = str(item.get("caracteres_divergentes", "")).strip()
+    # O sujeito entra no MEIO da frase ("verificou-se que {sujeito}
+    # apresentavam..."), então maiúscula inicial vinda da fala do perito sai
+    # errada no documento. Só a primeira letra é rebaixada, e apenas quando a
+    # palavra inteira não é sigla — "NIV" e "QR" continuam como estão.
+    if divergentes and divergentes.split()[0] not in ("NIV", "QR") and not divergentes[:2].isupper():
+        divergentes = divergentes[0].lower() + divergentes[1:]
     unico = "caractere" in normaliza(divergentes) and "todos" not in normaliza(divergentes)
     # Concordância: "o 17º caractere apresentava ... do caractere latente
     # original" contra "todos os caracteres apresentavam ... dos caracteres
