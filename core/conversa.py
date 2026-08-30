@@ -119,6 +119,9 @@ def processar(
     historico = historico or []
 
     pendencias_lista = pendencias.todas(exame, colecoes, so_conversa=True)
+    etapa_corrente = pendencias.etapa_atual(
+        exame, colecoes, fechadas, quesitos, respostas
+    )
 
     try:
         saida, bruto = orquestrador(
@@ -130,6 +133,7 @@ def processar(
             historico,
             pendencias_lista,
             mensagem,
+            etapa_corrente=etapa_corrente,
         )
     except ErroLLM as erro:
         return Resultado(
@@ -202,7 +206,21 @@ def processar(
     )
 
 
-ABERTURA = (
-    "Vamos anotar esse exame. Fala como preferir — vou registrando o que você "
-    "disser e pergunto o que faltar. Nada entra no laudo por mim."
-)
+def abertura(exame: Exame) -> str:
+    """Mensagem inicial da conversa — dinâmica, ancorada na etapa 1 do laudo.
+
+    A promessa de fidelidade fica no topo. Em seguida, a etapa 1 é anunciada
+    com título e objetivo, para o perito saber exatamente sobre o que vamos
+    falar primeiro. Sem etapas declaradas, cai numa saudação genérica.
+    """
+    partes = [
+        "Vamos anotar esse exame. Fala como preferir — vou registrando o que "
+        "você disser e pergunto o que faltar. Nada entra no laudo por mim."
+    ]
+    if exame.etapas:
+        primeira = exame.etapas[0]
+        partes.append(
+            f"Vamos começar pela **etapa 1 — {primeira.titulo}**: "
+            f"{primeira.objetivo}"
+        )
+    return "\n\n".join(partes)

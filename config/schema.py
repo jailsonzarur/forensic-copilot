@@ -139,6 +139,26 @@ class GrupoAdmin:
 
 
 @dataclass(frozen=True)
+class Etapa:
+    """Uma etapa da fase de conversa — declarada pelo tipo de laudo.
+
+    O agente é 100% conversacional, mas o roteiro é nosso: a ordem e o
+    objetivo de cada etapa vêm daqui. O controlador calcula a etapa atual a
+    partir das pendências determinísticas e informa ao agente, que não pode
+    pular pra frente enquanto a atual não estiver completa.
+    """
+
+    titulo: str
+    objetivo: str
+    #: Chave da coleção associada — a etapa está completa quando esta coleção
+    #: não tem pendência E está fechada (ou é a única obrigatória). Vazio = a
+    #: etapa não é de coleção (etapa de quesitos, por exemplo).
+    colecao: str = ""
+    #: True para a etapa dos quesitos da requisição.
+    quesitos: bool = False
+
+
+@dataclass(frozen=True)
 class Exame:
     """Uma entrada do registro: um tipo de laudo."""
 
@@ -149,6 +169,8 @@ class Exame:
     colecoes: tuple[Colecao, ...] = ()
     #: Grupos de campos administrativos que se repetem (peritos signatários).
     grupos_admin: tuple[GrupoAdmin, ...] = ()
+    #: Etapas da fase de conversa, em ordem. O roteiro que o agente segue.
+    etapas: tuple[Etapa, ...] = ()
     #: Ordem das seções do documento. Vazio = usa a ordem clássica do laudo de
     #: substância, para não quebrar o que já existe.
     secoes: tuple[Secao, ...] = ()

@@ -13,7 +13,7 @@ sugerem conteúdo.
 
 from __future__ import annotations
 
-from config.schema import CampoAdmin, Colecao, Exame, GrupoAdmin, Secao, Slot
+from config.schema import CampoAdmin, Colecao, Etapa, Exame, GrupoAdmin, Secao, Slot
 
 # --------------------------------------------------------------------------
 # Identificação de Substância (Química Forense)
@@ -304,6 +304,37 @@ _SECOES_IDENTIFICACAO = (
     Secao("assinatura"),
 )
 
+_ETAPAS_SUBSTANCIA = (
+    Etapa(
+        titulo="Identificação do material",
+        objetivo=(
+            "capturar, para cada porção de material examinado, a massa líquida "
+            "com unidade, a forma física, a coloração e o acondicionamento "
+            "(quantidade e tipo de invólucros)."
+        ),
+        colecao="materiais",
+    ),
+    Etapa(
+        titulo="Exames realizados",
+        objetivo=(
+            "para cada material, registrar os ensaios feitos, com o nome do "
+            "teste, o resultado (positivo, negativo ou inconclusivo) e — quando "
+            "positivo — a substância identificada."
+        ),
+        colecao="exames_realizados",
+    ),
+    Etapa(
+        titulo="Quesitos da requisição",
+        objetivo=(
+            "responder, um por um, os quesitos formulados pela autoridade. "
+            "Quando houver padrão do Instituto, oferecer para confirmação; "
+            "quando não houver, o perito escreve a resposta."
+        ),
+        quesitos=True,
+    ),
+)
+
+
 IDENTIFICACAO_SUBSTANCIA = Exame(
     id="identificacao_substancia",
     template="identificacao_substancia",
@@ -315,6 +346,7 @@ IDENTIFICACAO_SUBSTANCIA = Exame(
     ),
     campos_admin=_ADMIN_IDENTIFICACAO,
     colecoes=(_MATERIAL, _EXAMES_REALIZADOS),
+    etapas=_ETAPAS_SUBSTANCIA,
 )
 
 # --------------------------------------------------------------------------
@@ -544,6 +576,38 @@ _SECOES_VEICULAR = (
     Secao("apendice"),
 )
 
+_ETAPAS_VEICULAR = (
+    Etapa(
+        titulo="Identificação do veículo",
+        objetivo=(
+            "capturar os dados de identificação do veículo apresentado: tipo, "
+            "marca e modelo, cor, placa (se exibida) e os lacres que o "
+            "acompanham."
+        ),
+        colecao="veiculos",
+    ),
+    Etapa(
+        titulo="Exame dos sinais identificadores",
+        objetivo=(
+            "para cada sinal identificador examinado (NIV, Motor ou Placa), "
+            "registrar a numeração observada, o local da gravação, os "
+            "caracteres divergentes, o tratamento aplicado e o resultado da "
+            "revelação."
+        ),
+        colecao="exames_veiculo",
+    ),
+    Etapa(
+        titulo="Quesitos da requisição",
+        objetivo=(
+            "responder, um por um, os quesitos formulados pela autoridade. "
+            "Quando houver padrão do Instituto, oferecer para confirmação; "
+            "quando não houver, o perito escreve a resposta."
+        ),
+        quesitos=True,
+    ),
+)
+
+
 IDENTIFICACAO_VEICULAR = Exame(
     id="identificacao_veicular",
     template="identificacao_veicular",
@@ -555,6 +619,7 @@ IDENTIFICACAO_VEICULAR = Exame(
     campos_admin=_ADMIN_VEICULAR,
     grupos_admin=(_PERITOS,),
     colecoes=(_VEICULOS, _EXAMES_VEICULO),
+    etapas=_ETAPAS_VEICULAR,
     secoes=_SECOES_VEICULAR,
     imagens_em_apendice=True,
 )

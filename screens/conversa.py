@@ -33,7 +33,7 @@ def _inicia_conversa(exame: Exame) -> None:
     if st.session_state["mensagens"]:
         return
     st.session_state["mensagens"].append(
-        {"role": "assistant", "content": controlador.ABERTURA}
+        {"role": "assistant", "content": controlador.abertura(exame)}
     )
 
 

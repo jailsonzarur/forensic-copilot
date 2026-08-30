@@ -48,7 +48,10 @@ def _saida(**kwargs) -> dict:
 
 
 def _stub(saida: dict):
-    def orquestrador(exame, colecoes, fechadas, respostas, quesitos, historico, pend, mensagem):
+    def orquestrador(
+        exame, colecoes, fechadas, respostas, quesitos,
+        historico, pend, mensagem, etapa_corrente=None,
+    ):
         return saida, "<stub>"
     return orquestrador
 

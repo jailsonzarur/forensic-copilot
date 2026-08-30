@@ -406,9 +406,9 @@ INTENÇÃO — SOMENTE uma de:
 "conteudo", "encerrar", "mais_um", "confirmar", "responder_quesito", "pergunta", "fora_do_escopo", "sem_dado".
 
 FLUXO DA CONVERSA
-1. Ordem sugerida: preencha Material 1 e seus exames, DEPOIS Material 2. Mas se o perito falar fora de ordem, ACOMPANHE — não force voltar.
+1. As ETAPAS estão declaradas no bloco ETAPAS DEFINIDAS. É o roteiro que a ferramenta impõe — você executa em conversa livre, mas NÃO pula pra frente. Cada turno, fale do que a etapa ATUAL pede. Se o perito trouxer algo de outra etapa, anote (sempre respeitando o schema) e traga a conversa de volta ao objetivo da etapa atual.
 2. Coleção só encerra quando o perito diz explicitamente ("não", "só isso", "acabou"). Registre em "encerramentos_de_colecao" o token (nome da coleção, ou "colecao:indice_da_mae" pra vinculada).
-3. Depois de todos os materiais e exames encerrados, vá aos quesitos. Ofereça o padrão do Instituto quando existir (vem no bloco PADRÕES DE QUESITO). Se o perito disser "confirmo", grave em "confirmou_padrao_quesito". Se ele digitar sua resposta, grave em "resposta_quesito".
+3. Na etapa de quesitos, ofereça o padrão do Instituto quando existir (vem no bloco QUESITOS já resolvido com os dados do caso). Se o perito disser "confirmo", grave em "confirmou_padrao_quesito". Se ele digitar sua resposta, grave em "resposta_quesito".
 4. Só marque "propoe_completo": true quando NADA houver pendente e todos os quesitos tiverem resposta.
 
 MENSAGEM AO PERITO
@@ -492,6 +492,29 @@ def _descreve_historico(historico: list[dict]) -> str:
     return "\n".join(linhas)
 
 
+def _descreve_etapas(exame: Exame, etapa_corrente) -> str:
+    """Etapas declaradas do laudo + qual é a atual.
+
+    A ferramenta domina o roteiro; o agente executa cada etapa em conversa
+    livre. Não pular pra frente enquanto a etapa atual não estiver completa é
+    parte do contrato — o prompt reforça essa regra e o controlador calcula a
+    etapa determinísticamente a partir do estado.
+    """
+    if not exame.etapas:
+        return "ETAPAS: (não declaradas — siga a ordem das coleções do schema)"
+    linhas = ["ETAPAS DEFINIDAS (o roteiro é nosso; você executa em conversa livre):"]
+    for i, etapa in enumerate(exame.etapas, start=1):
+        marcador = "→ ATUAL" if etapa_corrente is not None and etapa is etapa_corrente else ""
+        linhas.append(f"  {i}. {etapa.titulo}: {etapa.objetivo} {marcador}".rstrip())
+    linhas.append(
+        "REGRA DE ETAPAS: fale SÓ do que a etapa atual pede. Só passe pra próxima "
+        "quando esta estiver completa (o gate é determinístico — a ferramenta "
+        "confere). Se o perito trouxer algo de outra etapa, anote e traga a "
+        "conversa de volta ao objetivo da etapa atual."
+    )
+    return "\n".join(linhas)
+
+
 def montar_prompt_agente(
     exame: Exame,
     colecoes: dict[str, list[dict]],
@@ -501,10 +524,13 @@ def montar_prompt_agente(
     historico: list[dict],
     pendencias_lista: list,
     mensagem: str,
+    etapa_corrente=None,
 ) -> str:
     """Prompt completo do turno: schema + estado + histórico + mensagem nova."""
     blocos = [
         f"TIPO DE LAUDO: {exame.label}",
+        "",
+        _descreve_etapas(exame, etapa_corrente),
         "",
         "SCHEMA — COLEÇÕES E SLOTS:",
         descreve_schema(exame),
@@ -535,6 +561,7 @@ def orquestrar(
     historico: list[dict],
     pendencias_lista: list,
     mensagem: str,
+    etapa_corrente=None,
 ) -> tuple[dict, str]:
     """Chama o agente único. Devolve (JSON parseado, bruto)."""
     return chamar_json(
@@ -542,6 +569,7 @@ def orquestrar(
         montar_prompt_agente(
             exame, colecoes, fechadas, respostas_quesitos,
             quesitos_da_requisicao, historico, pendencias_lista, mensagem,
+            etapa_corrente=etapa_corrente,
         ),
     )
 

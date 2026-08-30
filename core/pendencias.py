@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from config.schema import Colecao, Exame, Slot
+from config.schema import Colecao, Etapa, Exame, Slot
 from core.redacao import tem_redacao
 
 
@@ -97,3 +97,55 @@ def resumo(
                 if str(item.get(slot.chave, "")).strip():
                     preenchidos += 1
     return preenchidos, total
+
+
+def _etapa_de_colecao_completa(
+    colecao: Colecao,
+    colecoes: dict[str, list[dict]],
+    fechadas: list[str],
+) -> bool:
+    """A coleção-mãe desta etapa está completa: sem pendência e encerrada."""
+    if pendencias_da_colecao(colecao, colecoes.get(colecao.chave, []), so_conversa=True):
+        return False
+    # Vinculadas: fechadas por item da mãe. Só está completa quando todos os
+    # itens da mãe encerraram seus filhos.
+    if colecao.vinculada_a:
+        itens_mae = colecoes.get(colecao.vinculada_a, [])
+        for indice in range(1, len(itens_mae) + 1):
+            if f"{colecao.chave}:{indice}" not in fechadas:
+                return False
+        return True
+    return colecao.chave in fechadas
+
+
+def _etapa_de_quesitos_completa(
+    quesitos: list[str], respostas: dict[str, str]
+) -> bool:
+    from core import quesitos as camada1_quesitos
+    return not camada1_quesitos.pendentes(quesitos, respostas)
+
+
+def etapa_atual(
+    exame: Exame,
+    colecoes: dict[str, list[dict]],
+    fechadas: list[str],
+    quesitos: list[str],
+    respostas: dict[str, str],
+) -> Etapa | None:
+    """Primeira etapa não completa, na ordem declarada pelo tipo de laudo.
+
+    O agente é 100% conversacional, mas o roteiro é nosso: esta função calcula
+    determinísticamente onde a conversa está, para que o prompt possa avisar o
+    agente e ele não pule pra frente. Devolve None quando tudo está pronto.
+    """
+    for etapa in exame.etapas:
+        if etapa.quesitos:
+            if not _etapa_de_quesitos_completa(quesitos, respostas):
+                return etapa
+            continue
+        colecao = exame.colecao(etapa.colecao)
+        if colecao is None:
+            continue
+        if not _etapa_de_colecao_completa(colecao, colecoes, fechadas):
+            return etapa
+    return None
