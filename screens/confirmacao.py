@@ -535,12 +535,22 @@ def _painel_conferencia() -> bool:
 
 
 def _edita_quesitos(exame: Exame) -> None:
-    """Quesitos: a pergunta é da autoridade, a resposta é do perito."""
+    """Quesitos: a pergunta é da autoridade, a resposta é do perito.
+
+    Quando o perito escreveu a resposta na conversa (não confirmou padrão),
+    passa por uma formalização que só reformata sem acrescentar fato — mesma
+    regra da redação de procedimento. A original fica gravada e visível para
+    o perito poder reverter ou editar.
+    """
     perguntas = st.session_state["quesitos"]
     respostas = st.session_state["respostas_quesitos"]
     if not perguntas:
         st.warning("Nenhum quesito transcrito da requisição — o laudo ficaria sem responder nada.")
         return
+
+    # Cache: {numero: (bruta, formal)}. A bruta na chave garante que uma edição
+    # do perito para outro texto refaça a formalização.
+    formalizacoes = st.session_state.setdefault("formalizacoes_quesitos", {})
 
     montados = camada1_quesitos.montar(
         perguntas, st.session_state["colecoes"], st.session_state["derivados"], respostas
@@ -548,10 +558,34 @@ def _edita_quesitos(exame: Exame) -> None:
     for quesito in montados:
         st.markdown(f"**{quesito.numero} – {quesito.pergunta}**")
         chave = f"quesito_resposta_{quesito.numero}"
+        bruta_perito = str(respostas.get(quesito.numero, "")).strip()
+        vale_formalizar = (
+            bruta_perito
+            and bruta_perito != camada1_quesitos.PADRAO_ACEITO
+            and not quesito.padrao_conhecido
+        )
+        formal = ""
+        if vale_formalizar:
+            cache = formalizacoes.get(quesito.numero)
+            if cache and cache[0] == bruta_perito:
+                _, formal = cache
+            else:
+                with st.spinner(f"Formalizando resposta ao quesito {quesito.numero}…"):
+                    try:
+                        formal, _ = redacao.formalizar_resposta_quesito(
+                            quesito.pergunta, bruta_perito
+                        )
+                    except Exception as erro:
+                        formal = bruta_perito
+                        st.warning(
+                            f"Não consegui formalizar. Sua resposta segue como escrita. "
+                            f"Detalhe: {erro}"
+                        )
+                formalizacoes[quesito.numero] = (bruta_perito, formal)
+
         vigente = st.session_state.get(chave)
-        automatica = quesito.resposta if not respostas.get(quesito.numero) else ""
         if vigente is None:
-            st.session_state[chave] = respostas.get(quesito.numero) or quesito.resposta
+            st.session_state[chave] = formal or respostas.get(quesito.numero) or quesito.resposta
         texto = st.text_area(
             f"Resposta ao quesito {quesito.numero}",
             key=chave,
@@ -561,6 +595,11 @@ def _edita_quesitos(exame: Exame) -> None:
         respostas[quesito.numero] = texto
         if quesito.padrao_conhecido:
             st.caption("Padrão de resposta transcrito de laudo real.")
+        elif vale_formalizar and formal and formal != bruta_perito:
+            st.caption(
+                f"Formalizei sua resposta pra ficar no tom do laudo. "
+                f"Original: «{bruta_perito}». Edite se algo divergiu."
+            )
         else:
             st.caption(
                 "Quesito sem padrão transcrito — esta resposta é sua. "

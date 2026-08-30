@@ -67,3 +67,45 @@ def redigir(nome_teste: str, substancia: str, procedimento: str) -> tuple[dict, 
         },
         bruto,
     )
+
+
+SISTEMA_QUESITO = """Você formaliza a resposta do perito criminal a um quesito da requisição.
+
+REGRAS ABSOLUTAS
+1. Use SOMENTE o que o perito escreveu. Não acrescente fato, dado, exame, seção
+   ou conclusão que ele não citou.
+2. A SUBSTÂNCIA da resposta não muda: se ele negou, a formalização nega; se
+   afirmou, afirma; se disse "não se aplica", a formalização diz o mesmo.
+3. Não introduza remissão a "item X" ou "seção Y" que ele não usou.
+4. Não conclua além do que ele concluiu — em particular, não diga que "foi
+   comprovado" ou "restou demonstrado" o que ele não afirmou.
+5. Português formal, impessoal, no pretérito quando couber. Uma frase, no máximo
+   duas.
+
+FORMATO DA SAÍDA
+Responda APENAS com um objeto JSON: {"resposta": "<resposta formal>"}"""
+
+
+def formalizar_resposta_quesito(pergunta: str, resposta_bruta: str) -> tuple[str, str]:
+    """(resposta formal, resposta bruta original).
+
+    Em caso de falha (rede, JSON inválido, resposta vazia), devolve a bruta
+    inalterada — o perito revê tudo na tela de confirmação de qualquer jeito.
+    """
+    resposta_bruta = (resposta_bruta or "").strip()
+    if not resposta_bruta:
+        return ("", "")
+    instrucao = "\n".join(
+        [
+            f"QUESITO: {pergunta.strip()}",
+            "",
+            "RESPOSTA DO PERITO (COMO ELE ESCREVEU):",
+            resposta_bruta,
+        ]
+    )
+    try:
+        dados, _ = chamar_json(SISTEMA_QUESITO, instrucao, temperatura=0.2)
+        formal = str(dados.get("resposta", "")).strip()
+        return (formal or resposta_bruta, resposta_bruta)
+    except Exception:
+        return (resposta_bruta, resposta_bruta)
