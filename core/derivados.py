@@ -260,16 +260,29 @@ def referencias(colecoes: dict[str, list[dict]]) -> list[str]:
     return lista
 
 
-def legenda(material: dict, indice_material: int, numero_imagem: int) -> str:
-    """Legenda da foto, como o laudo real escreve.
+def legenda(
+    material: dict,
+    indice_material: int,
+    numero_imagem: int,
+    exame: Exame | None = None,
+) -> str:
+    """Legenda da foto, como o laudo real do TIPO de exame escreve.
 
     O laudo SB 1252/2019 usa uma legenda única e genérica — "Foto do material
     periciado" — mesmo com dois materiais. O briefing menciona um formato
     descritivo ("Imagem 01: Fotografia dos invólucros...") que deve vir de outro
-    dos quatro laudos; enquanto ele não chega, vale o que está transcrito. O
-    perito reescreve na confirmação.
+    dos quatro laudos; enquanto ele não chega, vale o que está transcrito.
+
+    Quando o template do exame sabe montar a sua, ele monta — é o caso do laudo
+    de danos, cuja legenda numera a imagem e deixa a descrição para o perito.
+    Em qualquer caso o texto é rascunho: o perito reescreve na confirmação.
     """
-    return boilerplate.LEGENDA_FOTO
+    from core import templates as texto_fixo
+
+    proprio = getattr(texto_fixo.boilerplate(exame), "legenda", None)
+    if proprio is not None:
+        return proprio(material, indice_material, numero_imagem)
+    return texto_fixo.texto(exame, "LEGENDA_FOTO", boilerplate.LEGENDA_FOTO)
 
 
 def referencia_imagem(numero_imagem: int) -> str:
@@ -345,6 +358,10 @@ def montar(exame: Exame, colecoes: dict[str, list[dict]]) -> list[Derivado]:
     chave_objeto = objeto.chave if objeto is not None else "materiais"
     rotulo_objeto = objeto.label_singular if objeto is not None else "Material"
     proprio = getattr(texto_fixo.boilerplate(exame), "descricao_objeto", None)
+    de_substancia = bool(
+        texto_fixo.texto(exame, "NATUREZA_POR_SUBSTANCIA", {})
+        or texto_fixo.texto(exame, "PROSCRICAO_POR_SUBSTANCIA", {})
+    )
 
     for indice, item in enumerate(colecoes.get(chave_objeto, []), start=1):
         valor = proprio(item, {}) if proprio is not None else descricao_material(item)
@@ -358,15 +375,18 @@ def montar(exame: Exame, colecoes: dict[str, list[dict]]) -> list[Derivado]:
             )
         )
 
-    campos.append(
-        Derivado(
-            chave=CHAVE_EXAMES,
-            label="Exames realizados (texto)",
-            valor=texto_exames(colecoes),
-            origem="ensaios registrados e o material de cada um",
-            ajuda="Detalhe de método que só você sabe deve ser acrescentado aqui.",
+    # A narrativa de ensaios só existe onde o laudo tem seção de exames sobre
+    # uma coleção vinculada. Num laudo de danos ela sairia vazia e confundiria.
+    if colecoes.get("exames_realizados"):
+        campos.append(
+            Derivado(
+                chave=CHAVE_EXAMES,
+                label="Exames realizados (texto)",
+                valor=texto_exames(colecoes),
+                origem="ensaios registrados e o material de cada um",
+                ajuda="Detalhe de método que só você sabe deve ser acrescentado aqui.",
+            )
         )
-    )
 
     texto, origem = conclusao(colecoes)
     campos.append(
@@ -382,14 +402,18 @@ def montar(exame: Exame, colecoes: dict[str, list[dict]]) -> list[Derivado]:
             ),
         )
     )
-    campos.append(
-        Derivado(
-            chave=CHAVE_NATUREZA,
-            label="Quesito 01 — natureza do material",
-            valor=natureza(colecoes),
-            origem="substâncias com resultado positivo",
+    # Natureza e proscrição são do laudo de substância: pedi-las num laudo de
+    # danos ou veicular seria campo fantasma, e campo fantasma vazio acaba
+    # virando pendência que ninguém sabe resolver.
+    if de_substancia:
+        campos.append(
+            Derivado(
+                chave=CHAVE_NATUREZA,
+                label="Quesito 01 — natureza do material",
+                valor=natureza(colecoes),
+                origem="substâncias com resultado positivo",
+            )
         )
-    )
     campos.append(
         Derivado(
             chave=CHAVE_PAGINAS,
@@ -403,13 +427,14 @@ def montar(exame: Exame, colecoes: dict[str, list[dict]]) -> list[Derivado]:
             ),
         )
     )
-    campos.append(
-        Derivado(
-            chave=CHAVE_PROSCRICAO,
-            label="Quesito 03 — texto de proscrição",
-            valor=proscricao(colecoes),
-            origem="texto legal transcrito do laudo real, por substância",
-            ajuda="Substância sem texto transcrito aparece como PENDENTE.",
+    if de_substancia:
+        campos.append(
+            Derivado(
+                chave=CHAVE_PROSCRICAO,
+                label="Quesito 03 — texto de proscrição",
+                valor=proscricao(colecoes),
+                origem="texto legal transcrito do laudo real, por substância",
+                ajuda="Substância sem texto transcrito aparece como PENDENTE.",
+            )
         )
-    )
     return campos

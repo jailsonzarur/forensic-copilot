@@ -26,7 +26,7 @@ from core.state import (
     exame_atual,
     ir_para,
 )
-from templates.identificacao_substancia import boilerplate
+from core import templates as texto_fixo
 
 
 def _edita_admin(exame: Exame) -> None:
@@ -67,8 +67,13 @@ def _edita_admin(exame: Exame) -> None:
 def _escolhe_referencia(slot, indice: int, item: dict) -> None:
     """Referência entre coleções: quem aponta é o perito, não o extrator."""
     alvo = st.session_state["colecoes"].get(slot.referencia_colecao, [])
+    # O rótulo do item apontado é do tipo de exame: Material, Veículo, Local.
+    exame = exame_atual()
+    apontada = exame.colecao(slot.referencia_colecao) if exame is not None else None
+    rotulo = apontada.label_singular if apontada is not None else "Item"
+
     if not alvo:
-        st.caption("Nenhum material foi descrito ainda.")
+        st.caption(f"Nenhum {rotulo.lower()} foi descrito ainda.")
         return
     opcoes = [""] + [str(i) for i in range(1, len(alvo) + 1)]
     atual = str(item.get(slot.chave, "")).strip()
@@ -77,12 +82,12 @@ def _escolhe_referencia(slot, indice: int, item: dict) -> None:
         slot.label + " *",
         options=opcoes,
         index=posicao,
-        format_func=lambda v: f"Material {v}" if v else "— selecione —",
+        format_func=lambda v: f"{rotulo} {v}" if v else "— selecione —",
         key=f"conf_ref_{slot.chave}_{indice}",
     )
     item[slot.chave] = escolhido
     if not escolhido:
-        st.caption("⚠️ Diga a qual material este exame se aplica.")
+        st.caption(f"⚠️ Diga a qual {rotulo.lower()} este item se refere.")
 
 
 def _edita_item(colecao: Colecao, indice: int, item: dict) -> None:
@@ -158,7 +163,7 @@ def _edita_imagens(colecao: Colecao, indice: int, item: dict) -> None:
         with coluna_foto:
             st.image(img["dados"], width="stretch")
         with coluna_texto:
-            sugerida = camada3.legenda(item, indice, numero)
+            sugerida = camada3.legenda(item, indice, numero, exame_atual())
             atual = img["legenda"] or sugerida
             nova = st.text_area(
                 "Legenda",
@@ -229,7 +234,7 @@ def _edita_derivados(exame: Exame) -> None:
 
 def _lacunas_institucionais(exame: Exame) -> list[dict]:
     """Redações que faltam para este laudo e que a biblioteca pode aprender."""
-    from templates.identificacao_substancia import boilerplate as texto_fixo
+    from templates.identificacao_substancia import boilerplate as texto_substancia
 
     colecoes = st.session_state["colecoes"]
     lacunas: list[dict] = []
@@ -239,8 +244,8 @@ def _lacunas_institucionais(exame: Exame) -> list[dict]:
         substancia = str(item.get("substancia", "")).strip()
         if not nome:
             continue
-        chave_par = (texto_fixo.normaliza(nome), texto_fixo.chave_substancia(substancia))
-        if texto_fixo.RESULTADOS_POR_ENSAIO.get(chave_par):
+        chave_par = (texto_substancia.normaliza(nome), texto_substancia.chave_substancia(substancia))
+        if texto_substancia.RESULTADOS_POR_ENSAIO.get(chave_par):
             continue
         identificador = biblioteca.chave(nome, substancia)
         if biblioteca.buscar("resultado", identificador):
@@ -269,26 +274,26 @@ def _lacunas_institucionais(exame: Exame) -> list[dict]:
         substancia = str(item.get("substancia", "")).strip()
         if not substancia:
             continue
-        chave_sub = texto_fixo.chave_substancia(substancia)
+        chave_sub = texto_substancia.chave_substancia(substancia)
         identificador = biblioteca.chave(substancia)
         for tipo, rotulo, fonte, ajuda in (
             (
                 "proscricao",
                 f"Quesito 03 — texto legal de {substancia}",
-                texto_fixo.PROSCRICAO_POR_SUBSTANCIA,
+                texto_substancia.PROSCRICAO_POR_SUBSTANCIA,
                 "Texto de proscrição: portaria, lista e condição legal da substância.",
             ),
             (
                 "natureza",
                 f"Quesito 01 — construção da resposta para {substancia}",
-                texto_fixo.NATUREZA_POR_SUBSTANCIA,
+                texto_substancia.NATUREZA_POR_SUBSTANCIA,
                 "Use {forma} onde entra a forma do material. Ex.: "
                 "'A substância {forma} trata-se de ...'",
             ),
             (
                 "referencia",
                 f"Seção 6 — referência bibliográfica de {substancia}",
-                texto_fixo.REFERENCIAS_POR_SUBSTANCIA,
+                texto_substancia.REFERENCIAS_POR_SUBSTANCIA,
                 "Obra ou manual que embasa o exame desta substância. Só as "
                 "referências das substâncias encontradas vão ao laudo.",
             ),
@@ -714,7 +719,7 @@ def render() -> None:
     for impedimento in impedimentos:
         st.error(impedimento)
 
-    blocos = boilerplate.blocos_pendentes()
+    blocos = texto_fixo.boilerplate(exame).blocos_pendentes()
     if blocos:
         st.warning(
             "O texto institucional do laudo ainda não foi transcrito dos laudos "

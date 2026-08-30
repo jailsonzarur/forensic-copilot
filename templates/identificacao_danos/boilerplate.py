@@ -314,3 +314,15 @@ def subsecoes(colecoes: dict, admin: dict) -> list[dict]:
         {"titulo": TITULO_LOCAL, "texto": descricao_objeto(local, admin)},
         {"titulo": TITULO_CONSTATACOES, "texto": texto_constatacoes(colecoes)},
     ]
+
+
+def legenda(item: dict, indice_item: int, numero_imagem: int) -> str:
+    """Legenda da foto, no formato dos laudos reais: "IMAGEM 01: ...".
+
+    A NUMERAÇÃO é automática — é contagem, e contar imagens não é achado. A
+    DESCRIÇÃO fica para o perito escrever na confirmação: num laudo de danos a
+    legenda é o próprio achado ("Mostrando a lâmpada do teto da cela,
+    danificada"), e afirmar dano a partir da foto seria inferência sobre prova
+    física, que esta ferramenta não faz nem com visão de modelo nem por regra.
+    """
+    return f"IMAGEM {numero_imagem:02d}: "

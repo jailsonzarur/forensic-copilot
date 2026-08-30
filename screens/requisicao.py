@@ -17,7 +17,7 @@ from config.schema import Exame
 from core import requisicao as leitor
 from core.llm import chave_configurada
 from core.state import TELA_ADMIN, TELA_SELECAO, exame_atual, ir_para
-from templates.identificacao_substancia import boilerplate
+from core import templates as texto_fixo
 
 
 def _aviso_de_confianca(leitura: leitor.Leitura) -> None:
@@ -77,7 +77,7 @@ def _campos_propostos(exame: Exame, leitura: leitor.Leitura) -> dict[str, str]:
     return aceitos
 
 
-def _quesitos_propostos(leitura: leitor.Leitura) -> list[str]:
+def _quesitos_propostos(leitura: leitor.Leitura, exame: Exame) -> list[str]:
     st.subheader("Quesitos formulados pela autoridade")
     st.caption(
         "São as perguntas que o laudo tem que responder. Copie do documento "
@@ -98,9 +98,9 @@ def _quesitos_propostos(leitura: leitor.Leitura) -> list[str]:
         )
         if texto.strip():
             perguntas.append(texto.strip())
-            if not leitor.boilerplate.RESPOSTAS_CONHECIDAS.get(
-                boilerplate.normaliza(texto.strip())
-            ):
+            conhecidas = texto_fixo.texto(exame, "RESPOSTAS_CONHECIDAS", {})
+            normaliza = texto_fixo.boilerplate(exame).normaliza
+            if not conhecidas.get(normaliza(texto.strip())):
                 st.caption(
                     "Sem padrão de resposta transcrito de laudo real — você "
                     "responde este quesito na confirmação."
@@ -115,7 +115,9 @@ def _sem_documento(exame: Exame) -> None:
         "confira contra o seu papel antes de seguir."
     )
     if st.button("Preencher na mão, sem anexar"):
-        st.session_state["quesitos"] = list(boilerplate.QUESITOS_DA_REQUISICAO_MODELO)
+        st.session_state["quesitos"] = list(
+            texto_fixo.texto(exame, "QUESITOS_DA_REQUISICAO_MODELO", ())
+        )
         st.session_state["requisicao"] = {"origem": "não anexada", "texto": ""}
         ir_para(TELA_ADMIN)
         st.rerun()
@@ -195,7 +197,7 @@ def render() -> None:
             quantidade = item.get("quantidade") or "?"
             st.write(f"- **{quantidade}** — {item['texto']}")
 
-    perguntas = _quesitos_propostos(leitura)
+    perguntas = _quesitos_propostos(leitura, exame)
 
     st.divider()
     esquerda, direita = st.columns([1, 1])

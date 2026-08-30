@@ -150,6 +150,7 @@ verificacao/
   referencias.py           # base da seção 6 e sua seleção (sem API)
   veicular.py              # laudo veicular contra os reais (sem API)
   danos.py                 # laudo de danos contra os reais (sem API)
+  danos_ponta_a_ponta.py   # o laudo de danos pelas TELAS reais (sem API)
   biblioteca.py            # redação aprendida e pendências (sem API)
   tela_requisicao.py       # a tela do anexo pela UI real (sem API)
   requisicao.py            # consenso e descarte de leitura (sem API)
@@ -269,6 +270,23 @@ Três pontos em que a transcrição se afasta do papel, todos anotados no cabeç
 do template: a grafia "PARÍCIA" foi corrigida; a concordância de "subscrit_",
 que os dois originais invertem, passou a acompanhar o artigo do documento; e a
 abertura das constatações ficou sem o "supostamente" que só um dos laudos traz.
+
+**A legenda numera, o perito descreve.** Numa foto de danos a legenda É o
+achado — "Mostrando a lâmpada do teto da cela, danificada" afirma que houve
+dano. Descrevê-la a partir da imagem, por visão de modelo ou por regra, seria
+inferência sobre prova física. Então a ferramenta preenche só o que é contagem
+("IMAGEM 01: ") e o perito completa. Decidido com o perito responsável em
+2026-08-30, depois de a visão computacional ter sido cogitada e descartada por
+este motivo.
+
+**Fechar o tipo custou menos código novo que desacoplamento.** O que impedia o
+laudo de danos de rodar não era o montador — era a UI ainda presumir substância:
+a tela de requisição propunha os quesitos de substância em QUALQUER laudo, o
+seletor de referência dizia "Material 1" onde era "Local 1", a legenda saía com
+marcador cru, e `derivados.montar` pedia "natureza do material" e "texto de
+proscrição" num laudo que não tem substância nenhuma. Nada disso aparecia nos
+roteiros existentes, porque nenhum deles abria as TELAS com um tipo que não
+fosse o de substância — `verificacao/danos_ponta_a_ponta.py` existe para isso.
 
 **Pendente:** derivar a resposta do quesito do meio/instrumento a partir de
 `meio_instrumento` (hoje o perito a escreve na conversa) — mesma pergunta em
@@ -460,6 +478,7 @@ cp .env.example .env   # preencher OPENAI_API_KEY
 .venv/bin/python -m verificacao.confirmacao  # sem API, pela UI real
 .venv/bin/python -m verificacao.documento    # sem API, contra o laudo real
 .venv/bin/python -m verificacao.danos        # sem API, contra os laudos reais
+.venv/bin/python -m verificacao.danos_ponta_a_ponta   # sem API, pelas telas
 .venv/bin/python -m verificacao.fidelidade   # com API real, custa chamadas
 ```
 

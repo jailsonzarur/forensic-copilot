@@ -80,8 +80,11 @@ def render() -> None:
             ("numero_demanda", "Demanda"),
         ):
             st.write(f"**{rotulo}:** {admin.get(chave, '') or '—'}")
-        st.write("**Materiais**")
-        for indice, material in enumerate(colecoes.get("materiais", []), start=1):
+        objeto = exame.colecao_objeto() if exame is not None else None
+        st.write(f"**{objeto.label_plural if objeto is not None else 'Materiais'}**")
+        for indice, _ in enumerate(
+            colecoes.get(objeto.chave if objeto is not None else "materiais", []), start=1
+        ):
             chave = f"descricao_material_{indice}"
             st.write(f"{chr(ord('a') + indice - 1)}) " + (derivados.get(chave) or ""))
         st.write("**Conclusão**")
