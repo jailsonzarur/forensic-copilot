@@ -10,6 +10,7 @@ import streamlit as st
 
 from config.exams import obter_exame
 from config.schema import Exame
+from core import persistencia
 
 TELA_SELECAO = "selecao"
 TELA_REQUISICAO = "requisicao"
@@ -46,6 +47,10 @@ def init_state() -> None:
     st.session_state.setdefault("derivados", {})  # camada 3, confirmada pelo perito
     st.session_state.setdefault("derivados_origem", {})  # último valor vindo da regra
     st.session_state.setdefault("derivados_recalcular", [])  # pedidos de recálculo
+    # Identidade do rascunho em disco. Nasce com a sessão para que o laudo
+    # sobreviva a fechar a aba desde a primeira tecla, não só depois de salvo.
+    st.session_state.setdefault("laudo_id", persistencia.novo_id())
+    st.session_state.setdefault("estado_salvo", "")
 
 
 def ir_para(tela: str) -> None:
@@ -67,6 +72,40 @@ def exame_atual() -> Exame | None:
     return obter_exame(exame_id) if exame_id else None
 
 
+def salvar_rascunho() -> None:
+    """Grava o laudo em disco, mas só quando algo mudou.
+
+    Chamada a cada execução do script. O Streamlit re-executa tudo a cada
+    clique, então a assinatura do estado evita reescrever o mesmo arquivo
+    dezenas de vezes. Falha de disco não pode derrubar a tela: o perito perde a
+    rede, não o trabalho da sessão.
+    """
+    if not st.session_state.get("exame_id"):
+        return  # nada a salvar antes de o perito escolher o tipo de exame
+    assinatura = persistencia.assinatura_do_estado(st.session_state)
+    if not assinatura or assinatura == st.session_state.get("estado_salvo"):
+        return
+    try:
+        persistencia.salvar(st.session_state["laudo_id"], st.session_state)
+        st.session_state["estado_salvo"] = assinatura
+    except OSError:
+        pass
+
+
+def retomar_rascunho(laudo_id: str) -> bool:
+    """Devolve um laudo salvo ao ``session_state``. False se não deu."""
+    estado = persistencia.carregar(laudo_id)
+    if estado is None:
+        return False
+    limpar_laudo()
+    for chave, valor in estado.items():
+        if valor is not None:
+            st.session_state[chave] = valor
+    st.session_state["laudo_id"] = laudo_id
+    st.session_state["estado_salvo"] = persistencia.assinatura_do_estado(st.session_state)
+    return True
+
+
 def limpar_laudo() -> None:
     """Descarta os dados do laudo, preservando a tela atual."""
     st.session_state["admin"] = {}
@@ -82,6 +121,9 @@ def limpar_laudo() -> None:
     st.session_state["derivados"] = {}
     st.session_state["derivados_origem"] = {}
     st.session_state["derivados_recalcular"] = []
+    # Um laudo novo é outro rascunho: o anterior fica salvo em disco, intacto.
+    st.session_state["laudo_id"] = persistencia.novo_id()
+    st.session_state["estado_salvo"] = ""
 
 
 def indice_da_tela(tela: str) -> int:

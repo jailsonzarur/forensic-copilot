@@ -20,6 +20,7 @@ from core.state import (
     init_state,
     ir_para,
     limpar_laudo,
+    salvar_rascunho,
 )
 from screens import admin, confirmacao, conversa, documento, requisicao, selecao
 
@@ -76,6 +77,9 @@ def main() -> None:
             st.rerun()
         return
     render()
+    # Depois de desenhar a tela, o que o perito ditou já está no estado: é a
+    # hora certa de gravar. Antes da tela, gravaria a versão velha.
+    salvar_rascunho()
 
 
 if __name__ == "__main__":

@@ -11,6 +11,15 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import os as _os
+import tempfile as _tempfile
+
+# Este roteiro abre o app de verdade, e o app salva rascunho sozinho. Sem isto,
+# rodar a verificação encheria a lista de laudos do perito com dados de teste.
+_os.environ.setdefault(
+    "FORENSIC_RASCUNHOS", _tempfile.mkdtemp(prefix="forensic-rascunhos-")
+)
+
 from streamlit.testing.v1 import AppTest
 
 from core import requisicao as leitor

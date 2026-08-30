@@ -127,6 +127,7 @@ core/
   referencias.py           # base bibliográfica da seção 6
   conferencia.py           # requisitado × examinado (cadeia de custódia)
   numeros.py               # extenso de números, massas e datas
+  persistencia.py          # rascunho em disco: o laudo sobrevive à aba
   derivados.py             # camada 3: descrições, conclusão, quesitos
   documento.py             # montagem do .docx
   llm.py                   # cliente OpenAI + parsing JSON defensivo
@@ -151,6 +152,7 @@ verificacao/
   veicular.py              # laudo veicular contra os reais (sem API)
   danos.py                 # laudo de danos contra os reais (sem API)
   danos_ponta_a_ponta.py   # o laudo de danos pelas TELAS reais (sem API)
+  persistencia.py          # o laudo sobrevive a fechar a aba (sem API)
   biblioteca.py            # redação aprendida e pendências (sem API)
   tela_requisicao.py       # a tela do anexo pela UI real (sem API)
   requisicao.py            # consenso e descarte de leitura (sem API)
@@ -479,6 +481,7 @@ cp .env.example .env   # preencher OPENAI_API_KEY
 .venv/bin/python -m verificacao.documento    # sem API, contra o laudo real
 .venv/bin/python -m verificacao.danos        # sem API, contra os laudos reais
 .venv/bin/python -m verificacao.danos_ponta_a_ponta   # sem API, pelas telas
+.venv/bin/python -m verificacao.persistencia  # sem API, rascunho em disco
 .venv/bin/python -m verificacao.fidelidade   # com API real, custa chamadas
 ```
 
@@ -552,6 +555,39 @@ respondeu 404 a todo acesso automatizado e os catálogos da ONU responderam 403
 
 Substância sem referência confirmada vira pendência visível, mesmo havendo
 candidata para ela.
+
+## O laudo sobrevive a fechar a aba
+
+O estado inteiro vivia só no `st.session_state`, que morre quando a aba fecha,
+a página recarrega ou o servidor reinicia. Para quem trabalha em campo, com
+rede instável, isso significava **recomeçar o laudo do zero** — e recomeçar é a
+chance de o perito digitar diferente da segunda vez.
+
+`core/persistencia.py` grava o laudo em `rascunhos/<id>/`, sozinho, a cada
+passo. A tela de seleção lista o que está em andamento e o perito continua de
+onde parou. Decisões que valem registro:
+
+- **Salva só quando muda.** O Streamlit re-executa o script a cada clique;
+  `assinatura_do_estado` evita reescrever o mesmo arquivo dezenas de vezes.
+- **Escrita atômica** (arquivo temporário e `os.replace`): queda no meio da
+  gravação não deixa rascunho pela metade — o anterior continua íntegro.
+- **Lista fechada de chaves.** O `session_state` também guarda o estado interno
+  de cada widget (`conf_admin_numero_laudo`); restaurar isso brigaria com os
+  próprios widgets ao remontar a tela.
+- **Fotos fora do JSON**, uma por arquivo, nomeadas pela assinatura de conteúdo
+  que a confirmação já calcula — conteúdo igual não é regravado.
+- **Falhar salvando não derruba a tela.** O perito perde a rede, não o trabalho
+  da sessão.
+- **Arquivo ilegível devolve `None`**, e a tela de seleção continua abrindo.
+
+**O rascunho contém dado pessoal** — envolvido, procedimento, endereço,
+fotografias. Por isso `rascunhos/` entrou no `.gitignore` ao lado de
+`referencia/`, nada sai da máquina, e descartar é botão do perito, nunca
+automático.
+
+A pasta é configurável por `FORENSIC_RASCUNHOS`, e os roteiros que abrem o app
+de verdade apontam para um diretório temporário: uma verificação que apagasse
+rascunho de perito seria pior que verificação nenhuma.
 
 ## O que a ferramenta NÃO julga
 
