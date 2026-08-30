@@ -142,11 +142,14 @@ screens/
   documento.py             # tela 5 — minuta e download
 templates/
   identificacao_substancia/boilerplate.py   # CAMADA 2 (texto fixo)
+  identificacao_veicular/boilerplate.py     # CAMADA 2 (texto fixo)
+  identificacao_danos/boilerplate.py        # CAMADA 2 (texto fixo)
 referencia/                # laudos reais; fora do git (dados pessoais)
 verificacao/
   fluxo.py                 # controlador, com extrator falso (sem API)
   referencias.py           # base da seção 6 e sua seleção (sem API)
   veicular.py              # laudo veicular contra os reais (sem API)
+  danos.py                 # laudo de danos contra os reais (sem API)
   biblioteca.py            # redação aprendida e pendências (sem API)
   tela_requisicao.py       # a tela do anexo pela UI real (sem API)
   requisicao.py            # consenso e descarte de leitura (sem API)
@@ -226,6 +229,50 @@ Um segundo laudo não podia existir enquanto o montador soubesse o que é
 
 Os padrões de resposta dos quesitos também são por exame: "Vide item 2. EXAMES"
 existe no veicular e não no de substância.
+
+## Terceiro exame: Verificação de Danos (Perícias Externas)
+
+Transcrito dos laudos reais das demandas 00016037-31 (cela de presídio
+arrombada) e 00016160-22 (ponte ferroviária pichada). Estrutura:
+preâmbulo → 1. HISTÓRICO → 2. DO OBJETIVO DA PERÍCIA → 3. DOS EXAMES
+(3.1 Do Local, 3.2 Das Constatações) → imagens no corpo → 4. CONCLUSÃO →
+quesitos → fecho → assinatura.
+
+Foi o primeiro tipo a entrar **sem tocar em `core/conversa.py` nem em
+`core/extracao.py`** — o agente único e as etapas declaradas já bastavam. O que
+o registro passou a declarar:
+
+- **duas subseções fixas** em `3. DOS EXAMES` (`boiler.subsecoes`), contra uma
+  por item examinado no veicular;
+- **`campos_extras`**: marcadores que só um laudo usa. Aqui a concordância do
+  preâmbulo sai do artigo que o perito escreveu — "do ofício … datado" contra
+  "da requisição … datada". É gramática sobre o texto dele, não achado;
+- **`Secao("imagens")`**: fotos no corpo onde o tipo mandar, em vez de presas à
+  seção de descrição do objeto;
+- **`RODAPE_MATRICULA`**: os laudos de danos abreviam "Mat.:".
+
+E `Exame.colecao_objeto()` acabou com o `"materiais"` presumido em
+`core/derivados.py`, `core/documento.py` e `screens/confirmacao.py`: a coleção
+do objeto examinado é a primeira que não pende de outra — material, veículo ou
+local.
+
+**Os dois laudos são do mesmo perito**, como a camada 2 de substância nasceu de
+um laudo só. Aceito pelo perito responsável em 2026-08-30.
+
+**Padrão de resposta só onde é remissão.** "Vide tópico 3. DOS EXAMES, item
+3.2", "Vide bojo do presente laudo" e "Prejudicada" entram em
+`RESPOSTAS_CONHECIDAS`. `"Houve dano(s)?" → "sim"` e `"Houve emprego de
+substância inflamável?" → "não"` **não entram**: são o achado do caso, e
+oferecê-los prontos plantaria no laudo uma conclusão que o perito não relatou.
+
+Três pontos em que a transcrição se afasta do papel, todos anotados no cabeçalho
+do template: a grafia "PARÍCIA" foi corrigida; a concordância de "subscrit_",
+que os dois originais invertem, passou a acompanhar o artigo do documento; e a
+abertura das constatações ficou sem o "supostamente" que só um dos laudos traz.
+
+**Pendente:** derivar a resposta do quesito do meio/instrumento a partir de
+`meio_instrumento` (hoje o perito a escreve na conversa) — mesma pergunta em
+aberto do laudo veicular.
 
 ## Segundo exame: Identificação Veicular
 
@@ -412,6 +459,7 @@ cp .env.example .env   # preencher OPENAI_API_KEY
 .venv/bin/python -m verificacao.requisicao   # sem API, consenso e descarte
 .venv/bin/python -m verificacao.confirmacao  # sem API, pela UI real
 .venv/bin/python -m verificacao.documento    # sem API, contra o laudo real
+.venv/bin/python -m verificacao.danos        # sem API, contra os laudos reais
 .venv/bin/python -m verificacao.fidelidade   # com API real, custa chamadas
 ```
 
