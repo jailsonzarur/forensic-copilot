@@ -227,8 +227,223 @@
         "pendencias_no_documento": [],
         "imagens_embutidas": 4
       }
+    },
+    "substancia-00086731-52": {
+      "apelido": "substancia-00086731-52",
+      "exame": "identificacao_substancia",
+      "descricao": "cocaína em invólucro único, com Scott e CG/EM (laudo inédito)",
+      "requisicao": {
+        "arquivo": "Demanda00086731-52_REQUISIÇÃO.pdf",
+        "origem_leitura": "OCR do documento digitalizado",
+        "nivel": "ocr",
+        "campos_extraidos": 8,
+        "quesitos_extraidos": 5,
+        "origem_quesitos": "requisição",
+        "descartados": []
+      },
+      "conversa": {
+        "turnos": [
+          {
+            "perito": "O material é uma substância sólida petriforme, parcialmente fragmentada, de cor branca. Massa líquida de 103,4 gramas. Veio em um invólucro plástico só.",
+            "assistente": "Registrei o Material 1: substância sólida petriforme, parcialmente fragmentada, cor branca; massa líquida 103,4 gramas; acondicionada em 1 invólucro plástico. Agora, quais exames/ensaios foram realizados nesse material (nome do teste) e qual foi o resultado (positivo, negativo ou inconclusivo)?",
+            "gravou": [
+              "Material 1 — Massa líquida: 103,4",
+              "Material 1 — Unidade da massa: gramas",
+              "Material 1 — Forma / tipo físico: substância sólida petriforme, parcialmente fragmentada",
+              "Material 1 — Coloração: branca",
+              "Material 1 — Quantidade de invólucros: 1",
+              "Material 1 — Tipo de acondicionamento: invólucro plástico"
+            ],
+            "recusou": [],
+            "erro": ""
+          },
+          {
+            "perito": "Fiz o ensaio de Scott modificado e deu positivo.",
+            "assistente": "Registrei no Material 1: ensaio de Scott modificado, resultado positivo. Qual foi a substância identificada nesse ensaio (substância)? Se houver outros ensaios nesse material, diga o nome do teste e o resultado (positivo/negativo/inconclusivo).",
+            "gravou": [
+              "Exame realizado 1 — Nome do teste: ensaio de Scott modificado",
+              "Exame realizado 1 — Resultado: positivo",
+              "Exame realizado 1 — Material examinado: 1"
+            ],
+            "recusou": [],
+            "erro": ""
+          },
+          {
+            "perito": "Fiz também cromatografia gasosa acoplada a espectrometria de massas. Constatei a presença do alcaloide cocaína, e também de cafeína e lidocaína.",
+            "assistente": "Registrei no Material 1 o exame “cromatografia gasosa acoplada a espectrometria de massas”, com resultado positivo, com presença de “alcaloide cocaína, e também de cafeína e lidocaína”. Agora faltam: no ensaio de Scott modificado (exame 1), qual substância identificada (substância)? E descreve o procedimento do ensaio de Scott modificado e o procedimento da cromatografia (como foi conduzido/observado)?",
+            "gravou": [
+              "Exame realizado 2 — Nome do teste: cromatografia gasosa acoplada a espectrometria de massas",
+              "Exame realizado 2 — Resultado: positivo",
+              "Exame realizado 2 — Material examinado: 1",
+              "Exame realizado 2 — Substância identificada: alcaloide cocaína, e também de cafeína e lidocaína"
+            ],
+            "recusou": [],
+            "erro": ""
+          },
+          {
+            "perito": "Não fiz mais nenhum exame nesse material.",
+            "assistente": "Ok, anotei que não houve mais nenhum exame nesse material. Ainda faltam, no ensaio de Scott modificado (exame 1): qual substância identificada (substância) e como o ensaio foi conduzido (procedimento). E na cromatografia (exame 2): como foi conduzida/observada (procedimento).",
+            "gravou": [],
+            "recusou": [],
+            "erro": ""
+          },
+          {
+            "perito": "E não tem mais material nenhum.",
+            "assistente": "Anotei que não há mais material a registrar. Ainda faltam os dados dos exames: no ensaio de Scott modificado (exame 1), qual substância identificada e como o ensaio foi conduzido (procedimento)? E na cromatografia (exame 2), descreve o procedimento (como foi conduzida/observada)?",
+            "gravou": [],
+            "recusou": [],
+            "erro": ""
+          }
+        ],
+        "campos_gravados": 13,
+        "chamadas": 5,
+        "segundos": 18.7,
+        "tokens_entrada": 19897,
+        "tokens_saida": 1678
+      },
+      "intervencao_do_perito": {
+        "campos_admin_preenchidos_a_mao": 4,
+        "quesitos_escritos": 5,
+        "quesitos_por_padrao": 0,
+        "derivados_confirmados": 2
+      },
+      "comparacao": {
+        "similaridade": 0.0802,
+        "caracteres_gerado": 3932,
+        "caracteres_oficial": 4574,
+        "fatos_presentes": [
+          "103,4",
+          "petriforme",
+          "branca",
+          "cocaína",
+          "Scott",
+          "RIAN FELIPE DE MELO ARAÚJO",
+          "357723-6"
+        ],
+        "fatos_ausentes": [],
+        "pendencias_no_documento": [
+          "referência bibliográfica de alcaloide cocaína, e também de cafeína e lidocaína",
+          "resposta do quesito 01 para alcaloide cocaína, e também de cafeína e lidocaína",
+          "texto de proscrição de alcaloide cocaína, e também de cafeína e lidocaína",
+          "descrição técnica do ensaio ensaio de Scott modificado",
+          "descrição técnica do ensaio cromatografia gasosa acoplada a espectrometria de massas para alcaloide cocaína, e também de cafeína e lidocaína"
+        ],
+        "imagens_embutidas": 4
+      }
+    },
+    "danos-00074314-60": {
+      "apelido": "danos-00074314-60",
+      "exame": "verificacao_danos",
+      "descricao": "celular danificado em residência (laudo inédito)",
+      "requisicao": {
+        "arquivo": "0000152570.pdf",
+        "origem_leitura": "OCR do documento digitalizado",
+        "nivel": "ocr",
+        "campos_extraidos": 5,
+        "quesitos_extraidos": 16,
+        "origem_quesitos": "requisição",
+        "descartados": []
+      },
+      "conversa": {
+        "turnos": [
+          {
+            "perito": "Fui à Rua Alcides Freitas número 2358, Bairro Marquês, em Teresina. É um imóvel residencial na zona norte. Fui comunicado pela Central de Flagrantes e cheguei às 14h42min. O local estava idôneo para perícia.",
+            "assistente": "Registrei o endereço (Rua Alcides Freitas número 2358, Bairro Marquês, em Teresina), a hora de chegada (14h42min), que o local estava idôneo e a descrição “É um imóvel residencial na zona norte.” Agora faltam: a hora da comunicação (em que horas você foi comunicado), a natureza da área (interna ou externa) e quem recebeu você no local (se alguém recebeu).",
+            "gravou": [
+              "Local 1 — Endereço do local: Rua Alcides Freitas número 2358, Bairro Marquês, em Teresina",
+              "Local 1 — Hora de chegada ao local: 14h42min",
+              "Local 1 — Idoneidade para perícia: idônea",
+              "Local 1 — Descrição do local: É um imóvel residencial na zona norte.",
+              "Local 1 — Quem recebeu o perito: Fui comunicado pela Central de Flagrantes"
+            ],
+            "recusou": [],
+            "erro": ""
+          },
+          {
+            "perito": "A porta de acesso principal frontal do imóvel estava sem evidências de violência.",
+            "assistente": "Registrei como dano constatado: “A porta de acesso principal frontal do imóvel estava sem evidências de violência.” (referente ao local 1). Agora faltam, do local examinado: a hora da comunicação e a natureza da área (interna ou externa).",
+            "gravou": [
+              "Dano constatado 1 — Descrição do dano: A porta de acesso principal frontal do imóvel estava sem evidências de violência.",
+              "Dano constatado 1 — Local examinado: 1"
+            ],
+            "recusou": [],
+            "erro": ""
+          },
+          {
+            "perito": "Havia um telefone celular tipo smartphone, marca Samsung, modelo Galaxy A12, na cor branca, posicionado sobre a mesa da sala, apresentando múltiplas avarias internas e externas, com a tela frontal tipo Touch Screen quebrada e inutilizada, sem funcionamento.",
+            "assistente": "Registrei como dano constatado: “Havia um telefone celular tipo smartphone, marca Samsung, modelo Galaxy A12, na cor branca, posicionado sobre a mesa da sala, apresentando múltiplas avarias internas e externas, com a tela frontal tipo Touch Screen quebrada e inutilizada, sem funcionamento.” (referente ao local 1). Agora faltam, do local examinado: a hora da comunicação e a natureza da área (interna ou externa).",
+            "gravou": [
+              "Dano constatado 2 — Descrição do dano: Havia um telefone celular tipo smartphone, marca Samsung, modelo Galaxy A12, na cor branca, posicionado sobre a mesa da sala, apresentando múltiplas avarias internas e externas, com a tela frontal tipo Touch Screen quebrada e inutilizada, sem funcionamento.",
+              "Dano constatado 2 — Local examinado: 1"
+            ],
+            "recusou": [],
+            "erro": ""
+          },
+          {
+            "perito": "Os danos são compatíveis com instrumentos de ação contundente aliado à força física de ação humana.",
+            "assistente": "Anotei, no local 1, o meio/instrumento: “Os danos são compatíveis com instrumentos de ação contundente aliado à força física de ação humana.” Agora faltam do local examinado: a hora da comunicação (em que horas você foi comunicado) e a natureza da área (interna ou externa).",
+            "gravou": [
+              "Local 1 — Meio ou instrumento que produziu os danos: Os danos são compatíveis com instrumentos de ação contundente aliado à força física de ação humana."
+            ],
+            "recusou": [],
+            "erro": ""
+          },
+          {
+            "perito": "Não constatei mais nenhum dano.",
+            "assistente": "Ok, registrei que não há mais nenhum dano a acrescentar. Pra fechar o local examinado, faltam só: a hora da comunicação (em que horas você foi comunicado) e a natureza da área (interna ou externa).",
+            "gravou": [],
+            "recusou": [],
+            "erro": ""
+          }
+        ],
+        "campos_gravados": 10,
+        "chamadas": 5,
+        "segundos": 19.3,
+        "tokens_entrada": 20228,
+        "tokens_saida": 1634
+      },
+      "intervencao_do_perito": {
+        "campos_admin_preenchidos_a_mao": 4,
+        "quesitos_escritos": 0,
+        "quesitos_por_padrao": 0,
+        "derivados_confirmados": 1
+      },
+      "comparacao": {
+        "similaridade": 0.08,
+        "caracteres_gerado": 5671,
+        "caracteres_oficial": 5781,
+        "fatos_presentes": [
+          "Alcides Freitas",
+          "Samsung",
+          "Galaxy A12",
+          "Touch Screen",
+          "contundente",
+          "DANIEL MENDES LOPES",
+          "14h42min"
+        ],
+        "fatos_ausentes": [],
+        "pendencias_no_documento": [
+          "resposta ao quesito: *Quais as condições, de uso, funcionamento e conservação do local/objeto a ser\nvistoriado?",
+          "resposta ao quesito: *Qual a principal destinação do local/objeto a ser vistoriado?",
+          "resposta ao quesito: *Qual o valor\npatrimonial aproximado do local/objeto a ser vistoriado??",
+          "resposta ao quesito: *É possível uma identificação\nprecisa sobre a natureza do local/objeto a ser submetido a exame?",
+          "resposta ao quesito: *Qual o valor estimado do\nlocal/objeto a ser submetido a exame?",
+          "resposta ao quesito: *Quais as dimensões/peso do local/objeto a ser\nsubmetido a exame?",
+          "resposta ao quesito: *Trata-se de obra de arte ou de grande valor artístico ou arquitetônico?",
+          "resposta ao quesito: *É possível identificar o proprietário do local/objeto a ser submetido a exame?",
+          "resposta ao quesito: *Houve\ndestruição, inutilização ou deterioração da coisa submetida a exame?",
+          "resposta ao quesito: *Qual o meio e quais os\ninstrumentos empregados?",
+          "resposta ao quesito: *Houve emprego de substância inflamável ou explosiva?",
+          "resposta ao quesito: *Qual o\nvalor do dano causado?",
+          "resposta ao quesito: *Qual o valor do provável prejuízo?",
+          "resposta ao quesito: *Há vestígios de material\nbiológico nos objetos que estavam no local?",
+          "resposta ao quesito: *Há vestígios de prováveis objetos e locais que\ntiveram contato com o agressor?",
+          "resposta ao quesito: OUTROS QUESITOS:"
+        ],
+        "imagens_embutidas": 4
+      }
     }
   },
   "modelo": "gpt-5.2",
-  "medido_em": "2026-08-30T16:45:21"
+  "medido_em": "2026-08-30T16:50:10"
 }

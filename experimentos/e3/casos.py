@@ -157,4 +157,83 @@ CASOS = {
             "HONDA/CG 125 ES", "HUNOS PAIXÃO MADUREIRA", "1839545",
         ],
     },
+
+    # ------------------------------------------------------------------
+    # INÉDITO — laudo de substância de outro perito, estrutura compatível.
+    "substancia-00086731-52": {
+        "exame": "identificacao_substancia",
+        "descricao": "cocaína em invólucro único, com Scott e CG/EM (laudo inédito)",
+        "inedito": True,
+        "falas": [
+            "O material é uma substância sólida petriforme, parcialmente "
+            "fragmentada, de cor branca. Massa líquida de 103,4 gramas. Veio "
+            "em um invólucro plástico só.",
+            "Fiz o ensaio de Scott modificado e deu positivo.",
+            "Fiz também cromatografia gasosa acoplada a espectrometria de "
+            "massas. Constatei a presença do alcaloide cocaína, e também de "
+            "cafeína e lidocaína.",
+            "Não fiz mais nenhum exame nesse material.",
+            "E não tem mais material nenhum.",
+        ],
+        "respostas_quesitos": {
+            "01": "Vide Item 2. Identificação e Descrição do Material;",
+            "02": "Vide Item 2. Identificação e Descrição do Material;",
+            "03": "Vide Item 2. Identificação e Descrição do Material;",
+            "04": "Sim. O material encaminhado a exame apresentou resultado "
+                  "positivo para a presença de cocaína. A cocaína, de acordo com "
+                  "a Lista F1 da RDC que atualiza o anexo da Portaria 344 SVS/MS "
+                  "de 12 de fevereiro de 1998, trata-se de um entorpecente de uso "
+                  "proscrito no Brasil;",
+            "05": "Sim. Vide resposta do quesito anterior (quesito 4).",
+        },
+        "admin_extra": {
+            "numero_demanda": "00086731-52",
+            "protocolo_sbs": "SBS 1630/2024",
+            "perito_designado": "RIAN FELIPE DE MELO ARAÚJO",
+            "matricula": "357723-6",
+        },
+        "derivados": {
+            "conclusao": "POSITIVO para cocaína.",
+            "paginas": "3",
+        },
+        "fatos_esperados": [
+            "103,4", "petriforme", "branca", "cocaína",
+            "Scott", "RIAN FELIPE DE MELO ARAÚJO", "357723-6",
+        ],
+    },
+    # ------------------------------------------------------------------
+    # INÉDITO — laudo de DANOS de outro perito, com estrutura bem diferente
+    # da dos dois que originaram o template (tem DISCUSSÃO e REFERÊNCIAS).
+    "danos-00074314-60": {
+        "exame": "verificacao_danos",
+        "descricao": "celular danificado em residência (laudo inédito)",
+        "inedito": True,
+        "falas": [
+            "Fui à Rua Alcides Freitas número 2358, Bairro Marquês, em Teresina. "
+            "É um imóvel residencial na zona norte. Fui comunicado pela Central "
+            "de Flagrantes e cheguei às 14h42min. O local estava idôneo para "
+            "perícia.",
+            "A porta de acesso principal frontal do imóvel estava sem "
+            "evidências de violência.",
+            "Havia um telefone celular tipo smartphone, marca Samsung, modelo "
+            "Galaxy A12, na cor branca, posicionado sobre a mesa da sala, "
+            "apresentando múltiplas avarias internas e externas, com a tela "
+            "frontal tipo Touch Screen quebrada e inutilizada, sem funcionamento.",
+            "Os danos são compatíveis com instrumentos de ação contundente "
+            "aliado à força física de ação humana.",
+            "Não constatei mais nenhum dano.",
+        ],
+        "respostas_quesitos": {},
+        "admin_extra": {
+            "numero_demanda": "00074314-60",
+            "hora_recebimento": "12h50min",
+            "perito_designado": "DANIEL MENDES LOPES",
+            "finalidade": "Exame Pericial para Verificação de Danos",
+        },
+        "derivados": {"paginas": "3"},
+        "fatos_esperados": [
+            "Alcides Freitas", "Samsung", "Galaxy A12", "Touch Screen",
+            "contundente", "DANIEL MENDES LOPES", "14h42min",
+        ],
+    },
 }

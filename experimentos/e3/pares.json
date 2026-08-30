@@ -39,14 +39,6 @@
     "imagens_extraidas": 7,
     "inedito": false
   },
-  "substancia-00074314-60": {
-    "requisicao": "0000152570.pdf",
-    "laudo": "0000157155.pdf",
-    "exame": "identificacao_substancia",
-    "caracteres": 6212,
-    "imagens_extraidas": 6,
-    "inedito": true
-  },
   "substancia-00086731-52": {
     "requisicao": "Demanda00086731-52_REQUISIÇÃO.pdf",
     "laudo": "Demanda00086731-52_LAUDO PERICIAL.pdf",
@@ -60,6 +52,14 @@
     "laudo": "0000213943.pdf",
     "exame": "identificacao_veicular",
     "caracteres": 4993,
+    "imagens_extraidas": 6,
+    "inedito": true
+  },
+  "danos-00074314-60": {
+    "requisicao": "0000152570.pdf",
+    "laudo": "0000157155.pdf",
+    "exame": "verificacao_danos",
+    "caracteres": 6212,
     "imagens_extraidas": 6,
     "inedito": true
   }
